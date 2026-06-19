@@ -22,19 +22,26 @@ class PlayingCardWidget extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white24),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+          boxShadow: [
+             BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+             )
+          ],
         ),
-        child: const Center(
-          child: Icon(Icons.style, color: Colors.white54),
+        child: Center(
+          child: Icon(Icons.style, color: Theme.of(context).colorScheme.primary.withOpacity(0.3), size: 32),
         ),
       );
     }
 
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
-    final color = isRed ? Colors.redAccent : Colors.white;
+    // Red color from theme error status, Black is white text
+    final color = isRed ? Theme.of(context).colorScheme.error : Colors.white;
 
     String suitSymbol;
     switch (card.suit) {
@@ -57,25 +64,53 @@ class PlayingCardWidget extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
-        boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(2, 2))],
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        boxShadow: [
+           BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+           ),
+        ],
       ),
       child: Stack(
         children: [
+          // Top Left Small Indicator
           Positioned(
-            top: 4,
-            left: 6,
+            top: 8,
+            left: 10,
             child: Column(
               children: [
-                Text(rankSymbol, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(suitSymbol, style: TextStyle(color: color, fontSize: 14)),
+                Text(
+                   rankSymbol, 
+                   style: TextStyle(
+                      color: color, 
+                      fontWeight: FontWeight.w600, 
+                      fontSize: 18,
+                   )
+                ),
+                Text(
+                   suitSymbol, 
+                   style: TextStyle(
+                      color: color, 
+                      fontSize: 14,
+                   )
+                ),
               ],
             ),
           ),
+          
+          // Clean Center Symbol
           Center(
-            child: Text(suitSymbol, style: TextStyle(color: color.withOpacity(0.3), fontSize: 36)),
+            child: Text(
+              suitSymbol, 
+              style: TextStyle(
+                color: color.withOpacity(0.7),
+                fontSize: 32,
+              ),
+            ),
           ),
         ],
       ),

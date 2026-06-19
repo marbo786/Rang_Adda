@@ -14,4 +14,16 @@ class PlayingCard extends Equatable {
 
   @override
   String toString() => '${rank.name} of ${suit.name}';
+
+  Map<String, dynamic> toJson() => {
+        'suit': suit.index,
+        'rank': rank.index,
+      };
+
+  factory PlayingCard.fromJson(Map<String, dynamic> json) {
+    return PlayingCard(
+      suit: Suit.values[json['suit'] as int],
+      rank: Rank.values[json['rank'] as int],
+    );
+  }
 }
