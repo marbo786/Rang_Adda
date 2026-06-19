@@ -150,7 +150,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0, bottom: 4.0),
                           child: Text(
-                            'YOUR TURN', 
+                            "${bottomPlayer.name.toUpperCase()}'S TURN", 
                             style: TextStyle(
                               fontSize: 16, 
                               fontWeight: FontWeight.w800, 

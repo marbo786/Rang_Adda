@@ -48,11 +48,12 @@ class PassDeviceOverlay extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  playerName,
-                  style: const TextStyle(
-                     color: Colors.white, 
-                     fontSize: 28, 
-                     fontWeight: FontWeight.bold,
+                  playerName.toUpperCase(),
+                  style: TextStyle(
+                     color: Theme.of(context).primaryColor, 
+                     fontSize: 32, 
+                     fontWeight: FontWeight.w900,
+                     letterSpacing: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
