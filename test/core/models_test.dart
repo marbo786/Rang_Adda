@@ -24,7 +24,9 @@ void main() {
       const p1 = Player(id: '1', name: 'Mohsin');
       expect(p1.hand, isEmpty);
 
-      final p2 = p1.copyWith(hand: [const PlayingCard(suit: Suit.clubs, rank: Rank.king)]);
+      final p2 = p1.copyWith(
+        hand: [const PlayingCard(suit: Suit.clubs, rank: Rank.king)],
+      );
       expect(p2.id, '1');
       expect(p2.name, 'Mohsin');
       expect(p2.hand.length, 1);

@@ -6,43 +6,52 @@ class PassDeviceOverlay extends StatelessWidget {
   final VoidCallback onAcknowledge;
 
   const PassDeviceOverlay({
-    Key? key,
+    super.key,
     required this.playerName,
     required this.onAcknowledge,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
       child: Container(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
-                )
+                ),
               ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.screen_lock_portrait, size: 48, color: Theme.of(context).primaryColor),
+                Icon(
+                  Icons.screen_lock_portrait,
+                  size: 48,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(height: 24),
                 Text(
                   'Pass device to',
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color, 
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                     fontSize: 16,
                   ),
                 ),
@@ -50,10 +59,10 @@ class PassDeviceOverlay extends StatelessWidget {
                 Text(
                   playerName.toUpperCase(),
                   style: TextStyle(
-                     color: Theme.of(context).primaryColor, 
-                     fontSize: 32, 
-                     fontWeight: FontWeight.w900,
-                     letterSpacing: 1.5,
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -65,11 +74,20 @@ class PassDeviceOverlay extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: onAcknowledge,
-                    child: const Text('READY', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: 1.0)),
+                    child: const Text(
+                      'READY',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
                   ),
                 ),
               ],

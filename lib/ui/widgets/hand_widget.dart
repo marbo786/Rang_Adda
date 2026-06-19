@@ -8,11 +8,11 @@ class HandWidget extends StatelessWidget {
   final bool Function(PlayingCard)? isCardValid;
 
   const HandWidget({
-    Key? key,
+    super.key,
     required this.hand,
     required this.onCardTap,
     this.isCardValid,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class HandWidget extends StatelessWidget {
         itemBuilder: (context, index) {
           final card = hand[index];
           bool valid = isCardValid == null || isCardValid!(card);
-          
+
           return Align(
             alignment: Alignment.bottomCenter,
             widthFactor: 0.6, // Clean overlap
@@ -35,25 +35,30 @@ class HandWidget extends StatelessWidget {
                 duration: const Duration(milliseconds: 120),
                 curve: Curves.easeOutCubic,
                 transform: Matrix4.identity()
-                  ..translate(0.0, valid ? -6.0 : 0.0) // 6px lift on hover/valid
+                  // ignore: deprecated_member_use
+                  ..translate(
+                    0.0,
+                    valid ? -10.0 : 0.0,
+                  )
+                  // ignore: deprecated_member_use
                   ..scale(valid ? 1.03 : 0.95), // Scale 1.03
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: valid ? [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.4),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    )
-                  ] : null,
+                  boxShadow: valid
+                      ? [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Opacity(
                   opacity: valid ? 1.0 : 0.5,
-                  child: PlayingCardWidget(
-                    card: card,
-                    width: 70,
-                    height: 105,
-                  ),
+                  child: PlayingCardWidget(card: card, width: 70, height: 105),
                 ),
               ),
             ),

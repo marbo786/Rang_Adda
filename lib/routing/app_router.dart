@@ -8,10 +8,7 @@ import '../ui/screens/bluff_table_screen.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const LobbyScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const LobbyScreen()),
     GoRoute(
       path: '/thulla',
       builder: (context, state) => const ThullaTableScreen(),

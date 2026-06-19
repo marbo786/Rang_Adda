@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/main.dart';
@@ -15,18 +15,18 @@ class MockAuthService implements AuthService {
 
 void main() {
   testWidgets('App loads and shows Lobby', (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        authProvider.overrideWithValue(MockAuthService()),
-      ],
-      child: const MyApp(),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authProvider.overrideWithValue(MockAuthService())],
+        child: const MyApp(),
+      ),
+    );
 
     // Wait for the GoRouter to settle on the initial route
     await tester.pumpAndSettle();
 
     // Verify that our lobby screen is displayed
-    expect(find.text('Rang Adda Lobby'), findsOneWidget);
-    expect(find.text('Select a Game'), findsOneWidget);
+    expect(find.text('RANG ADDA'), findsOneWidget);
+    expect(find.text('Choose your game'), findsOneWidget);
   });
 }

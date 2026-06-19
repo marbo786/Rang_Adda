@@ -55,70 +55,71 @@ class BluffGameState extends Equatable {
       lastClaimedRank: lastClaimedRank ?? this.lastClaimedRank,
       consecutivePasses: consecutivePasses ?? this.consecutivePasses,
       passToPlayerId: passToPlayerId ?? this.passToPlayerId,
-      resolvingBluffMessage: resolvingBluffMessage ?? this.resolvingBluffMessage,
+      resolvingBluffMessage:
+          resolvingBluffMessage ?? this.resolvingBluffMessage,
     );
   }
 
   BluffGameState clearOverlays() {
-     return BluffGameState(
-       gameId: gameId,
-       players: players,
-       status: status,
-       currentPlayerId: currentPlayerId,
-       lastPlayerId: lastPlayerId,
-       centerPile: centerPile,
-       lastPlayedCards: lastPlayedCards,
-       lastClaimedRank: lastClaimedRank,
-       consecutivePasses: consecutivePasses,
-       passToPlayerId: null,
-       resolvingBluffMessage: null,
-     );
+    return BluffGameState(
+      gameId: gameId,
+      players: players,
+      status: status,
+      currentPlayerId: currentPlayerId,
+      lastPlayerId: lastPlayerId,
+      centerPile: centerPile,
+      lastPlayedCards: lastPlayedCards,
+      lastClaimedRank: lastClaimedRank,
+      consecutivePasses: consecutivePasses,
+      passToPlayerId: null,
+      resolvingBluffMessage: null,
+    );
   }
-  
+
   BluffGameState setPassDevice(String passTo) {
-     return BluffGameState(
-       gameId: gameId,
-       players: players,
-       status: status,
-       currentPlayerId: currentPlayerId,
-       lastPlayerId: lastPlayerId,
-       centerPile: centerPile,
-       lastPlayedCards: lastPlayedCards,
-       lastClaimedRank: lastClaimedRank,
-       consecutivePasses: consecutivePasses,
-       passToPlayerId: passTo,
-       resolvingBluffMessage: resolvingBluffMessage,
-     );
+    return BluffGameState(
+      gameId: gameId,
+      players: players,
+      status: status,
+      currentPlayerId: currentPlayerId,
+      lastPlayerId: lastPlayerId,
+      centerPile: centerPile,
+      lastPlayedCards: lastPlayedCards,
+      lastClaimedRank: lastClaimedRank,
+      consecutivePasses: consecutivePasses,
+      passToPlayerId: passTo,
+      resolvingBluffMessage: resolvingBluffMessage,
+    );
   }
 
   BluffGameState setResolvingMessage(String message) {
-     return BluffGameState(
-       gameId: gameId,
-       players: players,
-       status: status,
-       currentPlayerId: currentPlayerId,
-       lastPlayerId: lastPlayerId,
-       centerPile: centerPile,
-       lastPlayedCards: lastPlayedCards,
-       lastClaimedRank: lastClaimedRank,
-       consecutivePasses: consecutivePasses,
-       passToPlayerId: passToPlayerId,
-       resolvingBluffMessage: message,
-     );
+    return BluffGameState(
+      gameId: gameId,
+      players: players,
+      status: status,
+      currentPlayerId: currentPlayerId,
+      lastPlayerId: lastPlayerId,
+      centerPile: centerPile,
+      lastPlayedCards: lastPlayedCards,
+      lastClaimedRank: lastClaimedRank,
+      consecutivePasses: consecutivePasses,
+      passToPlayerId: passToPlayerId,
+      resolvingBluffMessage: message,
+    );
   }
 
   @override
   List<Object?> get props => [
-        gameId,
-        players,
-        status,
-        currentPlayerId,
-        lastPlayerId,
-        centerPile,
-        lastPlayedCards,
-        lastClaimedRank,
-        consecutivePasses,
-        passToPlayerId,
-        resolvingBluffMessage,
-      ];
+    gameId,
+    players,
+    status,
+    currentPlayerId,
+    lastPlayerId,
+    centerPile,
+    lastPlayedCards,
+    lastClaimedRank,
+    consecutivePasses,
+    passToPlayerId,
+    resolvingBluffMessage,
+  ];
 }

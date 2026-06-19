@@ -8,13 +8,17 @@ import 'thulla_game_state.dart';
 class ThullaEngine {
   static ThullaGameState initializeGame(List<String> playerNames) {
     final deck = Deck.standard().cards..shuffle(Random());
-    
-    List<Player> players = playerNames.map((name) => Player(id: name, name: name, hand: const [])).toList();
-    
+
+    List<Player> players = playerNames
+        .map((name) => Player(id: name, name: name, hand: const []))
+        .toList();
+
     // Deal all cards
     int pIndex = 0;
     for (var card in deck) {
-      players[pIndex] = players[pIndex].copyWith(hand: [...players[pIndex].hand, card]);
+      players[pIndex] = players[pIndex].copyWith(
+        hand: [...players[pIndex].hand, card],
+      );
       pIndex = (pIndex + 1) % players.length;
     }
 
@@ -24,7 +28,9 @@ class ThullaEngine {
         ..sort((a, b) {
           int suitCompare = a.suit.index.compareTo(b.suit.index);
           if (suitCompare != 0) return suitCompare;
-          return _rankValue(b.rank).compareTo(_rankValue(a.rank)); // Highest first
+          return _rankValue(
+            b.rank,
+          ).compareTo(_rankValue(a.rank)); // Highest first
         });
       return p.copyWith(hand: sortedHand);
     }).toList();
@@ -32,7 +38,9 @@ class ThullaEngine {
     // Find Ace of Spades
     String startPlayerId = players.first.id;
     for (var p in players) {
-      if (p.hand.contains(const PlayingCard(suit: Suit.spades, rank: Rank.ace))) {
+      if (p.hand.contains(
+        const PlayingCard(suit: Suit.spades, rank: Rank.ace),
+      )) {
         startPlayerId = p.id;
         break;
       }
@@ -52,10 +60,12 @@ class ThullaEngine {
   static ThullaGameState startGameFromWaitingRoom(ThullaGameState state) {
     final deck = Deck.standard().cards..shuffle(Random());
     var players = List<Player>.from(state.players);
-    
+
     int pIndex = 0;
     for (var card in deck) {
-      players[pIndex] = players[pIndex].copyWith(hand: [...players[pIndex].hand, card]);
+      players[pIndex] = players[pIndex].copyWith(
+        hand: [...players[pIndex].hand, card],
+      );
       pIndex = (pIndex + 1) % players.length;
     }
 
@@ -71,7 +81,9 @@ class ThullaEngine {
 
     String startPlayerId = players.first.id;
     for (var p in players) {
-      if (p.hand.contains(const PlayingCard(suit: Suit.spades, rank: Rank.ace))) {
+      if (p.hand.contains(
+        const PlayingCard(suit: Suit.spades, rank: Rank.ace),
+      )) {
         startPlayerId = p.id;
         break;
       }
@@ -89,7 +101,11 @@ class ThullaEngine {
     );
   }
 
-  static String? getMoveError(ThullaGameState state, String playerId, PlayingCard card) {
+  static String? getMoveError(
+    ThullaGameState state,
+    String playerId,
+    PlayingCard card,
+  ) {
     if (state.status != GameStatus.playing) return "Game is over.";
     if (state.currentPlayerId != playerId) return "Not your turn.";
     if (state.passToPlayerId != null) return "Waiting for next player.";
@@ -105,30 +121,49 @@ class ThullaEngine {
 
     if (state.leadSuit != null && card.suit != state.leadSuit) {
       bool hasSuit = player.hand.any((c) => c.suit == state.leadSuit);
-      if (hasSuit) return "You must follow suit! Play a ${state.leadSuit!.name}.";
+      if (hasSuit) {
+        return "You must follow suit! Play a ${state.leadSuit!.name}.";
+      }
     }
 
     return null; // Valid
   }
 
-  static ThullaGameState playCard(ThullaGameState state, String playerId, PlayingCard card) {
+  static ThullaGameState playCard(
+    ThullaGameState state,
+    String playerId,
+    PlayingCard card,
+  ) {
     if (getMoveError(state, playerId, card) != null) return state;
 
     final players = state.players.map((p) {
-      if (p.id == playerId) return p.copyWith(hand: p.hand.where((c) => c != card).toList());
+      if (p.id == playerId) {
+        return p.copyWith(hand: p.hand.where((c) => c != card).toList());
+      }
       return p;
     }).toList();
 
-    final currentTrick = [...state.currentTrick, TrickPlay(playerId: playerId, card: card)];
+    final currentTrick = [
+      ...state.currentTrick,
+      TrickPlay(playerId: playerId, card: card),
+    ];
     Suit leadSuit = currentTrick.first.card.suit;
-    
+
     // In the first trick, playing a different suit is NOT a Tochoo that ends the trick early.
-    bool isTochoo = !state.isFirstTrick && state.leadSuit != null && card.suit != state.leadSuit;
+    bool isTochoo =
+        !state.isFirstTrick &&
+        state.leadSuit != null &&
+        card.suit != state.leadSuit;
 
     bool trickEnded = false;
-    int activePlayersCount = players.where((p) => p.hand.isNotEmpty || currentTrick.any((t) => t.playerId == p.id)).length;
+    int activePlayersCount = players
+        .where(
+          (p) =>
+              p.hand.isNotEmpty || currentTrick.any((t) => t.playerId == p.id),
+        )
+        .length;
     bool roundCompletedNormal = currentTrick.length == activePlayersCount;
-    
+
     if (isTochoo || roundCompletedNormal) trickEnded = true;
 
     if (!trickEnded) {
@@ -155,63 +190,85 @@ class ThullaEngine {
     final players = List<Player>.from(state.players);
     final currentTrick = state.currentTrick;
     Suit leadSuit = currentTrick.first.card.suit;
-    
-    bool isTochoo = !state.isFirstTrick && currentTrick.last.card.suit != leadSuit;
+
+    bool isTochoo =
+        !state.isFirstTrick && currentTrick.last.card.suit != leadSuit;
 
     if (isTochoo) {
-      String highestPlayerId = _getHighestLeadSuitPlayer(currentTrick, leadSuit);
+      String highestPlayerId = _getHighestLeadSuitPlayer(
+        currentTrick,
+        leadSuit,
+      );
       List<PlayingCard> trickCards = currentTrick.map((t) => t.card).toList();
-      
+
       final updatedPlayers = players.map((p) {
-        if (p.id == highestPlayerId) return p.copyWith(hand: [...p.hand, ...trickCards]);
+        if (p.id == highestPlayerId) {
+          return p.copyWith(hand: [...p.hand, ...trickCards]);
+        }
         return p;
       }).toList();
 
-      return _checkWinCondition(state.copyWith(
-        players: updatedPlayers,
-        currentTrick: const [],
-        powerPlayerId: highestPlayerId,
-        currentPlayerId: highestPlayerId,
-        passToPlayerId: state.isOnline ? null : highestPlayerId,
-        isFirstTrick: false,
-        trickResolving: false,
-      ));
+      return _checkWinCondition(
+        state.copyWith(
+          players: updatedPlayers,
+          currentTrick: const [],
+          powerPlayerId: highestPlayerId,
+          currentPlayerId: highestPlayerId,
+          passToPlayerId: state.isOnline ? null : highestPlayerId,
+          isFirstTrick: false,
+          trickResolving: false,
+        ),
+      );
     } else {
-      String highestPlayerId = _getHighestLeadSuitPlayer(currentTrick, leadSuit);
-      List<PlayingCard> newWastePile = [...state.wastePile, ...currentTrick.map((t) => t.card)];
-      
+      String highestPlayerId = _getHighestLeadSuitPlayer(
+        currentTrick,
+        leadSuit,
+      );
+      List<PlayingCard> newWastePile = [
+        ...state.wastePile,
+        ...currentTrick.map((t) => t.card),
+      ];
+
       var updatedPlayers = List<Player>.from(players);
-      final highestPlayer = updatedPlayers.firstWhere((p) => p.id == highestPlayerId);
-      
+      final highestPlayer = updatedPlayers.firstWhere(
+        (p) => p.id == highestPlayerId,
+      );
+
       if (highestPlayer.hand.isEmpty) {
         final random = Random();
         if (newWastePile.isNotEmpty) {
-           int drawIndex = random.nextInt(newWastePile.length);
-           PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
-           updatedPlayers = updatedPlayers.map((p) {
-             if (p.id == highestPlayerId) return p.copyWith(hand: [drawnCard]);
-             return p;
-           }).toList();
+          int drawIndex = random.nextInt(newWastePile.length);
+          PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
+          updatedPlayers = updatedPlayers.map((p) {
+            if (p.id == highestPlayerId) return p.copyWith(hand: [drawnCard]);
+            return p;
+          }).toList();
         }
       }
 
-      return _checkWinCondition(state.copyWith(
-        players: updatedPlayers,
-        currentTrick: const [],
-        wastePile: newWastePile,
-        powerPlayerId: highestPlayerId,
-        currentPlayerId: highestPlayerId,
-        passToPlayerId: state.isOnline ? null : highestPlayerId,
-        isFirstTrick: false,
-        trickResolving: false,
-      ));
+      return _checkWinCondition(
+        state.copyWith(
+          players: updatedPlayers,
+          currentTrick: const [],
+          wastePile: newWastePile,
+          powerPlayerId: highestPlayerId,
+          currentPlayerId: highestPlayerId,
+          passToPlayerId: state.isOnline ? null : highestPlayerId,
+          isFirstTrick: false,
+          trickResolving: false,
+        ),
+      );
     }
   }
 
   static ThullaGameState _checkWinCondition(ThullaGameState state) {
     var activePlayers = state.players.where((p) => p.hand.isNotEmpty).toList();
     if (activePlayers.length <= 1) {
-      return state.copyWith(status: GameStatus.finished, clearCurrentPlayerId: true, clearPassToPlayerId: true);
+      return state.copyWith(
+        status: GameStatus.finished,
+        clearCurrentPlayerId: true,
+        clearPassToPlayerId: true,
+      );
     }
     return state;
   }
@@ -225,10 +282,14 @@ class ThullaEngine {
     return currentPlayerId;
   }
 
-  static String _getHighestLeadSuitPlayer(List<TrickPlay> trick, Suit leadSuit) {
+  static String _getHighestLeadSuitPlayer(
+    List<TrickPlay> trick,
+    Suit leadSuit,
+  ) {
     TrickPlay highest = trick.firstWhere((t) => t.card.suit == leadSuit);
     for (var play in trick) {
-      if (play.card.suit == leadSuit && _rankValue(play.card.rank) > _rankValue(highest.card.rank)) {
+      if (play.card.suit == leadSuit &&
+          _rankValue(play.card.rank) > _rankValue(highest.card.rank)) {
         highest = play;
       }
     }

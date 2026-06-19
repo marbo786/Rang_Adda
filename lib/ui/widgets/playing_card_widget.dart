@@ -8,12 +8,12 @@ class PlayingCardWidget extends StatelessWidget {
   final double height;
 
   const PlayingCardWidget({
-    Key? key,
+    super.key,
     required this.card,
     this.isFaceUp = true,
     this.width = 60,
     this.height = 90,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +24,24 @@ class PlayingCardWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1,
+          ),
           boxShadow: [
-             BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-             )
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Center(
-          child: Icon(Icons.style, color: Theme.of(context).colorScheme.primary.withOpacity(0.3), size: 32),
+          child: Icon(
+            Icons.style,
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            size: 32,
+          ),
         ),
       );
     }
@@ -45,19 +52,37 @@ class PlayingCardWidget extends StatelessWidget {
 
     String suitSymbol;
     switch (card.suit) {
-      case Suit.hearts: suitSymbol = '♥'; break;
-      case Suit.diamonds: suitSymbol = '♦'; break;
-      case Suit.clubs: suitSymbol = '♣'; break;
-      case Suit.spades: suitSymbol = '♠'; break;
+      case Suit.hearts:
+        suitSymbol = '♥';
+        break;
+      case Suit.diamonds:
+        suitSymbol = '♦';
+        break;
+      case Suit.clubs:
+        suitSymbol = '♣';
+        break;
+      case Suit.spades:
+        suitSymbol = '♠';
+        break;
     }
 
     String rankSymbol;
     switch (card.rank) {
-      case Rank.ace: rankSymbol = 'A'; break;
-      case Rank.jack: rankSymbol = 'J'; break;
-      case Rank.queen: rankSymbol = 'Q'; break;
-      case Rank.king: rankSymbol = 'K'; break;
-      default: rankSymbol = '${card.rank.index + 1}'; break;
+      case Rank.ace:
+        rankSymbol = 'A';
+        break;
+      case Rank.jack:
+        rankSymbol = 'J';
+        break;
+      case Rank.queen:
+        rankSymbol = 'Q';
+        break;
+      case Rank.king:
+        rankSymbol = 'K';
+        break;
+      default:
+        rankSymbol = '${card.rank.index + 1}';
+        break;
     }
 
     return Container(
@@ -66,13 +91,16 @@ class PlayingCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1,
+        ),
         boxShadow: [
-           BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-           ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Stack(
@@ -84,30 +112,24 @@ class PlayingCardWidget extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                   rankSymbol, 
-                   style: TextStyle(
-                      color: color, 
-                      fontWeight: FontWeight.w600, 
-                      fontSize: 18,
-                   )
+                  rankSymbol,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
                 ),
-                Text(
-                   suitSymbol, 
-                   style: TextStyle(
-                      color: color, 
-                      fontSize: 14,
-                   )
-                ),
+                Text(suitSymbol, style: TextStyle(color: color, fontSize: 14)),
               ],
             ),
           ),
-          
+
           // Clean Center Symbol
           Center(
             child: Text(
-              suitSymbol, 
+              suitSymbol,
               style: TextStyle(
-                color: color.withOpacity(0.7),
+                color: color.withValues(alpha: 0.7),
                 fontSize: 32,
               ),
             ),

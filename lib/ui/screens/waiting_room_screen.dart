@@ -7,7 +7,7 @@ import '../../core/models/game_state.dart';
 
 class WaitingRoomScreen extends ConsumerWidget {
   final String gameId;
-  const WaitingRoomScreen({Key? key, required this.gameId}) : super(key: key);
+  const WaitingRoomScreen({super.key, required this.gameId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,28 +18,33 @@ class WaitingRoomScreen extends ConsumerWidget {
       body: stateAsync.when(
         data: (state) {
           if (state == null) return const Center(child: Text("Room not found"));
-          
+
           if (state.status == GameStatus.playing) {
-             WidgetsBinding.instance.addPostFrameCallback((_) {
-               context.go('/online_thulla');
-             });
-             return const Center(child: Text("Starting game..."));
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go('/online_thulla');
+            });
+            return const Center(child: Text("Starting game..."));
           }
 
           return Column(
             children: [
               const Padding(
                 padding: EdgeInsets.all(16.0),
-                child: Text('Share this code with your friends to let them join!'),
+                child: Text(
+                  'Share this code with your friends to let them join!',
+                ),
               ),
               Expanded(
                 child: ListView.builder(
                   itemCount: state.players.length,
                   itemBuilder: (context, index) {
-                     return ListTile(
-                       leading: const Icon(Icons.person, color: Colors.tealAccent),
-                       title: Text(state.players[index].name),
-                     );
+                    return ListTile(
+                      leading: const Icon(
+                        Icons.person,
+                        color: Colors.tealAccent,
+                      ),
+                      title: Text(state.players[index].name),
+                    );
                   },
                 ),
               ),

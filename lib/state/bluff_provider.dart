@@ -18,7 +18,11 @@ class BluffNotifier extends Notifier<BluffGameState> {
     state = BluffEngine.initializeGame(playerIds, playerNames);
   }
 
-  Future<String?> playCard(String playerId, List<PlayingCard> cards, Rank claimedRank) async {
+  Future<String?> playCard(
+    String playerId,
+    List<PlayingCard> cards,
+    Rank claimedRank,
+  ) async {
     try {
       state = BluffEngine.playCards(state, playerId, cards, claimedRank);
       return null;
@@ -50,13 +54,19 @@ class BluffNotifier extends Notifier<BluffGameState> {
   }
 
   void declineChallenge() {
-    state = state.copyWith(lastPlayerId: null, lastClaimedRank: null, lastPlayedCards: []);
+    state = state.copyWith(
+      lastPlayerId: null,
+      lastClaimedRank: null,
+      lastPlayedCards: [],
+    );
   }
 
   void acknowledgeResolvingMessage() {
-    state = state.setResolvingMessage(''); // Need to support null clearing, wait, the method uses string?
+    state = state.setResolvingMessage(
+      '',
+    ); // Need to support null clearing, wait, the method uses string?
     // Let's modify the engine or state to actually clear it using clearOverlays or similar.
-    state = state.clearOverlays(); 
+    state = state.clearOverlays();
   }
 }
 
