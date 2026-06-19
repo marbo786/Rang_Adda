@@ -31,6 +31,7 @@ class BluffEngine {
     return BluffGameState(
       gameId: 'local_${DateTime.now().millisecondsSinceEpoch}',
       players: players,
+      status: BluffGameStatus.playing,
       currentPlayerId: players[0].id,
       currentRequiredRank: Rank.ace,
     );
