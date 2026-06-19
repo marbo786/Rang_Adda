@@ -14,10 +14,11 @@ A fast-paced trick-taking game where players must follow suit if possible, or pl
 The classic game of deception and card-counting!
 - **Objective:** Be the first player to get rid of all your cards by successfully bluffing or telling the truth.
 - **Mechanics:** 
-  - Play 1 to 4 cards on your turn and claim a rank.
-  - Ranks strictly increment every turn (Ace -> 2 -> 3...).
-  - **The Interrogator:** When your turn starts, you are presented with a clean glass-dialog to either CALL BLUFF on the previous player, or ACCEPT & PLAY.
-  - The game engine handles all logic natively in Dart.
+  - **Round Starts:** The first player in a round MUST play 2, 3, or 4 cards to start the pile. (If they only have 1 card left, they must pass).
+  - **Ongoing Play:** Subsequent players can play 1, 2, 3, or 4 cards.
+  - **Any Rank, Any Time:** Players can claim *any* rank they want on their turn. There is no required sequence!
+  - **The Interrogator:** When your turn starts, you are presented with a clean frosted-glass dialog to either CALL BLUFF on the previous player, or ACCEPT & PLAY.
+  - The game engine handles all logic and card validation natively in Dart.
 - **Mode:** Local Pass & Play supported.
 
 ### 3. Rang (Coming Soon)
