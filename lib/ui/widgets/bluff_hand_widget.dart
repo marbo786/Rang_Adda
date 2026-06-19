@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/card_model.dart';
+import '../../services/audio_service.dart';
 import 'playing_card_widget.dart';
 
-class BluffHandWidget extends StatefulWidget {
+class BluffHandWidget extends ConsumerStatefulWidget {
   final List<PlayingCard> hand;
   final Function(List<PlayingCard>) onPlayCards;
   final VoidCallback onPass;
@@ -19,13 +22,15 @@ class BluffHandWidget extends StatefulWidget {
   });
 
   @override
-  State<BluffHandWidget> createState() => _BluffHandWidgetState();
+  ConsumerState<BluffHandWidget> createState() => _BluffHandWidgetState();
 }
 
-class _BluffHandWidgetState extends State<BluffHandWidget> {
+class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
   final Set<PlayingCard> _selectedCards = {};
 
   void _toggleCard(PlayingCard card) {
+    HapticFeedback.lightImpact();
+    ref.read(audioServiceProvider).playCardFlip();
     setState(() {
       if (_selectedCards.contains(card)) {
         _selectedCards.remove(card);
@@ -33,6 +38,8 @@ class _BluffHandWidgetState extends State<BluffHandWidget> {
         if (_selectedCards.length < 4) {
           _selectedCards.add(card);
         } else {
+          HapticFeedback.vibrate();
+          ref.read(audioServiceProvider).playError();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("You can only select up to 4 cards.")),
           );
@@ -75,6 +82,8 @@ class _BluffHandWidgetState extends State<BluffHandWidget> {
                     elevation: 0,
                   ),
                   onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    ref.read(audioServiceProvider).playClick();
                     _selectedCards.clear();
                     widget.onPass();
                   },
@@ -106,6 +115,8 @@ class _BluffHandWidgetState extends State<BluffHandWidget> {
                 ),
                 onPressed: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
                     ? () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(audioServiceProvider).playClick();
                         widget.onPlayCards(_selectedCards.toList());
                         setState(() {
                           _selectedCards.clear();

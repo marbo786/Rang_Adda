@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/models/card_model.dart';
 import '../../core/bluff/bluff_game_state.dart';
 import '../../state/bluff_provider.dart';
+import '../../services/audio_service.dart';
+import 'package:flutter/services.dart';
 import '../widgets/bluff_hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
 
@@ -58,65 +60,71 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
               children: [
                 // Top Opponents
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: state.players
-                        .where((p) => p.id != bottomPlayer.id)
-                        .map((p) {
-                          bool isActive = p.id == state.currentPlayerId;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 20,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? Theme.of(context).colorScheme.surface
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isActive
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.white.withValues(alpha: 0.1),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  p.name.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.0,
-                                    color: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: state.players
+                          .where((p) => p.id != bottomPlayer.id)
+                          .map((p) {
+                            bool isActive = p.id == state.currentPlayerId;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 20,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isActive
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.white.withValues(alpha: 0.1),
+                                    width: 1.5,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(
-                                      Icons.style,
-                                      size: 16,
-                                      color: Colors.white54,
-                                    ),
-                                    const SizedBox(width: 6),
                                     Text(
-                                      '${p.hand.length}',
+                                      p.name.toUpperCase(),
                                       style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1.0,
+                                        color: Colors.white,
                                       ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.style,
+                                          size: 16,
+                                          color: Colors.white54,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${p.hand.length}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList(),
+                              ),
+                            );
+                          })
+                          .toList(),
+                    ),
                   ),
                 ),
 
@@ -332,11 +340,15 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     children: Rank.values.map((rank) {
                       return InkWell(
                         onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          ref.read(audioServiceProvider).playClick();
                           Navigator.of(dialogContext).pop();
                           String? error = await ref
                               .read(bluffProvider.notifier)
                               .playCard(playerId, cards, rank);
                           if (error != null && mounted) {
+                            HapticFeedback.vibrate();
+                            ref.read(audioServiceProvider).playError();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(error),
@@ -443,6 +455,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       ),
                     ),
                     onPressed: () {
+                      HapticFeedback.heavyImpact();
+                      ref.read(audioServiceProvider).playHeavySlam();
                       ref
                           .read(bluffProvider.notifier)
                           .callBluff(state.currentPlayerId);
@@ -474,6 +488,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       ),
                     ),
                     onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      ref.read(audioServiceProvider).playClick();
                       ref.read(bluffProvider.notifier).declineChallenge();
                     },
                     child: const Text(
@@ -540,6 +556,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       ),
                     ),
                     onPressed: () {
+                      HapticFeedback.lightImpact();
+                      ref.read(audioServiceProvider).playClick();
                       ref
                           .read(bluffProvider.notifier)
                           .acknowledgeResolvingMessage();

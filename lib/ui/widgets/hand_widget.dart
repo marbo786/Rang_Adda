@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/card_model.dart';
+import '../../services/audio_service.dart';
 import 'playing_card_widget.dart';
 
-class HandWidget extends StatelessWidget {
+class HandWidget extends ConsumerWidget {
   final List<PlayingCard> hand;
   final Function(PlayingCard) onCardTap;
   final bool Function(PlayingCard)? isCardValid;
@@ -15,7 +18,7 @@ class HandWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: 140, // Enough height for the 6px lift and shadow
       child: ListView.builder(
@@ -30,7 +33,14 @@ class HandWidget extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             widthFactor: 0.6, // Clean overlap
             child: GestureDetector(
-              onTap: valid ? () => onCardTap(card) : null,
+              onTap: valid ? () {
+                HapticFeedback.lightImpact();
+                ref.read(audioServiceProvider).playCardFlip();
+                onCardTap(card);
+              } : () {
+                HapticFeedback.vibrate();
+                ref.read(audioServiceProvider).playError();
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 120),
                 curve: Curves.easeOutCubic,

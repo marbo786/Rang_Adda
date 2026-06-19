@@ -156,74 +156,80 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
               children: [
                 // Top Opponents
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: state.players
-                        .where((p) => p.id != bottomPlayer.id)
-                        .map((p) {
-                          bool hasPower = p.id == state.powerPlayerId;
-                          bool isActive = p.id == state.currentPlayerId;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 20,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? Theme.of(context).colorScheme.surface
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isActive
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.white.withValues(alpha: 0.1),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  p.name.toUpperCase(),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.0,
-                                    color: hasPower
-                                        ? Theme.of(
-                                            context,
-                                          ).colorScheme.secondary
-                                        : Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: state.players
+                          .where((p) => p.id != bottomPlayer.id)
+                          .map((p) {
+                            bool hasPower = p.id == state.powerPlayerId;
+                            bool isActive = p.id == state.currentPlayerId;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 20,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isActive
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.white.withValues(alpha: 0.1),
+                                    width: 1.5,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.style,
-                                      size: 16,
-                                      color: hasPower
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.secondary
-                                          : Colors.white54,
-                                    ),
-                                    const SizedBox(width: 6),
                                     Text(
-                                      '${p.hand.length}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                      p.name.toUpperCase(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1.0,
+                                        color: hasPower
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.secondary
+                                            : Colors.white,
                                       ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.style,
+                                          size: 16,
+                                          color: hasPower
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.secondary
+                                              : Colors.white54,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${p.hand.length}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList(),
+                              ),
+                            );
+                          })
+                          .toList(),
+                    ),
                   ),
                 ),
 
