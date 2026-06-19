@@ -101,7 +101,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                              border: Border.all(color: Theme.of(context).primaryColor),
                           ),
                           child: Text(
-                            'MUST PLAY: ${state.currentRequiredRank.name.toUpperCase()}S', 
+                            'CHOOSE YOUR BLUFF!', 
                             style: TextStyle(
                               fontSize: 16, 
                               fontWeight: FontWeight.w800, 
@@ -161,6 +161,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                         ),
                         BluffHandWidget(
                           hand: bottomPlayer.hand,
+                          isFirstTurn: state.centerPile.isEmpty,
                           canPass: true,
                           onPass: () async {
                             String? error = await ref.read(bluffProvider.notifier).passTurn(bottomPlayer.id);
@@ -168,11 +169,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error), backgroundColor: Theme.of(context).colorScheme.error));
                             }
                           },
-                          onPlayCards: (cards) async {
-                            String? error = await ref.read(bluffProvider.notifier).playCard(bottomPlayer.id, cards);
-                            if (error != null && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error), backgroundColor: Theme.of(context).colorScheme.error));
-                            }
+                          onPlayCards: (cards) {
+                            _showRankSelectorDialog(context, cards, bottomPlayer.id);
                           },
                         ),
                       ],
@@ -199,6 +197,63 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showRankSelectorDialog(BuildContext context, List<PlayingCard> cards, String playerId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Dialog(
+            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('WHAT RANK ARE YOU CLAIMING?', 
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: Rank.values.map((rank) {
+                      return InkWell(
+                        onTap: () async {
+                          Navigator.of(dialogContext).pop();
+                          String? error = await ref.read(bluffProvider.notifier).playCard(playerId, cards, rank);
+                          if (error != null && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error), backgroundColor: Theme.of(context).colorScheme.error));
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            border: Border.all(color: Theme.of(context).primaryColor),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(rank.name.toUpperCase(), style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

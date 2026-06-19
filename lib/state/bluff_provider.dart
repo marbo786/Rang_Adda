@@ -11,7 +11,6 @@ class BluffNotifier extends Notifier<BluffGameState> {
       gameId: 'initial',
       players: [],
       currentPlayerId: '',
-      currentRequiredRank: Rank.ace,
     );
   }
 
@@ -19,9 +18,9 @@ class BluffNotifier extends Notifier<BluffGameState> {
     state = BluffEngine.initializeGame(playerIds, playerNames);
   }
 
-  Future<String?> playCard(String playerId, List<PlayingCard> cards) async {
+  Future<String?> playCard(String playerId, List<PlayingCard> cards, Rank claimedRank) async {
     try {
-      state = BluffEngine.playCards(state, playerId, cards);
+      state = BluffEngine.playCards(state, playerId, cards, claimedRank);
       return null;
     } catch (e) {
       return e.toString().replaceAll("Exception: ", "");

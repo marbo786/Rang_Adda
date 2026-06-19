@@ -33,7 +33,6 @@ class BluffEngine {
       players: players,
       status: BluffGameStatus.playing,
       currentPlayerId: players[0].id,
-      currentRequiredRank: Rank.ace,
     );
   }
 
@@ -47,15 +46,11 @@ class BluffEngine {
     return deck;
   }
 
-  static Rank _getNextRank(Rank current) {
-    int nextIndex = (current.index + 1) % Rank.values.length;
-    return Rank.values[nextIndex];
-  }
-
   static String? getMoveError(BluffGameState state, String playerId, List<PlayingCard> cards) {
     if (state.status == BluffGameStatus.finished) return "Game is already finished.";
     if (state.currentPlayerId != playerId) return "It's not your turn.";
-    if (cards.isEmpty || cards.length > 4) return "You must play between 1 and 4 cards.";
+    if (cards.isEmpty || cards.length > 4) return "You must select between 1 and 4 cards.";
+    if (state.centerPile.isEmpty && cards.length < 2) return "You must play at least 2 cards to start a new pile.";
     
     final player = state.players.firstWhere((p) => p.id == playerId);
     for (var card in cards) {
@@ -66,7 +61,7 @@ class BluffEngine {
     return null;
   }
 
-  static BluffGameState playCards(BluffGameState state, String playerId, List<PlayingCard> cards) {
+  static BluffGameState playCards(BluffGameState state, String playerId, List<PlayingCard> cards, Rank claimedRank) {
     final error = getMoveError(state, playerId, cards);
     if (error != null) throw Exception(error);
 
@@ -98,8 +93,7 @@ class BluffEngine {
       lastPlayerId: playerId,
       centerPile: newCenterPile,
       lastPlayedCards: cards,
-      lastClaimedRank: state.currentRequiredRank,
-      currentRequiredRank: _getNextRank(state.currentRequiredRank),
+      lastClaimedRank: claimedRank,
       consecutivePasses: 0,
       passToPlayerId: nextPlayerId,
       resolvingBluffMessage: null,
@@ -134,7 +128,6 @@ class BluffEngine {
 
     return state.copyWith(
       currentPlayerId: nextPlayerId,
-      currentRequiredRank: _getNextRank(state.currentRequiredRank),
       consecutivePasses: newConsecutivePasses,
       centerPile: newCenterPile,
       lastPlayedCards: newLastPlayed,

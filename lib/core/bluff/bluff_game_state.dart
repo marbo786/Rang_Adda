@@ -12,7 +12,6 @@ class BluffGameState extends Equatable {
   final String? lastPlayerId;
   final List<PlayingCard> centerPile;
   final List<PlayingCard> lastPlayedCards;
-  final Rank currentRequiredRank;
   final Rank? lastClaimedRank;
   final int consecutivePasses;
   final String? passToPlayerId;
@@ -26,7 +25,6 @@ class BluffGameState extends Equatable {
     this.lastPlayerId,
     this.centerPile = const [],
     this.lastPlayedCards = const [],
-    required this.currentRequiredRank,
     this.lastClaimedRank,
     this.consecutivePasses = 0,
     this.passToPlayerId,
@@ -41,7 +39,6 @@ class BluffGameState extends Equatable {
     String? lastPlayerId,
     List<PlayingCard>? centerPile,
     List<PlayingCard>? lastPlayedCards,
-    Rank? currentRequiredRank,
     Rank? lastClaimedRank,
     int? consecutivePasses,
     String? passToPlayerId,
@@ -55,7 +52,6 @@ class BluffGameState extends Equatable {
       lastPlayerId: lastPlayerId ?? this.lastPlayerId,
       centerPile: centerPile ?? this.centerPile,
       lastPlayedCards: lastPlayedCards ?? this.lastPlayedCards,
-      currentRequiredRank: currentRequiredRank ?? this.currentRequiredRank,
       lastClaimedRank: lastClaimedRank ?? this.lastClaimedRank,
       consecutivePasses: consecutivePasses ?? this.consecutivePasses,
       passToPlayerId: passToPlayerId ?? this.passToPlayerId,
@@ -72,7 +68,6 @@ class BluffGameState extends Equatable {
        lastPlayerId: lastPlayerId,
        centerPile: centerPile,
        lastPlayedCards: lastPlayedCards,
-       currentRequiredRank: currentRequiredRank,
        lastClaimedRank: lastClaimedRank,
        consecutivePasses: consecutivePasses,
        passToPlayerId: null,
@@ -89,7 +84,6 @@ class BluffGameState extends Equatable {
        lastPlayerId: lastPlayerId,
        centerPile: centerPile,
        lastPlayedCards: lastPlayedCards,
-       currentRequiredRank: currentRequiredRank,
        lastClaimedRank: lastClaimedRank,
        consecutivePasses: consecutivePasses,
        passToPlayerId: passTo,
@@ -106,7 +100,6 @@ class BluffGameState extends Equatable {
        lastPlayerId: lastPlayerId,
        centerPile: centerPile,
        lastPlayedCards: lastPlayedCards,
-       currentRequiredRank: currentRequiredRank,
        lastClaimedRank: lastClaimedRank,
        consecutivePasses: consecutivePasses,
        passToPlayerId: passToPlayerId,
@@ -123,7 +116,6 @@ class BluffGameState extends Equatable {
         lastPlayerId,
         centerPile,
         lastPlayedCards,
-        currentRequiredRank,
         lastClaimedRank,
         consecutivePasses,
         passToPlayerId,

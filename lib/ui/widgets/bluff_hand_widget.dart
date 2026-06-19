@@ -7,6 +7,7 @@ class BluffHandWidget extends StatefulWidget {
   final Function(List<PlayingCard>) onPlayCards;
   final VoidCallback onPass;
   final bool canPass;
+  final bool isFirstTurn;
 
   const BluffHandWidget({
     Key? key,
@@ -14,6 +15,7 @@ class BluffHandWidget extends StatefulWidget {
     required this.onPlayCards,
     required this.onPass,
     required this.canPass,
+    required this.isFirstTurn,
   }) : super(key: key);
 
   @override
@@ -79,12 +81,12 @@ class _BluffHandWidgetState extends State<BluffHandWidget> {
                 
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _selectedCards.isNotEmpty ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.surface,
-                  foregroundColor: _selectedCards.isNotEmpty ? Colors.white : Colors.white54,
+                  backgroundColor: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1) ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.surface,
+                  foregroundColor: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1) ? Colors.white : Colors.white54,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: _selectedCards.isNotEmpty ? 2 : 0,
+                  elevation: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1) ? 2 : 0,
                 ),
-                onPressed: _selectedCards.isNotEmpty ? () {
+                onPressed: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1) ? () {
                   widget.onPlayCards(_selectedCards.toList());
                   setState(() {
                     _selectedCards.clear();
