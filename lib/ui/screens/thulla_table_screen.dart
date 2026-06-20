@@ -9,6 +9,7 @@ import '../widgets/pass_device_overlay.dart';
 import '../widgets/game_table_background.dart';
 import '../widgets/opponent_chip.dart';
 import '../widgets/deal_animation_overlay.dart';
+import '../widgets/winner_pulse_glow.dart';
 import '../../services/auth_service.dart';
 import '../../state/online_thulla_provider.dart';
 import '../../core/thulla/thulla_engine.dart';
@@ -183,11 +184,29 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                           .map((p) {
                             bool hasPower = p.id == state.powerPlayerId;
                             bool isActive = p.id == state.currentPlayerId;
-                            return OpponentChip(
-                              playerName: p.name,
-                              cardCount: p.hand.length,
-                              isActive: isActive,
-                              hasPower: hasPower,
+                            // Determine if this player won the trick (just resolved)
+                            final trickWinnerId = state.trickResolving &&
+                                    state.currentTrick.isNotEmpty
+                                ? state.currentTrick.first.playerId
+                                : null;
+                            final isWinner = state.trickResolving &&
+                                p.id == trickWinnerId;
+
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                OpponentChip(
+                                  playerName: p.name,
+                                  cardCount: p.hand.length,
+                                  isActive: isActive,
+                                  hasPower: hasPower,
+                                ),
+                                // Winner pulse glow
+                                if (isWinner)
+                                  WinnerPulseGlow(
+                                    show: isWinner,
+                                  ),
+                              ],
                             );
                           })
                           .toList(),
@@ -270,26 +289,31 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                   child: AnimatedScale(
                                     duration: const Duration(milliseconds: 350),
                                     scale: state.trickResolving ? 0.8 : 1.0,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          t.playerId,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Theme.of(
-                                              context,
-                                            ).textTheme.bodySmall?.color,
-                                            fontWeight: FontWeight.bold,
+                                    child: AnimatedOpacity(
+                                      opacity: state.trickResolving ? 0.0 : 1.0,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInCubic,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            t.playerId,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodySmall?.color,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        PlayingCardWidget(
-                                          card: t.card,
-                                          width: 70,
-                                          height: 105,
-                                        ),
-                                      ],
+                                          const SizedBox(height: 6),
+                                          PlayingCardWidget(
+                                            card: t.card,
+                                            width: 70,
+                                            height: 105,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -12,6 +12,7 @@ import '../widgets/pass_device_overlay.dart';
 import '../widgets/game_table_background.dart';
 import '../widgets/opponent_chip.dart';
 import '../widgets/deal_animation_overlay.dart';
+import '../widgets/winner_pulse_glow.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
@@ -79,11 +80,25 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           .where((p) => p.id != bottomPlayer.id)
                           .map((p) {
                             bool isActive = p.id == state.currentPlayerId;
-                            return OpponentChip(
-                              playerName: p.name,
-                              cardCount: p.hand.length,
-                              isActive: isActive,
-                              hasPower: false,
+                            // Show pulse glow when player won the last bluff challenge
+                            final isWinner = state.resolvingBluffMessage != null &&
+                                state.lastPlayerId == p.id;
+
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                OpponentChip(
+                                  playerName: p.name,
+                                  cardCount: p.hand.length,
+                                  isActive: isActive,
+                                  hasPower: false,
+                                ),
+                                // Winner pulse glow
+                                if (isWinner)
+                                  WinnerPulseGlow(
+                                    show: isWinner,
+                                  ),
+                              ],
                             );
                           })
                           .toList(),
@@ -126,35 +141,40 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
 
                         // Center Pile visualization
                         if (state.centerPile.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).colorScheme.surface,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1),
+                          AnimatedOpacity(
+                            opacity: state.resolvingBluffMessage != null ? 0.0 : 1.0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInCubic,
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).colorScheme.surface,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${state.centerPile.length}',
-                                  style: const TextStyle(
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${state.centerPile.length}',
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                const Text(
-                                  'CARDS IN PILE',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white54,
-                                    letterSpacing: 1.5,
+                                  const Text(
+                                    'CARDS IN PILE',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white54,
+                                      letterSpacing: 1.5,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           )
                         else
