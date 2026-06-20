@@ -6,6 +6,7 @@ import '../../state/thulla_provider.dart';
 import '../widgets/playing_card_widget.dart';
 import '../widgets/hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
+import '../widgets/game_table_background.dart';
 import '../../services/auth_service.dart';
 import '../../state/online_thulla_provider.dart';
 import '../../core/thulla/thulla_engine.dart';
@@ -151,9 +152,10 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
+      body: GameTableBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
             Column(
               children: [
                 // Top Opponents
@@ -442,6 +444,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

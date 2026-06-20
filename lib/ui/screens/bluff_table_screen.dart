@@ -9,6 +9,7 @@ import '../../services/audio_service.dart';
 import 'package:flutter/services.dart';
 import '../widgets/bluff_hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
+import '../widgets/game_table_background.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
@@ -50,9 +51,10 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           onPressed: () => context.go('/'),
         ),
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
+      body: GameTableBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
             Column(
               children: [
                 // Top Opponents
@@ -292,6 +294,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
