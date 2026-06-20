@@ -4,6 +4,7 @@ import '../ui/screens/table_screen.dart';
 import '../ui/screens/thulla_table_screen.dart';
 import '../ui/screens/waiting_room_screen.dart';
 import '../ui/screens/bluff_table_screen.dart';
+import '../ui/screens/add_players_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -33,6 +34,13 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final gameType = state.pathParameters['gameType'] ?? 'unknown';
         return TableScreen(gameType: gameType);
+      },
+    ),
+    GoRoute(
+      path: '/add_players/:gameType',
+      builder: (context, state) {
+        final gameType = state.pathParameters['gameType']!;
+        return AddPlayersScreen(gameType: gameType);
       },
     ),
   ],
