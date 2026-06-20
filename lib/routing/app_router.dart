@@ -5,6 +5,7 @@ import '../ui/screens/thulla_table_screen.dart';
 import '../ui/screens/waiting_room_screen.dart';
 import '../ui/screens/bluff_table_screen.dart';
 import '../ui/screens/add_players_screen.dart';
+import '../ui/screens/rang_table_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -39,6 +40,13 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/table/:gameType',
+      redirect: (context, state) {
+        final gameType = state.pathParameters['gameType'];
+        if (gameType == 'rang') {
+          return '/rang_table';
+        }
+        return null;
+      },
       builder: (context, state) {
         final gameType = state.pathParameters['gameType'] ?? 'unknown';
         return TableScreen(gameType: gameType);
@@ -61,11 +69,13 @@ final appRouter = GoRouter(
         return AddPlayersScreen(gameType: gameType);
       },
     ),
-    // ── Rang placeholder ──────────────────────────────────────────────────
-    // TODO(phase-4): Replace with the real RangTableScreen route.
     GoRoute(
       path: '/rang_table',
-      builder: (context, state) => const RangPlaceholderScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        final names = extra is List ? List<String>.from(extra) : null;
+        return RangTableScreen(playerNames: names);
+      },
     ),
   ],
 );

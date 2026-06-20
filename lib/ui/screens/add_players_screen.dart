@@ -165,10 +165,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         context.go('/table/bluff', extra: names);
 
       case 'rang':
-        // TODO(phase-4): wire RangProvider.startGame() here once the Rang
-        // table screen and provider are built. For now just navigate to the
-        // placeholder screen so the flow doesn't crash.
-        context.go('/rang_table');
+        context.go('/rang_table', extra: names);
 
       default:
         // Unknown game type — pop back to lobby.
@@ -618,72 +615,4 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Rang placeholder — registered at /rang_table until Phase 4 is complete.
-// ─────────────────────────────────────────────────────────────────────────────
 
-/// Temporary stub screen for the Rang game route.
-///
-/// Shown when the user completes [AddPlayersScreen] for gameType 'rang'.
-/// Replace this with the real RangTableScreen in Phase 4.
-// TODO(phase-4): Delete this class and replace /rang_table with the real
-// RangTableScreen once lib/ui/screens/rang_table_screen.dart is built.
-class RangPlaceholderScreen extends StatelessWidget {
-  const RangPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundPrimary,
-      appBar: AppBar(
-        title: const Text('RANG', style: TextStyle(letterSpacing: 4.0)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.go('/'),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.style,
-              size: 64,
-              color: AppTheme.accentPrimary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'COMING SOON',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 3.0,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Rang is under construction.\nCheck back in Phase 4!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 40),
-            TextButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.arrow_back_rounded,
-                  color: AppTheme.accentPrimary),
-              label: const Text(
-                'Back to Lobby',
-                style: TextStyle(color: AppTheme.accentPrimary),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
