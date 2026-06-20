@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../theme.dart';
+import '../../state/rang_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Game-type configuration
@@ -165,6 +166,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         context.go('/table/bluff', extra: names);
 
       case 'rang':
+        ref.read(rangProvider.notifier).startGame(names);
         context.go('/rang_table', extra: names);
 
       default:

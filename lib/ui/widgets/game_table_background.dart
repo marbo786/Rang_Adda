@@ -40,25 +40,22 @@ class GameTableBackground extends StatelessWidget {
       child: Stack(
         children: [
           child,
-          // Vignette overlay: radial gradient that darkens at edges
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, 0),
-                  radius: 1.2,
-                  colors: [
-                    Colors.transparent,
-                    Colors.transparent,
-                    vignetteColor,
-                  ],
-                  stops: const [0.0, 0.6, 1.0],
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0, 0),
+                    radius: 1.2,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      vignetteColor,
+                    ],
+                    stops: const [0.0, 0.6, 1.0],
+                  ),
+                  borderRadius: BorderRadius.zero,
                 ),
-                borderRadius: BorderRadius.zero,
-              ),
-              // Use IgnorePointer to ensure vignette doesn't intercept interactions
-              child: IgnorePointer(
-                child: Container(),
               ),
             ),
           ),
