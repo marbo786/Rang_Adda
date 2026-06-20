@@ -7,6 +7,8 @@ import '../widgets/playing_card_widget.dart';
 import '../widgets/hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
 import '../widgets/game_table_background.dart';
+import '../widgets/opponent_chip.dart';
+import '../widgets/deal_animation_overlay.dart';
 import '../../services/auth_service.dart';
 import '../../state/online_thulla_provider.dart';
 import '../../core/thulla/thulla_engine.dart';
@@ -26,6 +28,9 @@ class ThullaTableScreen extends ConsumerStatefulWidget {
 }
 
 class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
+  bool _dealAnimationComplete = true; // Track if deal animation has played
+  int? _lastGameStartTick; // Track the last game start to detect new games
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +50,14 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
 
     if (state == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Detect new game start for local games
+    if (!widget.isOnline && state.isFirstTrick) {
+      if (_lastGameStartTick != state.hashCode) {
+        _lastGameStartTick = state.hashCode;
+        _dealAnimationComplete = false;
+      }
     }
 
     if (state.status == GameStatus.finished) {
@@ -170,66 +183,11 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                           .map((p) {
                             bool hasPower = p.id == state.powerPlayerId;
                             bool isActive = p.id == state.currentPlayerId;
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 20,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? Theme.of(context).colorScheme.surface
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isActive
-                                        ? Theme.of(context).primaryColor
-                                        : Colors.white.withValues(alpha: 0.1),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      p.name.toUpperCase(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 1.0,
-                                        color: hasPower
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.secondary
-                                            : Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.style,
-                                          size: 16,
-                                          color: hasPower
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.secondary
-                                              : Colors.white54,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '${p.hand.length}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            return OpponentChip(
+                              playerName: p.name,
+                              cardCount: p.hand.length,
+                              isActive: isActive,
+                              hasPower: hasPower,
                             );
                           })
                           .toList(),
@@ -440,6 +398,19 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                 playerName: state.passToPlayerId!,
                 onAcknowledge: () =>
                     ref.read(thullaProvider.notifier).acknowledgePass(),
+              ),
+            // Deal animation overlay (plays once at game start)
+            if (!widget.isOnline && !_dealAnimationComplete)
+              DealAnimationOverlay(
+                players: state.players,
+                playerCount: state.players.length,
+                onAnimationComplete: () {
+                  if (mounted) {
+                    setState(() {
+                      _dealAnimationComplete = true;
+                    });
+                  }
+                },
               ),
           ],
         ),
