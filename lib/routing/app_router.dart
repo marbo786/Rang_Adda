@@ -12,7 +12,11 @@ final appRouter = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const LobbyScreen()),
     GoRoute(
       path: '/thulla',
-      builder: (context, state) => const ThullaTableScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        final names = extra is List ? List<String>.from(extra) : null;
+        return ThullaTableScreen(playerNames: names);
+      },
     ),
     GoRoute(
       path: '/online_thulla',
@@ -27,7 +31,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/table/bluff',
-      builder: (context, state) => const BluffTableScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        final names = extra is List ? List<String>.from(extra) : null;
+        return BluffTableScreen(playerNames: names);
+      },
     ),
     GoRoute(
       path: '/table/:gameType',
@@ -36,12 +44,28 @@ final appRouter = GoRouter(
         return TableScreen(gameType: gameType);
       },
     ),
+    // ── Pre-game player-name entry ─────────────────────────────────────────
+    // /setup/:gameType is the canonical route used by the lobby.
+    // /add_players/:gameType is kept for backwards compatibility.
+    GoRoute(
+      path: '/setup/:gameType',
+      builder: (context, state) {
+        final gameType = state.pathParameters['gameType']!;
+        return AddPlayersScreen(gameType: gameType);
+      },
+    ),
     GoRoute(
       path: '/add_players/:gameType',
       builder: (context, state) {
         final gameType = state.pathParameters['gameType']!;
         return AddPlayersScreen(gameType: gameType);
       },
+    ),
+    // ── Rang placeholder ──────────────────────────────────────────────────
+    // TODO(phase-4): Replace with the real RangTableScreen route.
+    GoRoute(
+      path: '/rang_table',
+      builder: (context, state) => const RangPlaceholderScreen(),
     ),
   ],
 );

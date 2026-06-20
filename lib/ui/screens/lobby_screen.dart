@@ -292,21 +292,21 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                     const SizedBox(height: 16),
                     _buildButton(
                       'Play Thulla (Pass & Play)',
-                      () => context.push('/thulla'),
+                      () => context.push('/setup/thulla'),
                     ),
                     Row(
                       children: [
                         Expanded(
                           child: _buildButton(
                             'Play Bluff',
-                            () => context.push('/table/bluff'),
+                            () => context.push('/setup/bluff'),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: _buildButton(
                             'Play Rang',
-                            () => context.push('/table/rang'),
+                            () => context.push('/setup/rang'),
                           ),
                         ),
                       ],

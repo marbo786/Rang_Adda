@@ -11,7 +11,8 @@ import '../widgets/bluff_hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
-  const BluffTableScreen({super.key});
+  final List<String>? playerNames;
+  const BluffTableScreen({super.key, this.playerNames});
 
   @override
   ConsumerState<BluffTableScreen> createState() => _BluffTableScreenState();
@@ -22,13 +23,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Initialize local game with 4 players for now
-      ref
-          .read(bluffProvider.notifier)
-          .startGame(
-            ['p1', 'p2', 'p3', 'p4'],
-            ['Alice', 'Bob', 'Charlie', 'Diana'],
-          );
+      final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
+      final ids = List.generate(names.length, (i) => 'p${i + 1}');
+      ref.read(bluffProvider.notifier).startGame(ids, names);
     });
   }
 

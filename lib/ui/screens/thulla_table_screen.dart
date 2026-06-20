@@ -13,7 +13,12 @@ import 'package:go_router/go_router.dart';
 
 class ThullaTableScreen extends ConsumerStatefulWidget {
   final bool isOnline;
-  const ThullaTableScreen({super.key, this.isOnline = false});
+  final List<String>? playerNames;
+  const ThullaTableScreen({
+    super.key,
+    this.isOnline = false,
+    this.playerNames,
+  });
 
   @override
   ConsumerState<ThullaTableScreen> createState() => _ThullaTableScreenState();
@@ -25,11 +30,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     super.initState();
     if (!widget.isOnline) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(thullaProvider.notifier).startGame([
-          'Alice',
-          'Bob',
-          'Charlie',
-        ]);
+        final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie'];
+        ref.read(thullaProvider.notifier).startGame(names);
       });
     }
   }
