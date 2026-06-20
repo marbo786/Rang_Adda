@@ -13,6 +13,7 @@ import '../widgets/game_table_background.dart';
 import '../widgets/opponent_chip.dart';
 import '../widgets/deal_animation_overlay.dart';
 import '../widgets/winner_pulse_glow.dart';
+import '../widgets/game_over_overlay.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
@@ -41,6 +42,31 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     final state = ref.watch(bluffProvider);
     if (state.players.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Check if game is finished
+    if (state.status == BluffGameStatus.finished) {
+      // Find the winner (last remaining player with cards)
+      final winner = state.players.isNotEmpty
+          ? state.players.reduce((a, b) =>
+              a.hand.length > b.hand.length ? a : b)
+          : state.players.first;
+      return Scaffold(
+        body: GameOverOverlay(
+          winnerName: winner.name,
+          onPlayAgain: () {
+            ref.read(audioServiceProvider).playClick();
+            final names =
+                widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
+            final ids = List.generate(names.length, (i) => 'p${i + 1}');
+            ref.read(bluffProvider.notifier).startGame(ids, names);
+          },
+          onBackToLobby: () {
+            ref.read(audioServiceProvider).playClick();
+            context.go('/');
+          },
+        ),
+      );
     }
 
     // Detect new game start

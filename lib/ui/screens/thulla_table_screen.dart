@@ -10,7 +10,9 @@ import '../widgets/game_table_background.dart';
 import '../widgets/opponent_chip.dart';
 import '../widgets/deal_animation_overlay.dart';
 import '../widgets/winner_pulse_glow.dart';
+import '../widgets/game_over_overlay.dart';
 import '../../services/auth_service.dart';
+import '../../services/audio_service.dart';
 import '../../state/online_thulla_provider.dart';
 import '../../core/thulla/thulla_engine.dart';
 import 'package:go_router/go_router.dart';
@@ -62,37 +64,28 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     }
 
     if (state.status == GameStatus.finished) {
-      final loser = state.players.firstWhere(
-        (p) => p.hand.isNotEmpty,
-        orElse: () => state.players.first,
+      // Find the winner (player without remaining cards)
+      final winner = state.players.firstWhere(
+        (p) => p.hand.isEmpty,
+        orElse: () => state.players.last,
       );
       return Scaffold(
-        appBar: AppBar(title: const Text('Game Over')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${loser.name} lost!',
-                style: const TextStyle(fontSize: 32, color: Colors.redAccent),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (!widget.isOnline) {
-                    ref.read(thullaProvider.notifier).startGame([
-                      'Alice',
-                      'Bob',
-                      'Charlie',
-                    ]);
-                  } else {
-                    context.go('/');
-                  }
-                },
-                child: const Text('Play Again / Exit'),
-              ),
-            ],
-          ),
+        body: GameOverOverlay(
+          winnerName: winner.name,
+          onPlayAgain: () {
+            ref.read(audioServiceProvider).playClick();
+            if (!widget.isOnline) {
+              ref.read(thullaProvider.notifier).startGame(
+                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie'],
+                  );
+            } else {
+              context.go('/');
+            }
+          },
+          onBackToLobby: () {
+            ref.read(audioServiceProvider).playClick();
+            context.go('/');
+          },
         ),
       );
     }
