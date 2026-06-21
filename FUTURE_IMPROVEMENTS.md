@@ -14,9 +14,9 @@ The core logic engine (`RangEngine` and `RangGameState`) and the test suite are 
 - [ ] **Localization**: Add `flutter_localizations` to support multiple languages (e.g., Hindi, Urdu, Punjabi, English).
 
 ## ✨ UX/UI Polish & Gamification
-- [ ] **Player Profiles & Stats**: Track wins, losses, and play style to display on a local or cloud profile page.
-- [ ] **Leaderboards**: Implement Firebase leaderboards to track the highest ranking players.
-- [ ] **In-Game Chat / Emotes**: Add a quick-chat or emote system for online rooms since voice chat isn't implemented.
+- [x] **In-Game Chat / Emojis:** Build a pop-up system or floating overlay where players can send quick reactions (e.g., 😂, 😡) or short messages that sync via Firestore. (Completed)
+- [x] **Player Profiles & Leaderboards:** Since we're tracking `wins`, `losses`, and `winRate` locally, syncing these to a `users` collection in Firestore will allow us to create a global leaderboard screen. (Completed)
+- [ ] **Rang Game Mode:** The UI for `RangTableScreen` is mostly a stub. The logic for trump calling, trick taking, and scoring needs to be fully built and wired into the `GameState` and Firestore sync.
 - [ ] **Dynamic Backgrounds**: Let players unlock or select different premium table backgrounds.
 
 ## ⚙️ Engine & Optimization

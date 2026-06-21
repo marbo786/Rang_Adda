@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rang_adda/core/models/card_model.dart';
-import 'package:rang_adda/core/models/game_state.dart';
-import 'package:rang_adda/core/models/player.dart';
-import 'package:rang_adda/core/rang/rang_game_state.dart';
-import 'package:rang_adda/core/rang/rang_trick_play.dart';
-import 'package:rang_adda/core/rang/rang_engine.dart';
+import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/models/game_state.dart';
+import 'package:rang_adda/shared/models/player.dart';
+import 'package:rang_adda/features/rang/engine/rang_game_state.dart';
+import 'package:rang_adda/features/rang/engine/rang_trick_play.dart';
+import 'package:rang_adda/features/rang/engine/rang_engine.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers

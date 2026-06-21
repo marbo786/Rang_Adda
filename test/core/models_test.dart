@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rang_adda/core/models/card_model.dart';
-import 'package:rang_adda/core/models/deck.dart';
-import 'package:rang_adda/core/models/player.dart';
+import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/models/deck.dart';
+import 'package:rang_adda/shared/models/player.dart';
 
 void main() {
   group('Models Test', () {

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rang_adda/core/models/card_model.dart';
-import 'package:rang_adda/core/models/game_state.dart';
-import 'package:rang_adda/core/models/player.dart';
-import 'package:rang_adda/core/thulla/thulla_game_state.dart';
-import 'package:rang_adda/core/thulla/thulla_engine.dart';
+import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/models/game_state.dart';
+import 'package:rang_adda/shared/models/player.dart';
+import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
+import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
 
 void main() {
   group('ThullaEngine', () {
@@ -57,8 +57,6 @@ void main() {
         status: GameStatus.playing,
         currentPlayerId: 'p1',
         passToPlayerId: null,
-        isFirstTrick: true,
-        powerPlayerId: 'p1',
         isOnline: true,
       );
     }
@@ -101,7 +99,7 @@ void main() {
 
     test('Tochoo logic forces highest lead player to pick up cards', () {
       var state = getTestState().copyWith(
-        isFirstTrick: false,
+        
       ); // Bypass first trick
 
       // Change hands to force a Tochoo
@@ -149,7 +147,7 @@ void main() {
 
     test('Empty Hand Draw logic (Winning a trick with 0 cards forces draw)', () {
       var state = getTestState().copyWith(
-        isFirstTrick: false,
+        
         wastePile: const [PlayingCard(suit: Suit.clubs, rank: Rank.two)],
       );
 

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/main.dart';
-import 'package:rang_adda/services/auth_service.dart';
+import 'package:rang_adda/shared/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:rang_adda/ui/screens/rang_table_screen.dart';
-import 'package:rang_adda/state/rang_provider.dart';
-import 'package:rang_adda/core/rang/rang_game_state.dart';
-import 'package:rang_adda/core/models/player.dart';
-import 'package:rang_adda/core/models/game_state.dart';
+import 'package:rang_adda/features/rang/ui/rang_table_screen.dart';
+import 'package:rang_adda/features/rang/state/rang_provider.dart';
+import 'package:rang_adda/features/rang/engine/rang_game_state.dart';
+import 'package:rang_adda/shared/models/player.dart';
+import 'package:rang_adda/shared/models/game_state.dart';
 
 class MockAuthService implements AuthService {
   @override

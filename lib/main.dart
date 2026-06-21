@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'routing/app_router.dart';
-import 'ui/theme.dart';
+import 'package:rang_adda/firebase_options.dart';
+import 'package:rang_adda/shared/routing/app_router.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

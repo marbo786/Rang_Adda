@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rang_adda/ui/screens/rang_table_screen.dart';
-import 'package:rang_adda/ui/widgets/deal_animation_overlay.dart';
-import 'package:rang_adda/ui/widgets/pass_device_overlay.dart';
+import 'package:rang_adda/features/rang/ui/rang_table_screen.dart';
+import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
+import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 
 void main() {
   testWidgets('RangTableScreen flow test (deal -> pass -> trump declaration -> trick play)',

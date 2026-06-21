@@ -2,15 +2,23 @@
 
 Welcome to **Rang-Adda**, a premium digital tabletop experience for classic card games! This application is built with Flutter and designed with a minimalist, high-contrast aesthetic that focuses on smooth interactions and an engaging multiplayer feel.
 
+## Architecture: Feature-First
+This repository is structured using a clean, scalable **Feature-First Architecture**. The codebase is organized by functionality rather than layer:
+- `lib/features/bluff/` - The Bluff game mode
+- `lib/features/thulla/` - The Thulla game mode
+- `lib/features/rang/` - The Rang game mode (WIP)
+- `lib/features/lobby/` - Matchmaking, Waiting Rooms, and Room creation
+- `lib/features/profile/` - Player Stats, Profiles, and Leaderboards
+- `lib/shared/` - Core models, services (Auth/Firestore), and global UI widgets
+
 ## Current Game Modes
 
-### 1. Thulla (Pass & Play)
+### 1. Thulla (Online & Pass & Play)
 A fast-paced trick-taking game where players must follow suit if possible, or play a power card. 
 - **Objective:** Win tricks by playing the highest card of the led suit or a powerful trump card.
 - **Rules:** The game enforces strict suit-following and automatically determines trick winners.
-- **Mode:** Local Pass & Play supported.
 
-### 2. Bluff / BS / Cheat (Pass & Play)
+### 2. Bluff / BS / Cheat (Online & Pass & Play)
 The classic game of deception and card-counting!
 - **Objective:** Be the first player to get rid of all your cards by successfully bluffing or telling the truth.
 - **Mechanics:** 
@@ -18,8 +26,6 @@ The classic game of deception and card-counting!
   - **Ongoing Play:** Subsequent players can play 1, 2, 3, or 4 cards.
   - **Any Rank, Any Time:** Players can claim *any* rank they want on their turn. There is no required sequence!
   - **The Interrogator:** When your turn starts, you are presented with a clean frosted-glass dialog to either CALL BLUFF on the previous player, or ACCEPT & PLAY.
-  - The game engine handles all logic and card validation natively in Dart.
-- **Mode:** Local Pass & Play supported.
 
 ### 3. Rang (Coming Soon)
 The traditional South Asian trick-taking game is next on the roadmap!
@@ -36,7 +42,9 @@ The application is built on a **Minimal Premium Design System**:
 The app now supports real-time online multiplayer powered by Firebase Firestore!
 - **Real-Time Sync**: True cross-device state management using Riverpod.
 - **Robust Reconnection**: If the app is closed or crashes, you can instantly reconnect to your active game straight from the Lobby.
-- **Lobby Management**: The game host has full control over the waiting room and can kick inactive players.
+- **Lobby Management**: The game host has full control over the waiting room and can kick inactive players. The "Start Game" option is securely hidden from non-hosts.
+- **Player Profiles & Leaderboards**: Track your global wins and losses securely using Firebase Auth.
+- **In-Game Chat & Emojis**: Real-time pop-up chat messages and emoji reactions over player avatars.
 - **Security Rules**: Locked down database rules ensure only authenticated players in the room can modify game state.
 
 ## Tech Stack

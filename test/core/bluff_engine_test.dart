@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rang_adda/core/models/card_model.dart';
-import 'package:rang_adda/core/bluff/bluff_game_state.dart';
-import 'package:rang_adda/core/bluff/bluff_engine.dart';
+import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/features/bluff/engine/bluff_game_state.dart';
+import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
 
 void main() {
   group('BluffEngine Tests', () {
