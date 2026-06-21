@@ -32,12 +32,20 @@ The application is built on a **Minimal Premium Design System**:
 - **Motion:** Fast and responsive animations (120ms - 350ms) for card interactions and trick resolutions using custom physics curves.
 - **Interactions:** "Pass Device" prompts use frosted-glass overlays to keep the game flow elegant.
 
+## Online Multiplayer 🌐
+The app now supports real-time online multiplayer powered by Firebase Firestore!
+- **Real-Time Sync**: True cross-device state management using Riverpod.
+- **Robust Reconnection**: If the app is closed or crashes, you can instantly reconnect to your active game straight from the Lobby.
+- **Lobby Management**: The game host has full control over the waiting room and can kick inactive players.
+- **Security Rules**: Locked down database rules ensure only authenticated players in the room can modify game state.
+
 ## Tech Stack
 
 - **Framework:** Flutter / Dart
 - **State Management:** Riverpod 3.0
 - **Routing:** GoRouter
-- **Backend:** Firebase (Firestore) - *(Integration for online play in progress)*
+- **Backend:** Firebase (Firestore & Authentication)
+- **Feedback:** Audio and Haptics engine integrated for premium tactile feedback.
 
 ## Running the Project
 
