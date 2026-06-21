@@ -21,7 +21,7 @@ final onlineThullaProvider = StreamProvider<ThullaGameState?>((ref) {
   if (gameId == null) return const Stream.empty();
 
   final firestore = ref.read(firestoreServiceProvider);
-  return firestore.streamGame(gameId);
+  return firestore.streamGame(gameId).cast<ThullaGameState?>();
 });
 
 final onlineActionProvider = Provider<OnlineActionController>((ref) {

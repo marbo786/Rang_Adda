@@ -8,16 +8,22 @@ import '../../state/bluff_provider.dart';
 import '../../services/audio_service.dart';
 import 'package:flutter/services.dart';
 import '../widgets/bluff_hand_widget.dart';
+import '../../state/online_bluff_provider.dart';
+import '../../services/auth_service.dart';
+import '../widgets/bluff_hand_widget.dart';
 import '../widgets/pass_device_overlay.dart';
 import '../widgets/game_table_background.dart';
 import '../widgets/opponent_chip.dart';
 import '../widgets/deal_animation_overlay.dart';
 import '../widgets/winner_pulse_glow.dart';
 import '../widgets/game_over_overlay.dart';
+import '../../core/models/game_state.dart';
+import '../../core/models/player.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
-  const BluffTableScreen({super.key, this.playerNames});
+  final bool isOnline;
+  const BluffTableScreen({super.key, this.playerNames, this.isOnline = false});
 
   @override
   ConsumerState<BluffTableScreen> createState() => _BluffTableScreenState();
@@ -31,54 +37,76 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
-      final ids = List.generate(names.length, (i) => 'p${i + 1}');
-      ref.read(bluffProvider.notifier).startGame(ids, names);
+      if (!widget.isOnline) {
+        final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
+        final ids = List.generate(names.length, (i) => 'p${i + 1}');
+        ref.read(bluffProvider.notifier).startGame(ids, names);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(bluffProvider);
-    if (state.players.isEmpty) {
+    final state = widget.isOnline
+        ? ref.watch(onlineBluffProvider).value
+        : ref.watch(bluffProvider);
+        
+    if (state == null || state.players.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    // Check if game is finished
-    if (state.status == BluffGameStatus.finished) {
-      // Find the winner (last remaining player with cards)
-      final winner = state.players.isNotEmpty
-          ? state.players.reduce((a, b) =>
-              a.hand.length > b.hand.length ? a : b)
-          : state.players.first;
+    
+    if (state.status == GameStatus.finished) {
       return Scaffold(
-        body: GameOverOverlay(
-          winnerName: winner.name,
-          onPlayAgain: () {
-            ref.read(audioServiceProvider).playClick();
-            final names =
-                widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
-            final ids = List.generate(names.length, (i) => 'p${i + 1}');
-            ref.read(bluffProvider.notifier).startGame(ids, names);
-          },
-          onBackToLobby: () {
-            ref.read(audioServiceProvider).playClick();
-            context.go('/');
-          },
+        appBar: AppBar(title: const Text('Game Over')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                state.resolvingBluffMessage ?? 'Game Finished',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 24, color: Colors.greenAccent),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (!widget.isOnline) {
+                    ref.read(bluffProvider.notifier).startGame(
+                      ['p1', 'p2', 'p3', 'p4'],
+                      ['Alice', 'Bob', 'Charlie', 'Diana'],
+                    );
+                  } else {
+                    context.go('/');
+                  }
+                },
+                child: const Text('Play Again / Exit'),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     // Detect new game start
-    if (_lastGameStartTick != state.hashCode && state.status == BluffGameStatus.playing) {
+    if (_lastGameStartTick != state.hashCode && state.status == GameStatus.playing) {
       _lastGameStartTick = state.hashCode;
       _dealAnimationComplete = false;
     }
 
-    final bottomPlayer = state.players.firstWhere(
+    Player bottomPlayer = state.players.firstWhere(
       (p) => p.id == state.currentPlayerId,
       orElse: () => state.players.first,
     );
+    
+    if (widget.isOnline) {
+      final user = ref.read(userProvider).value;
+      if (user != null) {
+        bottomPlayer = state.players.firstWhere(
+          (p) => p.id == user.uid,
+          orElse: () => state.players.first,
+        );
+      }
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -252,9 +280,26 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           isFirstTurn: state.centerPile.isEmpty,
                           canPass: true,
                           onPass: () async {
-                            String? error = await ref
-                                .read(bluffProvider.notifier)
-                                .passTurn(bottomPlayer.id);
+                            if (widget.isOnline) {
+                              final user = ref.read(userProvider).value;
+                              if (user == null || user.uid != bottomPlayer.id) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("You can only play your own hand!"),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                            
+                            String? error;
+                            if (widget.isOnline) {
+                              await ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
+                            } else {
+                              error = await ref
+                                  .read(bluffProvider.notifier)
+                                  .passTurn(bottomPlayer.id);
+                            }
                             if (error != null && mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -267,6 +312,17 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             }
                           },
                           onPlayCards: (cards) {
+                            if (widget.isOnline) {
+                              final user = ref.read(userProvider).value;
+                              if (user == null || user.uid != bottomPlayer.id) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("You can only play your own hand!"),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
                             _showRankSelectorDialog(
                               context,
                               cards,
@@ -282,7 +338,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
             ),
 
             // Pass Device Overlay
-            if (state.passToPlayerId != null)
+            if (state.passToPlayerId != null && !widget.isOnline)
               PassDeviceOverlay(
                 playerName: state.players
                     .firstWhere((p) => p.id == state.passToPlayerId)
@@ -295,8 +351,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
             if (state.passToPlayerId == null &&
                 state.lastPlayerId != null &&
                 state.lastPlayedCards.isNotEmpty &&
-                state.status == BluffGameStatus.playing)
-              _buildChallengeOverlay(context, state),
+                state.status == GameStatus.playing)
+              _buildChallengeOverlay(context, state, bottomPlayer),
 
             // Resolving Result Overlay
             if (state.resolvingBluffMessage != null)
@@ -367,9 +423,18 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           HapticFeedback.mediumImpact();
                           ref.read(audioServiceProvider).playClick();
                           Navigator.of(dialogContext).pop();
-                          String? error = await ref
-                              .read(bluffProvider.notifier)
-                              .playCard(playerId, cards, rank);
+                          
+                          String? error;
+                          if (widget.isOnline) {
+                            error = await ref
+                                .read(onlineBluffActionProvider)
+                                .playCard(playerId, cards, rank);
+                          } else {
+                            error = await ref
+                                .read(bluffProvider.notifier)
+                                .playCard(playerId, cards, rank);
+                          }
+                          
                           if (error != null && mounted) {
                             HapticFeedback.vibrate();
                             ref.read(audioServiceProvider).playError();
@@ -417,7 +482,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     );
   }
 
-  Widget _buildChallengeOverlay(BuildContext context, BluffGameState state) {
+  Widget _buildChallengeOverlay(BuildContext context, BluffGameState state, Player bottomPlayer) {
     String pName = state.players
         .firstWhere((p) => p.id == state.lastPlayerId)
         .name;
@@ -481,9 +546,13 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     onPressed: () {
                       HapticFeedback.heavyImpact();
                       ref.read(audioServiceProvider).playHeavySlam();
-                      ref
-                          .read(bluffProvider.notifier)
-                          .callBluff(state.currentPlayerId);
+                      if (widget.isOnline) {
+                        ref.read(onlineBluffActionProvider).callBluff(bottomPlayer.id);
+                      } else {
+                        ref
+                            .read(bluffProvider.notifier)
+                            .callBluff(state.currentPlayerId!);
+                      }
                     },
                     child: const Text(
                       'CALL BLUFF!',
@@ -514,7 +583,12 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       ref.read(audioServiceProvider).playClick();
-                      ref.read(bluffProvider.notifier).declineChallenge();
+                      if (widget.isOnline) {
+                        // Online decline means pass turn implicitly
+                        ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
+                      } else {
+                        ref.read(bluffProvider.notifier).declineChallenge();
+                      }
                     },
                     child: const Text(
                       'ACCEPT & PLAY',
@@ -582,9 +656,13 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       ref.read(audioServiceProvider).playClick();
-                      ref
-                          .read(bluffProvider.notifier)
-                          .acknowledgeResolvingMessage();
+                      if (widget.isOnline) {
+                        ref.read(onlineBluffActionProvider).acknowledgeResolvingMessage();
+                      } else {
+                        ref
+                            .read(bluffProvider.notifier)
+                            .acknowledgeResolvingMessage();
+                      }
                     },
                     child: const Text(
                       'CONTINUE',

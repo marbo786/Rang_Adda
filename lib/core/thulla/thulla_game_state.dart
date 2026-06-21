@@ -36,6 +36,7 @@ class ThullaGameState extends GameState {
 
   const ThullaGameState({
     required super.gameId,
+    super.gameType = 'thulla',
     required super.players,
     required super.status,
     super.currentPlayerId,
@@ -97,8 +98,10 @@ class ThullaGameState extends GameState {
     isOnline,
   ];
 
+  @override
   Map<String, dynamic> toJson() => {
     'gameId': gameId,
+    'gameType': 'thulla',
     'players': players.map((p) => p.toJson()).toList(),
     'status': status.index,
     'currentPlayerId': currentPlayerId,

@@ -3,6 +3,8 @@ import '../core/models/player.dart';
 import '../core/models/game_state.dart';
 import '../core/thulla/thulla_game_state.dart';
 import '../core/thulla/thulla_engine.dart';
+import '../core/bluff/bluff_game_state.dart';
+import '../core/bluff/bluff_engine.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {
@@ -12,11 +14,11 @@ final firestoreServiceProvider = Provider<FirestoreService>((ref) {
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<ThullaGameState?> streamGame(String gameId) {
+  Stream<GameState?> streamGame(String gameId) {
     return _db.collection('games').doc(gameId).snapshots().map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) return null;
       try {
-        return ThullaGameState.fromJson(snapshot.data()!);
+        return GameState.fromJson(snapshot.data()!);
       } catch (e) {
         print("Error parsing game state: $e");
         return null;
@@ -24,15 +26,27 @@ class FirestoreService {
     });
   }
 
-  Future<String> createWaitingRoom(String hostId, String hostName) async {
+  Future<String> createWaitingRoom(String hostId, String hostName, String gameType) async {
     final gameId = DateTime.now().millisecondsSinceEpoch.toString().substring(
       7,
     ); // e.g. "456789"
-    final state = ThullaGameState(
-      gameId: gameId,
-      players: [Player(id: hostId, name: hostName)],
-      status: GameStatus.waiting,
-    );
+    
+    GameState state;
+    if (gameType == 'bluff') {
+      state = BluffGameState(
+        gameId: gameId,
+        players: [Player(id: hostId, name: hostName)],
+        status: GameStatus.waiting,
+        currentPlayerId: hostId,
+      );
+    } else {
+      state = ThullaGameState(
+        gameId: gameId,
+        players: [Player(id: hostId, name: hostName)],
+        status: GameStatus.waiting,
+      );
+    }
+    
     await _db.collection('games').doc(gameId).set(state.toJson());
     return gameId;
   }
@@ -45,7 +59,7 @@ class FirestoreService {
     final doc = await _db.collection('games').doc(gameId).get();
     if (!doc.exists) throw Exception("Game not found");
 
-    final state = ThullaGameState.fromJson(doc.data()!);
+    final state = GameState.fromJson(doc.data()!);
     if (state.status != GameStatus.waiting) {
       throw Exception("Game already started");
     }
@@ -65,12 +79,30 @@ class FirestoreService {
     final doc = await _db.collection('games').doc(gameId).get();
     if (!doc.exists) return;
 
-    final state = ThullaGameState.fromJson(doc.data()!);
-    final playingState = ThullaEngine.startGameFromWaitingRoom(state);
+    final state = GameState.fromJson(doc.data()!);
+    GameState playingState;
+    
+    if (state.gameType == 'bluff') {
+      // In a real app we'd want a separate initializeOnlineGame.
+      // But for now, we can just use the initializeGame and copy the players to maintain their Firebase UIDs.
+      final playerIds = state.players.map((p) => p.id).toList();
+      final playerNames = state.players.map((p) => p.name).toList();
+      final initialized = BluffEngine.initializeGame(playerIds, playerNames);
+      playingState = initialized.copyWith(
+        gameId: state.gameId, 
+        status: GameStatus.playing,
+        isOnline: true
+      );
+    } else {
+      playingState = ThullaEngine.startGameFromWaitingRoom(state as ThullaGameState);
+      // Ensure online flag is set
+      playingState = (playingState as ThullaGameState).copyWith(isOnline: true);
+    }
+    
     await updateGameState(playingState);
   }
 
-  Future<void> updateGameState(ThullaGameState state) async {
+  Future<void> updateGameState(GameState state) async {
     await _db.collection('games').doc(state.gameId).set(state.toJson());
   }
 }

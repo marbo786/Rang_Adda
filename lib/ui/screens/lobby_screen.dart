@@ -7,6 +7,7 @@ import '../../services/audio_service.dart';
 import '../../state/online_thulla_provider.dart';
 import '../theme.dart';
 import '../widgets/game_table_background.dart';
+import '../../core/models/game_state.dart';
 
 class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({super.key});
@@ -88,6 +89,78 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
         ),
       ),
     );
+  }
+
+  void _showHostGameDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Host Game'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildButton('Thulla', () {
+                Navigator.of(context).pop();
+                _hostGame('thulla');
+              }),
+              _buildButton('Bluff', () {
+                Navigator.of(context).pop();
+                _hostGame('bluff');
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _hostGame(String gameType) async {
+    final user = ref.read(userProvider).value;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connecting...")),
+      );
+      try {
+        await ref
+            .read(authProvider)
+            .signInAnonymously("Host_${DateTime.now().millisecond}");
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Auth Failed: $e")),
+          );
+        }
+        return;
+      }
+    }
+    try {
+      String? uid = user?.uid ??
+          (await ref
+                  .read(authProvider)
+                  .signInAnonymously("Host_${DateTime.now().millisecond}"))
+              ?.uid;
+      if (uid == null) throw Exception("Auth failed");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Creating room...")),
+        );
+      }
+      final gameId = await ref
+          .read(firestoreServiceProvider)
+          .createWaitingRoom(uid, user?.displayName ?? "Host", gameType)
+          .timeout(const Duration(seconds: 5));
+      ref.read(currentGameIdProvider.notifier).setId(gameId);
+      if (mounted) {
+        context.push('/waiting_room/$gameId');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    }
   }
 
   @override
@@ -271,79 +344,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                               }
                             }),
                             const SizedBox(height: 12),
-                            _buildButton('HOST NEW GAME', () async {
-                              final user = ref.read(userProvider).value;
-                              if (user == null) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                  const SnackBar(
-                                      content: Text("Connecting...")),
-                                );
-                                try {
-                                  await ref
-                                      .read(authProvider)
-                                      .signInAnonymously(
-                                        "Host_${DateTime.now().millisecond}",
-                                      );
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text("Auth Failed: $e")),
-                                    );
-                                  }
-                                  return;
-                                }
-                              }
-                              try {
-                                String? uid = user?.uid ??
-                                    (await ref
-                                            .read(authProvider)
-                                            .signInAnonymously(
-                                              "Host_${DateTime.now().millisecond}",
-                                            ))
-                                        ?.uid;
-                                if (uid == null) {
-                                  throw Exception("Auth failed");
-                                }
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Creating room..."),
-                                    ),
-                                  );
-                                }
-                                final gameId = await ref
-                                    .read(firestoreServiceProvider)
-                                    .createWaitingRoom(
-                                      uid,
-                                      user?.displayName ?? "Host",
-                                    )
-                                    .timeout(
-                                        const Duration(seconds: 5));
-                                ref
-                                    .read(
-                                        currentGameIdProvider.notifier,
-                                    )
-                                    .setId(gameId);
-                                if (mounted) {
-                                  context.push('/waiting_room/$gameId');
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(
-                                    SnackBar(
-                                        content: Text("Error: $e")),
-                                  );
-                                }
-                              }
-                            }),
+                            _buildButton('HOST NEW GAME', _showHostGameDialog),
                           ],
-                        ),
                       ),
                       const Spacer(flex: 2),
 

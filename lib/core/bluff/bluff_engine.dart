@@ -1,5 +1,6 @@
 import '../models/card_model.dart';
 import '../models/player.dart';
+import '../models/game_state.dart';
 import 'bluff_game_state.dart';
 
 class BluffEngine {
@@ -38,7 +39,7 @@ class BluffEngine {
     return BluffGameState(
       gameId: 'local_${DateTime.now().millisecondsSinceEpoch}',
       players: players,
-      status: BluffGameStatus.playing,
+      status: GameStatus.playing,
       currentPlayerId: players[0].id,
     );
   }
@@ -58,7 +59,7 @@ class BluffEngine {
     String playerId,
     List<PlayingCard> cards,
   ) {
-    if (state.status == BluffGameStatus.finished) {
+    if (state.status == GameStatus.finished) {
       return "Game is already finished.";
     }
     if (state.currentPlayerId != playerId) return "It's not your turn.";
@@ -101,7 +102,7 @@ class BluffEngine {
       ..addAll(cards);
 
     // Check win condition
-    BluffGameStatus newStatus = state.status;
+    GameStatus newStatus = state.status;
     if (newHand.isEmpty) {
       // In Bluff, you only win if no one calls your bluff on the final play.
       // So the game isn't finished YET. We just wait for a challenge.
@@ -125,7 +126,7 @@ class BluffEngine {
   }
 
   static BluffGameState passTurn(BluffGameState state, String playerId) {
-    if (state.status == BluffGameStatus.finished) {
+    if (state.status == GameStatus.finished) {
       throw Exception("Game is already finished.");
     }
     if (state.currentPlayerId != playerId) {
@@ -166,7 +167,7 @@ class BluffEngine {
   }
 
   static BluffGameState callBluff(BluffGameState state, String callerId) {
-    if (state.status == BluffGameStatus.finished) {
+    if (state.status == GameStatus.finished) {
       throw Exception("Game is finished.");
     }
     if (state.lastPlayerId == null ||
@@ -202,13 +203,13 @@ class BluffEngine {
         : "\${updatedPlayers.firstWhere((p)=>p.id==state.lastPlayerId!).name} told the TRUTH! \${updatedPlayers.firstWhere((p)=>p.id==callerId).name} picks up the pile.";
 
     // Check if the previous player told the truth AND emptied their hand -> They win!
-    BluffGameStatus newStatus = state.status;
+    GameStatus newStatus = state.status;
     if (!isBluff) {
       int prevIdx = updatedPlayers.indexWhere(
         (p) => p.id == state.lastPlayerId!,
       );
       if (updatedPlayers[prevIdx].hand.isEmpty) {
-        newStatus = BluffGameStatus.finished;
+        newStatus = GameStatus.finished;
         message +=
             " And they have no cards left! \${updatedPlayers[prevIdx].name} WINS!";
       }

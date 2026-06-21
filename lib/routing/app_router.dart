@@ -24,6 +24,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const ThullaTableScreen(isOnline: true),
     ),
     GoRoute(
+      path: '/online_bluff',
+      builder: (context, state) => const BluffTableScreen(isOnline: true),
+    ),
+    GoRoute(
       path: '/waiting_room/:gameId',
       builder: (context, state) {
         final gameId = state.pathParameters['gameId']!;

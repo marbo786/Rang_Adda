@@ -1,14 +1,9 @@
 import 'package:equatable/equatable.dart';
 import '../models/card_model.dart';
 import '../models/player.dart';
+import '../models/game_state.dart';
 
-enum BluffGameStatus { initial, playing, finished }
-
-class BluffGameState extends Equatable {
-  final String gameId;
-  final List<Player> players;
-  final BluffGameStatus status;
-  final String currentPlayerId;
+class BluffGameState extends GameState {
   final String? lastPlayerId;
   final List<PlayingCard> centerPile;
   final List<PlayingCard> lastPlayedCards;
@@ -16,12 +11,14 @@ class BluffGameState extends Equatable {
   final int consecutivePasses;
   final String? passToPlayerId;
   final String? resolvingBluffMessage;
+  final bool isOnline;
 
   const BluffGameState({
-    required this.gameId,
-    required this.players,
-    this.status = BluffGameStatus.initial,
-    required this.currentPlayerId,
+    required super.gameId,
+    super.gameType = 'bluff',
+    required super.players,
+    super.status = GameStatus.waiting,
+    required String currentPlayerId,
     this.lastPlayerId,
     this.centerPile = const [],
     this.lastPlayedCards = const [],
@@ -29,12 +26,13 @@ class BluffGameState extends Equatable {
     this.consecutivePasses = 0,
     this.passToPlayerId,
     this.resolvingBluffMessage,
-  });
+    this.isOnline = false,
+  }) : super(currentPlayerId: currentPlayerId);
 
   BluffGameState copyWith({
     String? gameId,
     List<Player>? players,
-    BluffGameStatus? status,
+    GameStatus? status,
     String? currentPlayerId,
     String? lastPlayerId,
     List<PlayingCard>? centerPile,
@@ -43,12 +41,13 @@ class BluffGameState extends Equatable {
     int? consecutivePasses,
     String? passToPlayerId,
     String? resolvingBluffMessage,
+    bool? isOnline,
   }) {
     return BluffGameState(
       gameId: gameId ?? this.gameId,
       players: players ?? this.players,
       status: status ?? this.status,
-      currentPlayerId: currentPlayerId ?? this.currentPlayerId,
+      currentPlayerId: (currentPlayerId ?? this.currentPlayerId)!,
       lastPlayerId: lastPlayerId ?? this.lastPlayerId,
       centerPile: centerPile ?? this.centerPile,
       lastPlayedCards: lastPlayedCards ?? this.lastPlayedCards,
@@ -57,6 +56,7 @@ class BluffGameState extends Equatable {
       passToPlayerId: passToPlayerId ?? this.passToPlayerId,
       resolvingBluffMessage:
           resolvingBluffMessage ?? this.resolvingBluffMessage,
+      isOnline: isOnline ?? this.isOnline,
     );
   }
 
@@ -65,7 +65,7 @@ class BluffGameState extends Equatable {
       gameId: gameId,
       players: players,
       status: status,
-      currentPlayerId: currentPlayerId,
+      currentPlayerId: currentPlayerId!,
       lastPlayerId: lastPlayerId,
       centerPile: centerPile,
       lastPlayedCards: lastPlayedCards,
@@ -73,6 +73,7 @@ class BluffGameState extends Equatable {
       consecutivePasses: consecutivePasses,
       passToPlayerId: null,
       resolvingBluffMessage: null,
+      isOnline: isOnline,
     );
   }
 
@@ -81,7 +82,7 @@ class BluffGameState extends Equatable {
       gameId: gameId,
       players: players,
       status: status,
-      currentPlayerId: currentPlayerId,
+      currentPlayerId: currentPlayerId!,
       lastPlayerId: lastPlayerId,
       centerPile: centerPile,
       lastPlayedCards: lastPlayedCards,
@@ -89,6 +90,7 @@ class BluffGameState extends Equatable {
       consecutivePasses: consecutivePasses,
       passToPlayerId: passTo,
       resolvingBluffMessage: resolvingBluffMessage,
+      isOnline: isOnline,
     );
   }
 
@@ -97,7 +99,7 @@ class BluffGameState extends Equatable {
       gameId: gameId,
       players: players,
       status: status,
-      currentPlayerId: currentPlayerId,
+      currentPlayerId: currentPlayerId!,
       lastPlayerId: lastPlayerId,
       centerPile: centerPile,
       lastPlayedCards: lastPlayedCards,
@@ -105,15 +107,13 @@ class BluffGameState extends Equatable {
       consecutivePasses: consecutivePasses,
       passToPlayerId: passToPlayerId,
       resolvingBluffMessage: message,
+      isOnline: isOnline,
     );
   }
 
   @override
   List<Object?> get props => [
-    gameId,
-    players,
-    status,
-    currentPlayerId,
+    ...super.props,
     lastPlayerId,
     centerPile,
     lastPlayedCards,
@@ -121,5 +121,48 @@ class BluffGameState extends Equatable {
     consecutivePasses,
     passToPlayerId,
     resolvingBluffMessage,
+    isOnline,
   ];
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'gameId': gameId,
+    'gameType': 'bluff',
+    'players': players.map((p) => p.toJson()).toList(),
+    'status': status.index,
+    'currentPlayerId': currentPlayerId,
+    'lastPlayerId': lastPlayerId,
+    'centerPile': centerPile.map((c) => c.toJson()).toList(),
+    'lastPlayedCards': lastPlayedCards.map((c) => c.toJson()).toList(),
+    'lastClaimedRank': lastClaimedRank?.index,
+    'consecutivePasses': consecutivePasses,
+    'passToPlayerId': passToPlayerId,
+    'resolvingBluffMessage': resolvingBluffMessage,
+    'isOnline': isOnline,
+  };
+
+  factory BluffGameState.fromJson(Map<String, dynamic> json) {
+    return BluffGameState(
+      gameId: json['gameId'] as String,
+      players: (json['players'] as List)
+          .map((p) => Player.fromJson(p as Map<String, dynamic>))
+          .toList(),
+      status: GameStatus.values[json['status'] as int],
+      currentPlayerId: json['currentPlayerId'] as String,
+      lastPlayerId: json['lastPlayerId'] as String?,
+      centerPile: (json['centerPile'] as List?)
+          ?.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
+          .toList() ?? [],
+      lastPlayedCards: (json['lastPlayedCards'] as List?)
+          ?.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
+          .toList() ?? [],
+      lastClaimedRank: json['lastClaimedRank'] != null 
+          ? Rank.values[json['lastClaimedRank'] as int] 
+          : null,
+      consecutivePasses: json['consecutivePasses'] as int? ?? 0,
+      passToPlayerId: json['passToPlayerId'] as String?,
+      resolvingBluffMessage: json['resolvingBluffMessage'] as String?,
+      isOnline: json['isOnline'] as bool? ?? false,
+    );
+  }
 }

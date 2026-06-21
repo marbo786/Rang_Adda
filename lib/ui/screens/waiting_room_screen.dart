@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/firestore_service.dart';
-import '../../state/online_thulla_provider.dart';
+import '../../state/online_game_provider.dart';
 import '../../core/models/game_state.dart';
 
 class WaitingRoomScreen extends ConsumerWidget {
@@ -11,7 +11,7 @@ class WaitingRoomScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stateAsync = ref.watch(onlineThullaProvider);
+    final stateAsync = ref.watch(onlineGameProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text('Room Code: $gameId')),
@@ -21,7 +21,11 @@ class WaitingRoomScreen extends ConsumerWidget {
 
           if (state.status == GameStatus.playing) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.go('/online_thulla');
+              if (state.gameType == 'bluff') {
+                context.go('/online_bluff');
+              } else {
+                context.go('/online_thulla');
+              }
             });
             return const Center(child: Text("Starting game..."));
           }
