@@ -76,6 +76,7 @@ class RangGameState extends GameState {
 
   const RangGameState({
     required super.gameId,
+    super.gameType = 'rang',
     required super.players,
     required super.status,
     super.currentPlayerId,
@@ -185,6 +186,7 @@ class RangGameState extends GameState {
 
   // ── Serialisation (Firestore-compatible) ─────────────────────────────────
 
+  @override
   Map<String, dynamic> toJson() => {
         'gameId': gameId,
         'players': players.map((p) => p.toJson()).toList(),

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/firestore_service.dart';
+import '../../services/auth_service.dart';
 import '../../state/online_game_provider.dart';
+import '../../state/online_thulla_provider.dart';
 import '../../core/models/game_state.dart';
 
 class WaitingRoomScreen extends ConsumerWidget {
@@ -19,6 +21,20 @@ class WaitingRoomScreen extends ConsumerWidget {
         data: (state) {
           if (state == null) return const Center(child: Text("Room not found"));
 
+          final user = ref.read(userProvider).value;
+          
+          // If the user has been kicked (is no longer in the players list)
+          if (user != null && !state.players.any((p) => p.id == user.uid)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref.read(currentGameIdProvider.notifier).setId(null);
+              context.go('/');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('You have been kicked from the room.')),
+              );
+            });
+            return const Center(child: Text("You were kicked..."));
+          }
+
           if (state.status == GameStatus.playing) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (state.gameType == 'bluff') {
@@ -29,6 +45,8 @@ class WaitingRoomScreen extends ConsumerWidget {
             });
             return const Center(child: Text("Starting game..."));
           }
+
+          final isHost = user != null && state.players.isNotEmpty && state.players.first.id == user.uid;
 
           return Column(
             children: [
@@ -42,12 +60,22 @@ class WaitingRoomScreen extends ConsumerWidget {
                 child: ListView.builder(
                   itemCount: state.players.length,
                   itemBuilder: (context, index) {
+                    final player = state.players[index];
+                    final isSelf = user?.uid == player.id;
                     return ListTile(
-                      leading: const Icon(
+                      leading: Icon(
                         Icons.person,
-                        color: Colors.tealAccent,
+                        color: isSelf ? Colors.greenAccent : Colors.tealAccent,
                       ),
-                      title: Text(state.players[index].name),
+                      title: Text(player.name + (isSelf ? " (You)" : "")),
+                      trailing: (isHost && !isSelf) 
+                        ? IconButton(
+                            icon: const Icon(Icons.person_remove, color: Colors.redAccent),
+                            onPressed: () async {
+                              await ref.read(firestoreServiceProvider).kickPlayer(gameId, player.id);
+                            },
+                          )
+                        : null,
                     );
                   },
                 ),

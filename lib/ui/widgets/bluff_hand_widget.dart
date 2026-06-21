@@ -133,56 +133,66 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
         ),
 
         // Hand
-        SizedBox(
-          height: 140, // Height for lift and shadow
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 16.0,
-            ),
-            itemCount: widget.hand.length,
-            itemBuilder: (context, index) {
-              final card = widget.hand[index];
-              final isSelected = _selectedCards.contains(card);
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final isSmallScreen = screenWidth < 600;
+            final cardW = isSmallScreen ? 55.0 : 70.0;
+            final cardH = isSmallScreen ? 82.5 : 105.0;
+            final containerHeight = isSmallScreen ? 110.0 : 140.0;
 
-              return Align(
-                alignment: Alignment.bottomCenter,
-                widthFactor: 0.6,
-                child: GestureDetector(
-                  onTap: () => _toggleCard(card),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 120),
-                    curve: Curves.easeOutCubic,
-                    transform: Matrix4.identity()
-                      // ignore: deprecated_member_use
-                      ..translate(0.0, isSelected ? -10.0 : 0.0)
-                      // ignore: deprecated_member_use
-                      ..scale(isSelected ? 1.05 : 1.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).primaryColor.withValues(alpha: 0.6),
-                                blurRadius: 15,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: PlayingCardWidget(
-                      card: card,
-                      width: 70,
-                      height: 105,
-                    ),
-                  ),
+            return SizedBox(
+              height: containerHeight, // Height for lift and shadow
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 16.0,
                 ),
-              );
-            },
-          ),
+                itemCount: widget.hand.length,
+                itemBuilder: (context, index) {
+                  final card = widget.hand[index];
+                  final isSelected = _selectedCards.contains(card);
+
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    widthFactor: 0.6,
+                    child: GestureDetector(
+                      onTap: () => _toggleCard(card),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 120),
+                        curve: Curves.easeOutCubic,
+                        transform: Matrix4.identity()
+                          // ignore: deprecated_member_use
+                          ..translate(0.0, isSelected ? -10.0 : 0.0)
+                          // ignore: deprecated_member_use
+                          ..scale(isSelected ? 1.05 : 1.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.6),
+                                    blurRadius: 15,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: PlayingCardWidget(
+                          card: card,
+                          width: cardW,
+                          height: cardH,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ],
     );

@@ -257,11 +257,17 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                         SizedBox(
                           height: 180,
                           width: 300,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: List.generate(state.currentTrick.length, (
-                              index,
-                            ) {
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final screenWidth = MediaQuery.of(context).size.width;
+                              final cardW = screenWidth < 600 ? 55.0 : 70.0;
+                              final cardH = screenWidth < 600 ? 82.5 : 105.0;
+
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: List.generate(state.currentTrick.length, (
+                                  index,
+                                ) {
                               final t = state.currentTrick[index];
                               final offset =
                                   (index -
@@ -302,8 +308,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                           const SizedBox(height: 6),
                                           PlayingCardWidget(
                                             card: t.card,
-                                            width: 70,
-                                            height: 105,
+                                            width: cardW,
+                                            height: cardH,
                                           ),
                                         ],
                                       ),
@@ -312,7 +318,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                 ),
                               );
                             }),
-                          ),
+                          );
+                        },
+                      ),
                         ),
                       ],
                     ),

@@ -19,8 +19,14 @@ class HandWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final cardW = isSmallScreen ? 55.0 : 70.0;
+    final cardH = isSmallScreen ? 82.5 : 105.0;
+    final containerHeight = isSmallScreen ? 110.0 : 140.0;
+
     return SizedBox(
-      height: 140, // Enough height for the 6px lift and shadow
+      height: containerHeight, // Enough height for the lift and shadow
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -68,7 +74,7 @@ class HandWidget extends ConsumerWidget {
                 ),
                 child: Opacity(
                   opacity: valid ? 1.0 : 0.5,
-                  child: PlayingCardWidget(card: card, width: 70, height: 105),
+                  child: PlayingCardWidget(card: card, width: cardW, height: cardH),
                 ),
               ),
             ),

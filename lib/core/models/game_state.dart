@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'player.dart';
 import '../thulla/thulla_game_state.dart';
 import '../bluff/bluff_game_state.dart';
+import '../rang/rang_game_state.dart';
 
 enum GameStatus { waiting, playing, finished }
 
@@ -29,6 +30,8 @@ abstract class GameState extends Equatable {
     final type = json['gameType'] as String?;
     if (type == 'bluff') {
       return BluffGameState.fromJson(json);
+    } else if (type == 'rang') {
+      return RangGameState.fromJson(json);
     } else {
       // Default to thulla for backward compatibility
       return ThullaGameState.fromJson(json);

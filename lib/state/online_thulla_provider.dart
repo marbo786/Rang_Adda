@@ -4,6 +4,8 @@ import '../core/thulla/thulla_game_state.dart';
 import '../core/thulla/thulla_engine.dart';
 import '../services/firestore_service.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 final currentGameIdProvider = NotifierProvider<CurrentGameIdNotifier, String?>(
   () {
     return CurrentGameIdNotifier();
@@ -12,8 +14,28 @@ final currentGameIdProvider = NotifierProvider<CurrentGameIdNotifier, String?>(
 
 class CurrentGameIdNotifier extends Notifier<String?> {
   @override
-  String? build() => null;
-  void setId(String? id) => state = id;
+  String? build() {
+    _loadInitialId();
+    return null;
+  }
+
+  Future<void> _loadInitialId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedId = prefs.getString('currentGameId');
+    if (savedId != null) {
+      state = savedId;
+    }
+  }
+
+  Future<void> setId(String? id) async {
+    state = id;
+    final prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      await prefs.remove('currentGameId');
+    } else {
+      await prefs.setString('currentGameId', id);
+    }
+  }
 }
 
 final onlineThullaProvider = StreamProvider<ThullaGameState?>((ref) {

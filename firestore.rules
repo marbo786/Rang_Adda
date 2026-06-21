@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /games/{gameId} {
+      // Anyone authenticated can create a game
+      allow create: if request.auth != null;
+      
+      // Anyone can read and update a game if it's in the waiting state
+      allow read, update: if resource.data.status == 'waiting';
+      
+      // If the game has started, authenticated users can read/update it
+      allow read, update: if request.auth != null;
+      
+      // No one can delete a game
+      allow delete: if false;
+    }
+  }
+}

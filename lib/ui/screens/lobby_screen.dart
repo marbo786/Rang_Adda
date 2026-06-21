@@ -240,6 +240,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       ),
                       const Spacer(flex: 1),
 
+                      if (ref.watch(currentGameIdProvider) != null) ...[
+                        _buildButton('RECONNECT TO GAME', () {
+                          final gameId = ref.read(currentGameIdProvider);
+                          if (gameId != null) {
+                            context.push('/waiting_room/$gameId');
+                          }
+                        }, isPrimary: true),
+                        const SizedBox(height: 12),
+                        _buildButton('LEAVE CURRENT GAME', () {
+                          ref.read(currentGameIdProvider.notifier).setId(null);
+                        }),
+                        const SizedBox(height: 32),
+                      ],
+
                       // Center: Join Online Card
                       Container(
                         padding: const EdgeInsets.all(24),
@@ -308,7 +322,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            _buildButton('JOIN GAME', isPrimary: true, () async {
+                            _buildButton('JOIN GAME', () async {
                               final user = ref.read(userProvider).value;
                               if (user == null ||
                                   _codeController.text.isEmpty) {
@@ -342,10 +356,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                                   );
                                 }
                               }
-                            }),
+                            }, isPrimary: true),
                             const SizedBox(height: 12),
                             _buildButton('HOST NEW GAME', _showHostGameDialog),
                           ],
+                        ),
                       ),
                       const Spacer(flex: 2),
 

@@ -105,4 +105,16 @@ class FirestoreService {
   Future<void> updateGameState(GameState state) async {
     await _db.collection('games').doc(state.gameId).set(state.toJson());
   }
+
+  Future<void> kickPlayer(String gameId, String playerIdToKick) async {
+    final doc = await _db.collection('games').doc(gameId).get();
+    if (!doc.exists) return;
+
+    final state = GameState.fromJson(doc.data()!);
+    final newPlayers = state.players.where((p) => p.id != playerIdToKick).toList();
+    
+    await _db.collection('games').doc(gameId).update({
+      'players': newPlayers.map((p) => p.toJson()).toList(),
+    });
+  }
 }
