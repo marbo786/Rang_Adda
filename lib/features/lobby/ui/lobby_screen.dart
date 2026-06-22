@@ -9,6 +9,8 @@ import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 
+enum ButtonType { primary, secondary }
+
 class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({super.key});
 
@@ -18,10 +20,14 @@ class LobbyScreen extends ConsumerStatefulWidget {
 
 class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   final _codeController = TextEditingController();
+  final FocusNode _codeFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    _codeFocus.addListener(() {
+      setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         await ref
@@ -43,14 +49,16 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   @override
   void dispose() {
     _codeController.dispose();
+    _codeFocus.dispose();
     super.dispose();
   }
 
   Widget _buildButton(
     String text,
     VoidCallback onPressed, {
-    bool isPrimary = false,
+    ButtonType type = ButtonType.secondary,
   }) {
+    final isPrimary = type == ButtonType.primary;
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -60,17 +68,15 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
               ? AppTheme.accentPrimary
               : Colors.transparent,
           foregroundColor: isPrimary
-              ? Colors.white
+              ? AppTheme.backgroundPrimary
               : AppTheme.accentPrimary,
-          elevation: isPrimary ? 8 : 0,
-          shadowColor:
-              isPrimary ? AppTheme.accentPrimary.withValues(alpha: 0.4) : null,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: isPrimary
                 ? BorderSide.none
                 : BorderSide(
-                    color: AppTheme.accentPrimary.withValues(alpha: 0.5),
+                    color: AppTheme.accentPrimary,
                     width: 1.5,
                   ),
           ),
@@ -83,8 +89,42 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           text,
           style: const TextStyle(
             fontSize: 16,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocalButton(String text, VoidCallback onPressed) {
+    return InkWell(
+      onTap: () {
+        ref.read(audioServiceProvider).playClick();
+        onPressed();
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceElevated,
+          borderRadius: BorderRadius.circular(8),
+          border: const Border(
+            left: BorderSide(
+              color: AppTheme.accentPrimary,
+              width: 3.0,
+            ),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
-            letterSpacing: 1.0,
+            letterSpacing: 1.5,
           ),
         ),
       ),
@@ -96,15 +136,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Host Game'),
+          backgroundColor: AppTheme.surfaceElevated,
+          title: const Text(
+            'HOST GAME',
+            style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, letterSpacing: 2.0),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildButton('Thulla', () {
+              _buildButton('THULLA', () {
                 Navigator.of(context).pop();
                 _hostGame('thulla');
               }),
-              _buildButton('Bluff', () {
+              const SizedBox(height: 12),
+              _buildButton('BLUFF', () {
                 Navigator.of(context).pop();
                 _hostGame('bluff');
               }),
@@ -165,6 +210,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isOnlineFocused = _codeFocus.hasFocus;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundPrimary,
       appBar: AppBar(
@@ -195,61 +242,66 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Top: Logo Area with Gradient
+                      // Top: Logo Area
                       Center(
-                        child: Column(
-                          children: [
-                            // Gradient icon
-                            ShaderMask(
-                              shaderCallback: (bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    AppTheme.accentPrimary,
-                                    AppTheme.accentSecondary,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ).createShader(bounds);
-                              },
-                              child: Icon(
-                                Icons.style,
-                                size: 64,
-                                color: Colors.white,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.neonGlow,
+                                blurRadius: 40,
+                                spreadRadius: -10,
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            // Title with gradient
-                            ShaderMask(
-                              shaderCallback: (bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    AppTheme.accentPrimary,
-                                    AppTheme.accentSecondary,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ).createShader(bounds);
-                              },
-                              child: const Text(
-                                'RANG ADDA',
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'RANG',
                                 style: TextStyle(
-                                  fontSize: 40,
+                                  fontSize: 52,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: 2.0,
-                                  color: Colors.white,
+                                  letterSpacing: 8.0,
+                                  color: AppTheme.accentPrimary,
+                                  height: 1.0,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Choose your game',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.textSecondary,
-                                fontWeight: FontWeight.w500,
+                              Container(
+                                height: 2,
+                                width: 140,
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppTheme.accentPrimary,
+                                      Colors.transparent,
+                                      AppTheme.accentSecondary,
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                              const Text(
+                                'ADDA',
+                                style: TextStyle(
+                                  fontSize: 52,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 8.0,
+                                  color: AppTheme.accentSecondary,
+                                  height: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "PAKISTAN'S CARD GAMES",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2.0,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const Spacer(flex: 1),
@@ -260,7 +312,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                           if (gameId != null) {
                             context.push('/waiting_room/$gameId');
                           }
-                        }, isPrimary: true),
+                        }, type: ButtonType.primary),
                         const SizedBox(height: 12),
                         _buildButton('LEAVE CURRENT GAME', () {
                           ref.read(currentGameIdProvider.notifier).setId(null);
@@ -272,63 +324,65 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: AppTheme.surface,
+                          color: AppTheme.surfaceElevated,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
+                            color: AppTheme.accentPrimary.withOpacity(0.20),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.accentPrimary
-                                  .withValues(alpha: 0.08),
-                              blurRadius: 12,
-                              spreadRadius: 0,
-                            ),
-                          ],
+                          boxShadow: isOnlineFocused
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.neonGlow,
+                                    blurRadius: 16,
+                                  )
+                                ]
+                              : [],
                         ),
                         child: Column(
                           children: [
-                            Text(
+                            const Text(
                               'JOIN ONLINE',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.5,
-                                color: AppTheme.accentPrimary,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 20),
                             TextField(
                               controller: _codeController,
+                              focusNode: _codeFocus,
                               textAlign: TextAlign.center,
+                              cursorColor: AppTheme.accentPrimary,
                               style: const TextStyle(
                                 fontSize: 24,
-                                letterSpacing: 6.0,
+                                letterSpacing: 4.0,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textPrimary,
                               ),
                               decoration: InputDecoration(
                                 hintText: 'ROOM CODE',
                                 hintStyle: TextStyle(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.15),
+                                  color: Colors.white.withOpacity(0.15),
                                   fontSize: 18,
-                                  letterSpacing: 2.0,
+                                  letterSpacing: 4.0,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                filled: true,
-                                fillColor: AppTheme.backgroundPrimary,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(vertical: 18),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                filled: false,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                                border: const UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.white.withValues(alpha: 0.07),
+                                    color: AppTheme.textDisabled,
                                   ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
+                                enabledBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AppTheme.textDisabled,
+                                  ),
+                                ),
+                                focusedBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
                                     color: AppTheme.accentPrimary,
                                     width: 2,
                                   ),
@@ -370,7 +424,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                                   );
                                 }
                               }
-                            }, isPrimary: true),
+                            }, type: ButtonType.primary),
                             const SizedBox(height: 12),
                             _buildButton('HOST NEW GAME', _showHostGameDialog),
                           ],
@@ -379,34 +433,33 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       const Spacer(flex: 2),
 
                       // Bottom: Local Games
-                      Text(
+                      const Text(
                         'LOCAL PLAY',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                          color: AppTheme.accentPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2.0,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildButton(
+                      _buildLocalButton(
                         'THULLA (3-7 PLAYERS)',
                         () => context.push('/setup/thulla'),
-                        isPrimary: true,
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: _buildButton(
+                            child: _buildLocalButton(
                               'BLUFF',
                               () => context.push('/setup/bluff'),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildButton(
+                            child: _buildLocalButton(
                               'RANG',
                               () => context.push('/setup/rang'),
                             ),

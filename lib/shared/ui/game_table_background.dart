@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 
-/// A reusable background widget that gives game screens depth through
-/// a radial gradient and subtle vignette effect.
-/// 
-/// Uses the existing theme colors (backgroundPrimary/Secondary) with
-/// derived lighter/darker variants to create visual depth.
 class GameTableBackground extends StatelessWidget {
   final Widget child;
 
@@ -16,30 +11,54 @@ class GameTableBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Derive lighter variant of backgroundSecondary for radial gradient center glow
-    // Original: 0xFF171A21 (23, 26, 33) -> Lighter: ~(50, 55, 75) for subtle glow
-    const Color centerGlow = Color(0xFF323749);
-
-    // Vignette overlay: semi-transparent dark with slight blue tint
-    const Color vignetteColor = Color(0x66000000);
-
     return Container(
-      decoration: BoxDecoration(
-        // Main radial gradient: center glow to outer darkness
-        gradient: RadialGradient(
-          center: const Alignment(0, 0),
-          radius: 1.0,
-          colors: [
-            centerGlow,
-            AppTheme.backgroundSecondary,
-            AppTheme.backgroundPrimary,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
+      color: AppTheme.backgroundPrimary,
       child: Stack(
         children: [
+          // Grid layer
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _PerspectiveGridPainter(),
+            ),
+          ),
+          // Glow layer
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      backgroundBlendMode: BlendMode.screen,
+                      gradient: RadialGradient(
+                        center: const Alignment(0, 0),
+                        radius: 0.8,
+                        colors: [
+                          AppTheme.accentPrimary.withOpacity(0.06),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      backgroundBlendMode: BlendMode.screen,
+                      gradient: RadialGradient(
+                        center: const Alignment(0, -0.2),
+                        radius: 0.5,
+                        colors: [
+                          AppTheme.accentSecondary.withOpacity(0.04),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Child content
           child,
+          // Vignette layer
           Positioned.fill(
             child: IgnorePointer(
               child: Container(
@@ -50,11 +69,10 @@ class GameTableBackground extends StatelessWidget {
                     colors: [
                       Colors.transparent,
                       Colors.transparent,
-                      vignetteColor,
+                      AppTheme.backgroundPrimary.withOpacity(0.5),
                     ],
-                    stops: const [0.0, 0.6, 1.0],
+                    stops: const [0.0, 0.7, 1.0],
                   ),
-                  borderRadius: BorderRadius.zero,
                 ),
               ),
             ),
@@ -63,4 +81,37 @@ class GameTableBackground extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PerspectiveGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppTheme.accentPrimary.withOpacity(0.04)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final double width = size.width;
+    final double height = size.height;
+
+    // Draw horizontal perspective lines
+    // Make them get closer together towards the top
+    for (int i = 0; i <= 20; i++) {
+      double t = i / 20.0;
+      double y = height * (t * t); // Perspective scaling
+      canvas.drawLine(Offset(0, y), Offset(width, y), paint);
+    }
+
+    // Draw vertical radiating lines
+    final double vanishingPointY = -height * 0.5;
+    final double vanishingPointX = width * 0.5;
+    
+    for (int i = -10; i <= 10; i++) {
+      double x = width * 0.5 + (i * width * 0.15);
+      canvas.drawLine(Offset(vanishingPointX, vanishingPointY), Offset(x, height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

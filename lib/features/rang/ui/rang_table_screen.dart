@@ -44,8 +44,9 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
     final state = ref.watch(rangProvider);
     if (state == null) {
       return const Scaffold(
+        backgroundColor: AppTheme.backgroundPrimary,
         body: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(color: AppTheme.accentPrimary),
         ),
       );
     }
@@ -92,15 +93,31 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
 
     final isTrumpSelection = state.phase == RangPhase.trumpSelection;
     final isTrumpCaller = bottomPlayer.id == state.trumpCallerId;
+    final isYourTurn = state.currentPlayerId == bottomPlayer.id && !isTrumpSelection;
+    final hasHeap = state.heap.isNotEmpty;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: AppTheme.backgroundPrimary,
       appBar: AppBar(
-        title: const Text('RANG', style: TextStyle(letterSpacing: 4.0)),
+        title: Text(
+          'RANG',
+          style: TextStyle(
+            color: AppTheme.accentSecondary,
+            letterSpacing: 4.0,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: AppTheme.accentSecondary.withOpacity(0.5),
+                blurRadius: 12,
+              )
+            ],
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
           onPressed: () {
             ref.read(audioServiceProvider).playClick();
             context.go('/');
@@ -112,11 +129,20 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
             Center(
               child: Container(
                 margin: const EdgeInsets.only(right: 8.0),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black45,
+                  color: AppTheme.surfaceElevated,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
+                  border: Border.all(
+                    color: AppTheme.accentPrimary.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentPrimary.withOpacity(0.2),
+                      blurRadius: 12,
+                    )
+                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -125,8 +151,9 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                       'TRUMP: ',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white70,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textSecondary,
+                        letterSpacing: 1.0,
                       ),
                     ),
                     Text(
@@ -135,6 +162,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: _getSuitColor(state.trumpSuit!),
+                        shadows: [
+                          Shadow(
+                            color: _getSuitColor(state.trumpSuit!).withOpacity(0.5),
+                            blurRadius: 8,
+                          )
+                        ],
                       ),
                     ),
                   ],
@@ -147,19 +180,21 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               padding: const EdgeInsets.only(right: 16.0),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black45,
+                  color: AppTheme.surfaceElevated,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
+                  border: Border.all(color: AppTheme.textDisabled, width: 1.5),
                 ),
                 child: Text(
-                  'A: ${state.teamASars} — B: ${state.teamBSars}',
+                  'A: ${state.teamASars}  B: ${state.teamBSars}',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    fontSize: 12,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
               ),
@@ -227,29 +262,31 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                       clipBehavior: Clip.none,
                       children: [
                         // Heap counter in center
-                        if (state.heap.isNotEmpty)
+                        if (hasHeap)
                           Center(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.85),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white24, width: 1),
-                                boxShadow: const [
+                                color: AppTheme.surfaceElevated,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppTheme.statusError.withOpacity(0.5),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black54,
-                                    blurRadius: 6,
-                                    spreadRadius: 1,
+                                    color: AppTheme.statusError.withOpacity(0.2),
+                                    blurRadius: 16,
                                   )
                                 ],
                               ),
                               child: Text(
                                 'HEAP: ${state.heap.length}',
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.statusError,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 12,
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 1.5,
                                 ),
                               ),
                             ),
@@ -312,19 +349,38 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white10),
+                      color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                          ? AppTheme.accentPrimary.withOpacity(0.15)
+                          : AppTheme.surfaceElevated,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                            ? AppTheme.accentPrimary
+                            : AppTheme.accentPrimary.withOpacity(0.1),
+                        width: 1.5,
+                      ),
+                      boxShadow: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.neonGlow,
+                                blurRadius: 16,
+                              )
+                            ]
+                          : [],
                     ),
                     child: Text(
-                      _getBannerText(state, bottomPlayer),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      _getBannerText(state, bottomPlayer).toUpperCase(),
+                      style: TextStyle(
+                        color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                            ? AppTheme.accentPrimary
+                            : AppTheme.textSecondary,
+                        fontWeight: FontWeight.w800,
                         fontSize: 14,
+                        letterSpacing: 2.0,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -334,33 +390,87 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
 
               // 6. Bottom Area: Suit Picker (Trump Selection) or HandWidget
               Positioned(
-                bottom: 16,
+                bottom: 0,
                 left: 0,
                 right: 0,
-                child: isTrumpSelection && isTrumpCaller
-                    ? _buildSuitPicker(context, bottomPlayer.id)
-                    : HandWidget(
-                        hand: bottomPlayer.hand,
-                        onCardTap: (card) async {
-                          final error = await ref.read(rangProvider.notifier).playCard(bottomPlayer.id, card);
-                          if (error != null && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(error),
-                                duration: const Duration(seconds: 2),
-                                backgroundColor: Theme.of(context).colorScheme.error,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        },
-                        isCardValid: (card) {
-                          if (state.phase != RangPhase.trickPlay) return false;
-                          if (state.currentPlayerId != bottomPlayer.id) return false;
-                          if (state.passToPlayerId != null) return false;
-                          return RangEngine.getMoveError(state, bottomPlayer.id, card) == null;
-                        },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceElevated,
+                    border: Border(
+                      top: BorderSide(
+                        color: AppTheme.accentPrimary.withOpacity(0.3),
+                        width: 1.5,
                       ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.neonGlow,
+                        blurRadius: 24,
+                        offset: const Offset(0, -8),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 16.0,
+                            bottom: 4.0,
+                          ),
+                          child: Text(
+                            (isYourTurn || (isTrumpSelection && isTrumpCaller))
+                                ? 'YOUR TURN'
+                                : bottomPlayer.name.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3.0,
+                              color: (isYourTurn || (isTrumpSelection && isTrumpCaller))
+                                  ? AppTheme.accentPrimary
+                                  : AppTheme.textSecondary,
+                              shadows: (isYourTurn || (isTrumpSelection && isTrumpCaller))
+                                  ? [
+                                      Shadow(
+                                        color: AppTheme.neonGlow,
+                                        blurRadius: 8,
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                          ),
+                        ),
+                        if (isTrumpSelection && isTrumpCaller)
+                          _buildSuitPicker(context, bottomPlayer.id)
+                        else
+                          HandWidget(
+                            hand: bottomPlayer.hand,
+                            onCardTap: (card) async {
+                              final error = await ref.read(rangProvider.notifier).playCard(bottomPlayer.id, card);
+                              if (error != null && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: AppTheme.statusError,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            isCardValid: (card) {
+                              if (state.phase != RangPhase.trickPlay) return false;
+                              if (state.currentPlayerId != bottomPlayer.id) return false;
+                              if (state.passToPlayerId != null) return false;
+                              return RangEngine.getMoveError(state, bottomPlayer.id, card) == null;
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
 
               // 7. Pass Device Overlay
@@ -405,11 +515,11 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Colors.white70,
+              color: AppTheme.textSecondary,
               letterSpacing: 2.0,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: Suit.values.map((suit) {
@@ -425,14 +535,14 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                   width: 75,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: AppTheme.backgroundPrimary.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white24, width: 1.5),
+                    border: Border.all(color: color.withOpacity(0.5), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: color.withOpacity(0.2),
+                        blurRadius: 16,
+                        spreadRadius: -4,
                       ),
                     ],
                   ),
@@ -442,6 +552,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                       style: TextStyle(
                         fontSize: 48,
                         color: color,
+                        shadows: [
+                          Shadow(
+                            color: color.withOpacity(0.5),
+                            blurRadius: 12,
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -449,6 +565,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               );
             }).toList(),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -493,7 +610,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
     } else {
       if (state.currentPlayerId == bottomPlayer.id) {
         if (state.leadSuit != null) {
-          return "Your Turn! Play a ${state.leadSuit!.name.toUpperCase()}.";
+          return "Your Turn! Play a ${state.leadSuit!.name}.";
         } else {
           return "Your Turn! Lead the trick.";
         }
@@ -584,7 +701,7 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
       children: [
         ConfettiWidget(controller: _confettiController),
         Container(
-          color: Colors.black.withValues(alpha: 0.75),
+          color: AppTheme.backgroundPrimary.withOpacity(0.85),
         ),
         Center(
           child: SingleChildScrollView(
@@ -653,9 +770,9 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                             winningMembers,
                             style: const TextStyle(
                               fontSize: 18,
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.5,
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -664,61 +781,79 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                             'WINS THE HAND!',
                             style: TextStyle(
                               fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.0,
                               color: AppTheme.statusSuccess,
+                              shadows: [
+                                Shadow(
+                                  color: AppTheme.statusSuccess.withOpacity(0.5),
+                                  blurRadius: 12,
+                                )
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white12),
+                              color: AppTheme.surfaceElevated,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppTheme.accentPrimary.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.accentPrimary.withOpacity(0.15),
+                                  blurRadius: 24,
+                                  spreadRadius: -4,
+                                )
+                              ],
                             ),
                             child: Column(
                               children: [
                                 const Text(
                                   'FINAL SCORE',
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white54,
-                                    letterSpacing: 1.5,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.textSecondary,
+                                    letterSpacing: 2.0,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 12),
                                 Text(
                                   '$winningSars Sars  vs  $losingSars Sars',
                                   style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.textPrimary,
+                                    letterSpacing: 1.0,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
                           if (widget.kot || widget.bavney)
                             Wrap(
-                              spacing: 12,
+                              spacing: 16,
                               children: [
                                 if (widget.kot)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Colors.orangeAccent, Colors.redAccent],
+                                      color: Colors.orangeAccent.withOpacity(0.1),
+                                      border: Border.all(
+                                        color: Colors.orangeAccent.withOpacity(0.5),
+                                        width: 1.5,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(24),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.redAccent.withValues(alpha: 0.4),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
+                                          color: Colors.orangeAccent.withOpacity(0.2),
+                                          blurRadius: 16,
+                                          spreadRadius: -4,
                                         )
                                       ],
                                     ),
@@ -726,25 +861,27 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                       '🔥 KOT',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                        letterSpacing: 1.0,
+                                        fontSize: 18,
+                                        color: Colors.orangeAccent,
+                                        letterSpacing: 1.5,
                                       ),
                                     ),
                                   ),
                                 if (widget.bavney)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Colors.amber, Colors.orange],
+                                      color: Colors.amber.withOpacity(0.1),
+                                      border: Border.all(
+                                        color: Colors.amber.withOpacity(0.5),
+                                        width: 1.5,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(24),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.amber.withValues(alpha: 0.4),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
+                                          color: Colors.amber.withOpacity(0.2),
+                                          blurRadius: 16,
+                                          spreadRadius: -4,
                                         )
                                       ],
                                     ),
@@ -752,9 +889,9 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                       '👑 BAVNEY',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                        letterSpacing: 1.0,
+                                        fontSize: 18,
+                                        color: Colors.amber,
+                                        letterSpacing: 1.5,
                                       ),
                                     ),
                                   ),
@@ -792,18 +929,17 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                 backgroundColor: AppTheme.statusSuccess,
                                 foregroundColor: AppTheme.backgroundPrimary,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                elevation: 8,
-                                shadowColor: AppTheme.statusSuccess.withValues(alpha: 0.5),
+                                elevation: 0,
                               ),
                               onPressed: widget.onPlayAgain,
                               child: const Text(
                                 'PLAY AGAIN',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2.0,
                                 ),
                               ),
                             ),
@@ -815,12 +951,12 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.statusSuccess,
-                                side: BorderSide(
+                                side: const BorderSide(
                                   color: AppTheme.statusSuccess,
-                                  width: 2,
+                                  width: 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                               onPressed: widget.onBackToLobby,
@@ -828,8 +964,8 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                 'BACK TO LOBBY',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2.0,
                                 ),
                               ),
                             ),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 
 class PassDeviceOverlay extends StatelessWidget {
   final String playerName;
@@ -14,27 +15,24 @@ class PassDeviceOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: AppTheme.backgroundPrimary.withOpacity(0.85),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.85),
+              color: AppTheme.surfaceElevated,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1,
+                color: AppTheme.accentPrimary.withOpacity(0.30),
+                width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  color: AppTheme.neonGlow,
                   blurRadius: 24,
-                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -43,26 +41,34 @@ class PassDeviceOverlay extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.screen_lock_portrait,
+                  Icons.swap_horiz_rounded,
                   size: 48,
-                  color: Theme.of(context).primaryColor,
+                  color: AppTheme.accentPrimary,
                 ),
                 const SizedBox(height: 24),
                 Text(
                   'Pass device to',
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    color: AppTheme.textSecondary,
                     fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   playerName.toUpperCase(),
                   style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
+                    color: AppTheme.accentPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: AppTheme.neonGlow,
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -70,22 +76,33 @@ class PassDeviceOverlay extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 52,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: OutlinedButton(
+                    style: ButtonStyle(
+                      side: WidgetStateProperty.all(
+                        const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
                       ),
-                      elevation: 0,
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      overlayColor: WidgetStateProperty.resolveWith(
+                        (states) {
+                          if (states.contains(WidgetState.pressed)) {
+                            return AppTheme.accentPrimary.withOpacity(0.15);
+                          }
+                          return null;
+                        },
+                      ),
+                      foregroundColor: WidgetStateProperty.all(AppTheme.accentPrimary),
                     ),
                     onPressed: onAcknowledge,
                     child: const Text(
                       'READY',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2.0,
                       ),
                     ),
                   ),

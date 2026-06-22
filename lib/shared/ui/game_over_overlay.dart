@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:rang_adda/shared/ui/theme.dart';
 
 class GameOverOverlay extends StatefulWidget {
   final String winnerName;
+  final String? score;
+  final bool isKotOrBavney;
   final VoidCallback onPlayAgain;
   final VoidCallback onBackToLobby;
 
@@ -12,6 +15,8 @@ class GameOverOverlay extends StatefulWidget {
     required this.winnerName,
     required this.onPlayAgain,
     required this.onBackToLobby,
+    this.score,
+    this.isKotOrBavney = false,
   });
 
   @override
@@ -53,182 +58,178 @@ class _GameOverOverlayState extends State<GameOverOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Confetti effect
-        ConfettiWidget(
-          controller: _confettiController,
-        ),
-        // Semi-transparent overlay
-        Container(
-          color: Colors.black.withValues(alpha: 0.6),
-        ),
-        // Content
-        Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Winner announcement
-                ScaleTransition(
-                  scale: Tween<double>(begin: 0.5, end: 1.0)
-                      .animate(
-                        CurvedAnimation(
-                          parent: _titleController,
-                          curve: Curves.elasticOut,
-                        ),
-                      ),
-                  child: FadeTransition(
-                    opacity: Tween<double>(begin: 0.0, end: 1.0)
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+      child: Stack(
+        children: [
+          // Semi-transparent overlay
+          Container(
+            color: AppTheme.backgroundPrimary.withOpacity(0.85),
+          ),
+          // Confetti effect
+          ConfettiWidget(
+            controller: _confettiController,
+          ),
+          // Content
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Winner announcement
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0.5, end: 1.0)
                         .animate(
                           CurvedAnimation(
                             parent: _titleController,
-                            curve: Curves.easeInOut,
+                            curve: Curves.elasticOut,
                           ),
                         ),
-                    child: Column(
-                      children: [
-                        // Celebratory icon
-                        ShaderMask(
-                          shaderCallback: (bounds) {
-                            return LinearGradient(
-                              colors: [
-                                AppTheme.statusSuccess,
-                                AppTheme.accentPrimary,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ).createShader(bounds);
-                          },
-                          child: const Icon(
-                            Icons.celebration_rounded,
-                            size: 80,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Winner name
-                        ShaderMask(
-                          shaderCallback: (bounds) {
-                            return LinearGradient(
-                              colors: [
-                                AppTheme.statusSuccess,
-                                AppTheme.accentPrimary,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ).createShader(bounds);
-                          },
-                          child: Text(
-                            widget.winnerName,
-                            style: const TextStyle(
-                              fontSize: 56,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 1.0,
+                    child: FadeTransition(
+                      opacity: Tween<double>(begin: 0.0, end: 1.0)
+                          .animate(
+                            CurvedAnimation(
+                              parent: _titleController,
+                              curve: Curves.easeInOut,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        // "WINS!" text
-                        Text(
-                          'WINS!',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 2.0,
-                            color: AppTheme.statusSuccess,
+                      child: Column(
+                        children: [
+                          if (widget.isKotOrBavney)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentTertiary.withOpacity(0.2),
+                                border: Border.all(color: AppTheme.accentTertiary),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                '★ KOT / BAVNEY',
+                                style: TextStyle(
+                                  color: AppTheme.accentTertiary,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2.0,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          // Winner name
+                          Text(
+                            widget.winnerName.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.accentPrimary,
+                              letterSpacing: 3.0,
+                              shadows: [
+                                Shadow(
+                                  color: AppTheme.neonGlow,
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          if (widget.score != null)
+                            Text(
+                              widget.score!,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.accentSecondary,
+                                letterSpacing: 2.0,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 48),
-                // Action buttons
-                FadeTransition(
-                  opacity: Tween<double>(begin: 0.0, end: 1.0)
-                      .animate(
-                        CurvedAnimation(
-                          parent: _buttonsController,
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.3),
-                      end: Offset.zero,
-                    )
+                  const SizedBox(height: 64),
+                  // Action buttons
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 0.0, end: 1.0)
                         .animate(
                           CurvedAnimation(
                             parent: _buttonsController,
-                            curve: Curves.easeOutCubic,
+                            curve: Curves.easeInOut,
                           ),
                         ),
-                    child: Column(
-                      children: [
-                        // Play Again button
-                        SizedBox(
-                          width: 280,
-                          height: 56,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.statusSuccess,
-                              foregroundColor: AppTheme.backgroundPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 8,
-                              shadowColor:
-                                  AppTheme.statusSuccess.withValues(alpha: 0.5),
-                            ),
-                            onPressed: widget.onPlayAgain,
-                            child: const Text(
-                              'PLAY AGAIN',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
-                              ),
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.3),
+                        end: Offset.zero,
+                      )
+                          .animate(
+                            CurvedAnimation(
+                              parent: _buttonsController,
+                              curve: Curves.easeOutCubic,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Back to Lobby button
-                        SizedBox(
-                          width: 280,
-                          height: 56,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.statusSuccess,
-                              side: const BorderSide(
-                                color: AppTheme.statusSuccess,
-                                width: 2,
+                      child: Column(
+                        children: [
+                          // Play Again button
+                          SizedBox(
+                            width: 280,
+                            height: 56,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.accentPrimary,
+                                foregroundColor: AppTheme.backgroundPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: widget.onBackToLobby,
-                            child: const Text(
-                              'BACK TO LOBBY',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
+                              onPressed: widget.onPlayAgain,
+                              child: const Text(
+                                'PLAY AGAIN',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2.0,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          // Back to Lobby button
+                          SizedBox(
+                            width: 280,
+                            height: 56,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.textSecondary,
+                                side: const BorderSide(
+                                  color: AppTheme.textDisabled,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: widget.onBackToLobby,
+                              child: const Text(
+                                'BACK TO LOBBY',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -269,12 +270,10 @@ class _ConfettiWidgetState extends State<ConfettiWidget> {
         rotationVelocity: (random.nextDouble() - 0.5) * 10,
         size: random.nextDouble() * 8 + 4,
         color: [
-          AppTheme.statusSuccess,
           AppTheme.accentPrimary,
           AppTheme.accentSecondary,
-          Colors.cyan,
-          Colors.amber,
-        ][random.nextInt(5)],
+          AppTheme.accentTertiary,
+        ][random.nextInt(3)],
       );
     });
   }
@@ -340,7 +339,7 @@ class ConfettiPainter extends CustomPainter {
       // Only draw if particle is still visible
       if (particle.y < 1.0 && opacity > 0) {
         final paint = Paint()
-          ..color = particle.color.withValues(alpha: opacity)
+          ..color = particle.color.withOpacity(opacity.clamp(0.0, 1.0))
           ..style = PaintingStyle.fill;
 
         canvas.save();

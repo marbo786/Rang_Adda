@@ -17,15 +17,21 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           "PLAYER PROFILE",
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
+            color: AppTheme.accentSecondary,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 4.0,
+            shadows: [
+              Shadow(
+                color: AppTheme.accentSecondary.withOpacity(0.5),
+                blurRadius: 12,
+              )
+            ],
           ),
         ),
         centerTitle: true,
@@ -34,7 +40,7 @@ class ProfileScreen extends ConsumerWidget {
         data: (profile) {
           if (profile == null) {
             return const Center(
-              child: Text("Profile not found.", style: TextStyle(color: Colors.white)),
+              child: Text("Profile not found.", style: TextStyle(color: AppTheme.textSecondary)),
             );
           }
           return Padding(
@@ -45,48 +51,66 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 40),
                 Center(
                   child: Container(
-                    width: 100,
-                    height: 100,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                      color: AppTheme.accentPrimary.withOpacity(0.1),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppTheme.accentPrimary, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.neonGlow,
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        )
+                      ],
                     ),
                     child: const Center(
-                      child: Icon(Icons.person, size: 50, color: AppTheme.accentPrimary),
+                      child: Icon(Icons.person, size: 60, color: AppTheme.accentPrimary),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 Text(
                   profile.displayName,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                    shadows: [
+                      Shadow(
+                        color: AppTheme.accentPrimary.withOpacity(0.3),
+                        blurRadius: 8,
+                      )
+                    ],
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   "Joined ${profile.createdAt.toLocal().toString().split(' ')[0]}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
                     fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 64),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _StatCard(title: "WINS", value: profile.wins.toString(), color: Colors.green),
-                    _StatCard(title: "LOSSES", value: profile.losses.toString(), color: Colors.red),
-                    _StatCard(
+                    Expanded(child: _StatCard(title: "WINS", value: profile.wins.toString(), color: AppTheme.statusSuccess)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _StatCard(title: "LOSSES", value: profile.losses.toString(), color: AppTheme.statusError)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _StatCard(
                       title: "WIN RATE",
                       value: "${profile.winRate.toStringAsFixed(1)}%",
-                      color: AppTheme.accentPrimary,
-                    ),
+                      color: AppTheme.accentSecondary,
+                    )),
                   ],
                 ),
               ],
@@ -94,7 +118,7 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)),
-        error: (err, stack) => Center(child: Text("Error: $err", style: const TextStyle(color: Colors.red))),
+        error: (err, stack) => Center(child: Text("Error: $err", style: const TextStyle(color: AppTheme.statusError))),
       ),
     );
   }
@@ -110,11 +134,18 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: AppTheme.surfaceElevated,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.15),
+            blurRadius: 24,
+            spreadRadius: -4,
+          )
+        ],
       ),
       child: Column(
         children: [
@@ -122,18 +153,24 @@ class _StatCard extends StatelessWidget {
             value,
             style: TextStyle(
               color: color,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              shadows: [
+                Shadow(
+                  color: color.withOpacity(0.5),
+                  blurRadius: 12,
+                )
+              ],
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             title,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+            style: const TextStyle(
+              color: AppTheme.textSecondary,
               fontSize: 12,
               letterSpacing: 1.5,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

@@ -10,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:rang_adda/features/bluff/ui/bluff_hand_widget.dart';
 import 'package:rang_adda/features/bluff/state/online_bluff_provider.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
-import 'package:rang_adda/features/bluff/ui/bluff_hand_widget.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/ui/opponent_chip.dart';
@@ -20,6 +19,7 @@ import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
@@ -63,37 +63,35 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
         : ref.watch(bluffProvider);
         
     if (state == null || state.players.isEmpty) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+          backgroundColor: AppTheme.backgroundPrimary,
+          body: Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)));
     }
     
     if (state.status == GameStatus.finished) {
+      // Find the winner (player without remaining cards)
+      final winner = state.players.firstWhere(
+        (p) => p.hand.isEmpty,
+        orElse: () => state.players.last,
+      );
       return Scaffold(
-        appBar: AppBar(title: const Text('Game Over')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                state.resolvingBluffMessage ?? 'Game Finished',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, color: Colors.greenAccent),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (!widget.isOnline) {
-                    ref.read(bluffProvider.notifier).startGame(
-                      ['p1', 'p2', 'p3', 'p4'],
-                      ['Alice', 'Bob', 'Charlie', 'Diana'],
-                    );
-                  } else {
-                    context.go('/');
-                  }
-                },
-                child: const Text('Play Again / Exit'),
-              ),
-            ],
-          ),
+        body: GameOverOverlay(
+          winnerName: winner.name,
+          onPlayAgain: () {
+            ref.read(audioServiceProvider).playClick();
+            if (!widget.isOnline) {
+              ref.read(bluffProvider.notifier).startGame(
+                    ['p1', 'p2', 'p3', 'p4'],
+                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'],
+                  );
+            } else {
+              context.go('/');
+            }
+          },
+          onBackToLobby: () {
+            ref.read(audioServiceProvider).playClick();
+            context.go('/');
+          },
         ),
       );
     }
@@ -119,12 +117,30 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       }
     }
 
+    final isYourTurn = state.currentPlayerId == bottomPlayer.id;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      extendBodyBehindAppBar: true,
+      backgroundColor: AppTheme.backgroundPrimary,
       appBar: AppBar(
-        title: const Text('BLUFF', style: TextStyle(letterSpacing: 4.0)),
+        title: Text(
+          'BLUFF',
+          style: TextStyle(
+            color: AppTheme.accentSecondary,
+            letterSpacing: 4.0,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: AppTheme.accentSecondary.withOpacity(0.5),
+                blurRadius: 12,
+              )
+            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
           onPressed: () => context.go('/'),
         ),
       ),
@@ -132,271 +148,321 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-            Column(
-              children: [
-                // Top Opponents
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: state.players
-                          .where((p) => p.id != bottomPlayer.id)
-                          .map((p) {
-                            bool isActive = p.id == state.currentPlayerId;
-                            // Show pulse glow when player won the last bluff challenge
-                            final isWinner = state.resolvingBluffMessage != null &&
-                                state.lastPlayerId == p.id;
+              Column(
+                children: [
+                  // Top Opponents
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: state.players
+                            .where((p) => p.id != bottomPlayer.id)
+                            .map((p) {
+                              bool isActive = p.id == state.currentPlayerId;
+                              // Show pulse glow when player won the last bluff challenge
+                              final isWinner = state.resolvingBluffMessage != null &&
+                                  state.lastPlayerId == p.id;
 
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                OpponentChip(
-                                  playerName: p.name,
-                                  cardCount: p.hand.length,
-                                  isActive: isActive,
-                                  hasPower: false,
-                                  latestEmoji: p.latestEmoji,
-                                ),
-                                // Winner pulse glow
-                                if (isWinner)
-                                  WinnerPulseGlow(
-                                    show: isWinner,
-                                  ),
-                              ],
-                            );
-                          })
-                          .toList(),
-                    ),
-                  ),
-                ),
-
-                // Arena Center
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Status Banner
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          child: Text(
-                            'CHOOSE YOUR BLUFF!',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.0,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-
-                        // Center Pile visualization
-                        if (state.centerPile.isNotEmpty)
-                          AnimatedOpacity(
-                            opacity: state.resolvingBluffMessage != null ? 0.0 : 1.0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInCubic,
-                            child: Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context).colorScheme.surface,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                              return Stack(
+                                alignment: Alignment.center,
                                 children: [
-                                  Text(
-                                    '${state.centerPile.length}',
-                                    style: const TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                  OpponentChip(
+                                    playerName: p.name,
+                                    cardCount: p.hand.length,
+                                    isActive: isActive,
+                                    hasPower: false,
+                                    latestEmoji: p.latestEmoji,
                                   ),
-                                  const Text(
-                                    'CARDS IN PILE',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white54,
-                                      letterSpacing: 1.5,
+                                  // Winner pulse glow
+                                  if (isWinner)
+                                    WinnerPulseGlow(
+                                      show: isWinner,
                                     ),
-                                  ),
                                 ],
-                              ),
-                            ),
-                          )
-                        else
-                          const Text(
-                            'PILE IS EMPTY',
-                            style: TextStyle(
-                              color: Colors.white24,
-                              letterSpacing: 2.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Bottom Player Hand
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.05),
+                              );
+                            })
+                            .toList(),
                       ),
                     ),
                   ),
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 16.0,
-                            bottom: 4.0,
-                          ),
-                          child: Text(
-                            "${bottomPlayer.name.toUpperCase()}'S TURN",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.0,
-                              color: Theme.of(context).primaryColor,
+
+                  // Arena Center
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Status Banner
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isYourTurn
+                                  ? AppTheme.accentPrimary.withOpacity(0.15)
+                                  : AppTheme.surfaceElevated,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.accentPrimary.withOpacity(0.1),
+                                width: 1.5,
+                              ),
+                              boxShadow: isYourTurn
+                                  ? [
+                                      BoxShadow(
+                                        color: AppTheme.neonGlow,
+                                        blurRadius: 16,
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                            child: Text(
+                              isYourTurn
+                                  ? 'CHOOSE YOUR BLUFF!'
+                                  : 'WAITING FOR ${state.players.firstWhere((p) => p.id == state.currentPlayerId).name.toUpperCase()}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 2.0,
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.textSecondary,
+                              ),
                             ),
                           ),
-                        ),
-                        BluffHandWidget(
-                          hand: bottomPlayer.hand,
-                          isFirstTurn: state.centerPile.isEmpty,
-                          canPass: true,
-                          onPass: () async {
-                            if (widget.isOnline) {
-                              final user = ref.read(userProvider).value;
-                              if (user == null || user.uid != bottomPlayer.id) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("You can only play your own hand!"),
+                          const SizedBox(height: 40),
+
+                          // Center Pile visualization
+                          if (state.centerPile.isNotEmpty)
+                            AnimatedOpacity(
+                              opacity: state.resolvingBluffMessage != null ? 0.0 : 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInCubic,
+                              child: Container(
+                                padding: const EdgeInsets.all(28),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppTheme.surfaceElevated,
+                                  border: Border.all(
+                                    color: AppTheme.accentSecondary.withOpacity(0.5),
+                                    width: 2,
                                   ),
-                                );
-                                return;
-                              }
-                            }
-                            
-                            String? error;
-                            if (widget.isOnline) {
-                              await ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
-                            } else {
-                              error = await ref
-                                  .read(bluffProvider.notifier)
-                                  .passTurn(bottomPlayer.id);
-                            }
-                            if (error != null && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(error),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.error,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.accentSecondary.withOpacity(0.3),
+                                      blurRadius: 24,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
-                              );
-                            }
-                          },
-                          onPlayCards: (cards) {
-                            if (widget.isOnline) {
-                              final user = ref.read(userProvider).value;
-                              if (user == null || user.uid != bottomPlayer.id) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("You can only play your own hand!"),
-                                  ),
-                                );
-                                return;
-                              }
-                            }
-                            _showRankSelectorDialog(
-                              context,
-                              cards,
-                              bottomPlayer.id,
-                            );
-                          },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${state.centerPile.length}',
+                                      style: TextStyle(
+                                        fontSize: 48,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppTheme.textPrimary,
+                                        shadows: [
+                                          Shadow(
+                                            color: AppTheme.accentSecondary.withOpacity(0.5),
+                                            blurRadius: 12,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    const Text(
+                                      'CARDS IN PILE',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.textSecondary,
+                                        letterSpacing: 2.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            const Text(
+                              'PILE IS EMPTY',
+                              style: TextStyle(
+                                color: AppTheme.textDisabled,
+                                letterSpacing: 2.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Bottom Player Hand
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceElevated,
+                      border: Border(
+                        top: BorderSide(
+                          color: AppTheme.accentPrimary.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.neonGlow,
+                          blurRadius: 24,
+                          offset: const Offset(0, -8),
                         ),
                       ],
                     ),
+                    child: SafeArea(
+                      top: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: 16.0,
+                              bottom: 4.0,
+                            ),
+                            child: Text(
+                              isYourTurn
+                                  ? 'YOUR TURN'
+                                  : bottomPlayer.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 3.0,
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.textSecondary,
+                                shadows: isYourTurn
+                                    ? [
+                                        Shadow(
+                                          color: AppTheme.neonGlow,
+                                          blurRadius: 8,
+                                        )
+                                      ]
+                                    : [],
+                              ),
+                            ),
+                          ),
+                          BluffHandWidget(
+                            hand: bottomPlayer.hand,
+                            isFirstTurn: state.centerPile.isEmpty,
+                            canPass: true,
+                            onPass: () async {
+                              if (widget.isOnline) {
+                                final user = ref.read(userProvider).value;
+                                if (user == null || user.uid != bottomPlayer.id) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("You can only play your own hand!"),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
+                              
+                              String? error;
+                              if (widget.isOnline) {
+                                await ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
+                              } else {
+                                error = await ref
+                                    .read(bluffProvider.notifier)
+                                    .passTurn(bottomPlayer.id);
+                              }
+                              if (error != null && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error),
+                                    backgroundColor: AppTheme.statusError,
+                                  ),
+                                );
+                              }
+                            },
+                            onPlayCards: (cards) {
+                              if (widget.isOnline) {
+                                final user = ref.read(userProvider).value;
+                                if (user == null || user.uid != bottomPlayer.id) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("You can only play your own hand!"),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
+                              _showRankSelectorDialog(
+                                context,
+                                cards,
+                                bottomPlayer.id,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                ],
+              ),
+
+              // Pass Device Overlay
+              if (state.passToPlayerId != null && !widget.isOnline)
+                PassDeviceOverlay(
+                  playerName: state.players
+                      .firstWhere((p) => p.id == state.passToPlayerId)
+                      .name,
+                  onAcknowledge: () =>
+                      ref.read(bluffProvider.notifier).acknowledgePass(),
                 ),
-              ],
-            ),
 
-            // Pass Device Overlay
-            if (state.passToPlayerId != null && !widget.isOnline)
-              PassDeviceOverlay(
-                playerName: state.players
-                    .firstWhere((p) => p.id == state.passToPlayerId)
-                    .name,
-                onAcknowledge: () =>
-                    ref.read(bluffProvider.notifier).acknowledgePass(),
-              ),
+              // Challenge Bluff Overlay
+              if (state.passToPlayerId == null &&
+                  state.lastPlayerId != null &&
+                  state.lastPlayedCards.isNotEmpty &&
+                  state.status == GameStatus.playing)
+                _buildChallengeOverlay(context, state, bottomPlayer),
 
-            // Challenge Bluff Overlay
-            if (state.passToPlayerId == null &&
-                state.lastPlayerId != null &&
-                state.lastPlayedCards.isNotEmpty &&
-                state.status == GameStatus.playing)
-              _buildChallengeOverlay(context, state, bottomPlayer),
+              // Resolving Result Overlay
+              if (state.resolvingBluffMessage != null)
+                _buildResultOverlay(context, state.resolvingBluffMessage!),
 
-            // Resolving Result Overlay
-            if (state.resolvingBluffMessage != null)
-              _buildResultOverlay(context, state.resolvingBluffMessage!),
-
-            // Deal animation overlay (plays once at game start)
-            if (!_dealAnimationComplete)
-              DealAnimationOverlay(
-                players: state.players,
-                playerCount: state.players.length,
-                onAnimationComplete: () {
-                  if (mounted) {
-                    setState(() {
-                      _dealAnimationComplete = true;
-                    });
-                  }
-                },
-              ),
-            if (widget.isOnline)
-              ChatOverlay(messages: state.chatMessages),
-          ],
+              // Deal animation overlay (plays once at game start)
+              if (!_dealAnimationComplete)
+                DealAnimationOverlay(
+                  players: state.players,
+                  playerCount: state.players.length,
+                  onAnimationComplete: () {
+                    if (mounted) {
+                      setState(() {
+                        _dealAnimationComplete = true;
+                      });
+                    }
+                  },
+                ),
+              if (widget.isOnline)
+                ChatOverlay(messages: state.chatMessages),
+            ],
+          ),
         ),
       ),
-    ),
-    floatingActionButton: widget.isOnline
-        ? FloatingActionButton(
-            onPressed: () => _showChatModal(state!.gameId),
-            backgroundColor: Theme.of(context).primaryColor,
-            child: const Icon(Icons.chat),
-          )
-        : null,
-  );
+      floatingActionButton: widget.isOnline
+          ? FloatingActionButton(
+              onPressed: () => _showChatModal(state.gameId),
+              backgroundColor: AppTheme.accentPrimary,
+              foregroundColor: AppTheme.backgroundPrimary,
+              child: const Icon(Icons.chat),
+            )
+          : null,
+    );
   }
 
   void _showRankSelectorDialog(
@@ -409,34 +475,52 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Dialog(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surface.withValues(alpha: 0.9),
+            backgroundColor: AppTheme.surfaceElevated.withOpacity(0.9),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(
+                color: AppTheme.accentPrimary.withOpacity(0.5),
+                width: 1.5,
+              ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
+            elevation: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.neonGlow,
+                    blurRadius: 32,
+                    spreadRadius: -8,
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(28.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'WHAT RANK ARE YOU CLAIMING?',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.accentSecondary,
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2.0,
+                      shadows: [
+                        Shadow(
+                          color: AppTheme.accentSecondary.withOpacity(0.5),
+                          blurRadius: 8,
+                        )
+                      ],
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 12,
+                    runSpacing: 12,
                     alignment: WrapAlignment.center,
                     children: Rank.values.map((rank) {
                       return InkWell(
@@ -462,37 +546,47 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(error),
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.error,
+                                backgroundColor: AppTheme.statusError,
                               ),
                             );
                           }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                            horizontal: 20,
+                            vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withValues(alpha: 0.1),
+                            color: AppTheme.accentPrimary.withOpacity(0.1),
                             border: Border.all(
-                              color: Theme.of(context).primaryColor,
+                              color: AppTheme.accentPrimary.withOpacity(0.5),
+                              width: 1.5,
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             rank.name.toUpperCase(),
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
+                            style: const TextStyle(
+                              color: AppTheme.accentPrimary,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.5,
                             ),
                           ),
                         ),
                       );
                     }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text(
+                      'CANCEL',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -508,60 +602,80 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
         .firstWhere((p) => p.id == state.lastPlayerId)
         .name;
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: AppTheme.backgroundPrimary.withOpacity(0.6),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(16),
+              color: AppTheme.surfaceElevated.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1,
+                color: AppTheme.statusWarning.withOpacity(0.5),
+                width: 1.5,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.statusWarning.withOpacity(0.2),
+                  blurRadius: 32,
+                  spreadRadius: -8,
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 48,
-                  color: Colors.orangeAccent,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.statusWarning.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    size: 48,
+                    color: AppTheme.statusWarning,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   '$pName claims they played:',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
                     fontSize: 16,
+                    letterSpacing: 1.0,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${state.lastPlayedCards.length} ${state.lastClaimedRank?.name.toUpperCase()}S',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                    shadows: [
+                      Shadow(
+                        color: AppTheme.statusWarning.withOpacity(0.5),
+                        blurRadius: 8,
+                      )
+                    ],
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppTheme.statusError,
+                      foregroundColor: AppTheme.textPrimary,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     onPressed: () {
@@ -578,27 +692,26 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     child: const Text(
                       'CALL BLUFF!',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 56,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).primaryColor,
-                      side: BorderSide(
-                        color: Theme.of(
-                          context,
-                        ).primaryColor.withValues(alpha: 0.5),
+                      foregroundColor: AppTheme.accentPrimary,
+                      side: const BorderSide(
+                        color: AppTheme.accentPrimary,
+                        width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     onPressed: () {
@@ -615,8 +728,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       'ACCEPT & PLAY',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
                       ),
                     ),
                   ),
@@ -631,47 +744,62 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
 
   Widget _buildResultOverlay(BuildContext context, String message) {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: AppTheme.backgroundPrimary.withOpacity(0.6),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(16),
+              color: AppTheme.surfaceElevated.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                color: AppTheme.accentSecondary.withOpacity(0.5),
                 width: 1.5,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accentSecondary.withOpacity(0.2),
+                  blurRadius: 32,
+                  spreadRadius: -8,
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.gavel, size: 48, color: Colors.white),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentSecondary.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.gavel_rounded, size: 48, color: AppTheme.accentSecondary),
+                ),
                 const SizedBox(height: 24),
                 Text(
                   message,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     fontSize: 18,
+                    fontWeight: FontWeight.w600,
                     height: 1.5,
+                    letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppTheme.accentPrimary,
+                      foregroundColor: AppTheme.backgroundPrimary,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     onPressed: () {
@@ -689,8 +817,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       'CONTINUE',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2.0,
                       ),
                     ),
                   ),

@@ -2,23 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Premium Minimalist Colors
-  static const Color backgroundPrimary = Color(0xFF0F1115);
-  static const Color backgroundSecondary = Color(0xFF171A21);
-  static const Color surface = Color(0xFF1E232D);
+  // Futuristic Dark-Neon Colors
+  static const Color backgroundPrimary = Color(0xFF060A0F);
+  static const Color backgroundSecondary = Color(0xFF0B1018);
+  static const Color surface = Color(0xFF111827);
+  static const Color surfaceElevated = Color(0xFF1A2332);
 
-  static const Color accentPrimary = Color(0xFF5B8CFF);
-  static const Color accentSecondary = Color(0xFF7C5CFF);
+  static const Color accentPrimary = Color(0xFF00FF88);
+  static const Color accentSecondary = Color(0xFF00CCFF);
+  static const Color accentTertiary = Color(0xFF7B61FF);
 
-  static const Color statusSuccess = Color(0xFF32D583);
-  static const Color statusWarning = Color(0xFFF5B942);
-  static const Color statusError = Color(0xFFF04438);
+  static const Color statusSuccess = Color(0xFF00FF88);
+  static const Color statusWarning = Color(0xFFFFB800);
+  static const Color statusError = Color(0xFFFF3D5A);
 
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFA7B0BE);
-  static const Color textDisabled = Color(0xFF6C7380);
+  static const Color textPrimary = Color(0xFFF0F6FF);
+  static const Color textSecondary = Color(0xFF8BA3BE);
+  static const Color textDisabled = Color(0xFF3D5166);
+
+  static Color get neonGlow => const Color(0xFF00FF88).withOpacity(0.35);
+  static Color get cyanGlow => const Color(0xFF00CCFF).withOpacity(0.30);
 
   static final ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: backgroundPrimary,
     primaryColor: accentPrimary,
@@ -28,18 +34,24 @@ class AppTheme {
       surface: backgroundPrimary,
       error: statusError,
     ),
-    textTheme: GoogleFonts.interTextTheme(
+    textTheme: GoogleFonts.spaceGroteskTextTheme(
       ThemeData.dark().textTheme,
     ).apply(bodyColor: textSecondary, displayColor: textPrimary),
     appBarTheme: const AppBarTheme(
-      backgroundColor: backgroundSecondary,
+      backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       titleTextStyle: TextStyle(
         color: textPrimary,
         fontSize: 20,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 0.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 2.0,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent, // Default to no background color
+        shadowColor: Colors.transparent,
       ),
     ),
   );

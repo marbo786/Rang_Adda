@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 
 class PlayingCardWidget extends StatelessWidget {
   final PlayingCard card;
@@ -22,33 +23,30 @@ class PlayingCardWidget extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 1,
+          gradient: const RadialGradient(
+            colors: [AppTheme.surfaceElevated, AppTheme.backgroundPrimary],
+            center: Alignment.center,
+            radius: 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppTheme.accentPrimary.withOpacity(0.15),
+            width: 1.5,
+          ),
         ),
-        child: Center(
-          child: Icon(
-            Icons.style,
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-            size: 32,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12.5), // slightly less than 14 to fit inside border
+          child: CustomPaint(
+            painter: _CardBackPainter(),
           ),
         ),
       );
     }
 
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
-    // Red color from theme error status, Black is white text
-    final color = isRed ? Theme.of(context).colorScheme.error : Colors.white;
+    final color = isRed ? AppTheme.statusError : AppTheme.textPrimary;
+    final borderColor = isRed ? AppTheme.statusError.withOpacity(0.25) : AppTheme.accentPrimary.withOpacity(0.25);
+    final glowColor = isRed ? AppTheme.statusError.withOpacity(0.25) : AppTheme.neonGlow;
 
     String suitSymbol;
     switch (card.suit) {
@@ -89,53 +87,82 @@ class PlayingCardWidget extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        color: AppTheme.surfaceElevated,
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1,
+          color: borderColor,
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: glowColor,
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Stack(
         children: [
-          // Top Left Small Indicator
+          // Clean Center Symbol Watermark
+          Center(
+            child: Text(
+              suitSymbol,
+              style: TextStyle(
+                color: color.withOpacity(0.15),
+                fontSize: 32,
+              ),
+            ),
+          ),
+          
+          // Top Left Rank and Suit
           Positioned(
-            top: 8,
-            left: 10,
+            top: 6,
+            left: 8,
             child: Column(
               children: [
                 Text(
                   rankSymbol,
                   style: TextStyle(
                     color: color,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
                 ),
-                Text(suitSymbol, style: TextStyle(color: color, fontSize: 14)),
+                Text(
+                  suitSymbol,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 14,
+                  )
+                ),
               ],
-            ),
-          ),
-
-          // Clean Center Symbol
-          Center(
-            child: Text(
-              suitSymbol,
-              style: TextStyle(
-                color: color.withValues(alpha: 0.7),
-                fontSize: 32,
-              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _CardBackPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppTheme.accentPrimary.withOpacity(0.08)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final double width = size.width;
+    final double height = size.height;
+    final double step = 15.0;
+
+    // Draw diamond pattern lines
+    for (double i = -height; i < width + height; i += step) {
+      canvas.drawLine(Offset(i, 0), Offset(i + height, height), paint);
+      canvas.drawLine(Offset(i, height), Offset(i + height, 0), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

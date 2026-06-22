@@ -64,7 +64,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
         : ref.watch(thullaProvider);
 
     if (state == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+          backgroundColor: AppTheme.backgroundPrimary,
+          body: Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)));
     }
 
     // Detect new game start for local games
@@ -140,30 +142,63 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
       }
     }
 
+    final isYourTurn = state.currentPlayerId == bottomPlayer.id && !state.trickResolving;
+    final hasWaste = state.wastePile.isNotEmpty;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: AppTheme.backgroundPrimary,
       appBar: AppBar(
-        title: const Text('THULLA', style: TextStyle(letterSpacing: 4.0)),
+        title: Text(
+          'THULLA',
+          style: TextStyle(
+            color: AppTheme.accentSecondary,
+            letterSpacing: 4.0,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: AppTheme.accentSecondary.withOpacity(0.5),
+                blurRadius: 12,
+              )
+            ],
+          ),
+        ),
         backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black45,
+                  color: AppTheme.surfaceElevated,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
+                  border: Border.all(
+                    color: hasWaste
+                        ? AppTheme.statusError.withOpacity(0.5)
+                        : AppTheme.textDisabled,
+                    width: 1.5,
+                  ),
+                  boxShadow: hasWaste
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.statusError.withOpacity(0.2),
+                            blurRadius: 12,
+                          )
+                        ]
+                      : [],
                 ),
                 child: Text(
                   'WASTE: ${state.wastePile.length}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
+                  style: TextStyle(
+                    color: hasWaste ? AppTheme.statusError : AppTheme.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -175,294 +210,306 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-            Column(
-              children: [
-                // Top Opponents
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: state.players
-                          .where((p) => p.id != bottomPlayer.id)
-                          .map((p) {
-                            bool hasPower = p.id == state.powerPlayerId;
-                            bool isActive = p.id == state.currentPlayerId;
-                            // Determine if this player won the trick (just resolved)
-                            final trickWinnerId = state.trickResolving &&
-                                    state.currentTrick.isNotEmpty
-                                ? state.currentTrick.first.playerId
-                                : null;
-                            final isWinner = state.trickResolving &&
-                                p.id == trickWinnerId;
-
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                OpponentChip(
-                                  playerName: p.name,
-                                  cardCount: p.hand.length,
-                                  isActive: isActive,
-                                  hasPower: hasPower,
-                                  latestEmoji: p.latestEmoji,
-                                ),
-                                // Winner pulse glow
-                                if (isWinner)
-                                  WinnerPulseGlow(
-                                    show: isWinner,
-                                  ),
-                              ],
-                            );
-                          })
-                          .toList(),
-                    ),
-                  ),
-                ),
-
-                // Arena Center
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Status Banner
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                state.currentPlayerId == bottomPlayer.id &&
-                                    !state.trickResolving
-                                ? Theme.of(
-                                    context,
-                                  ).primaryColor.withValues(alpha: 0.1)
-                                : Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color:
-                                  state.currentPlayerId == bottomPlayer.id &&
-                                      !state.trickResolving
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.white.withValues(alpha: 0.05),
-                            ),
-                          ),
-                          child: Text(
-                            bannerText.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.5,
-                              color: state.currentPlayerId == bottomPlayer.id
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-
-                        // Trick Area (Stack for clean positioning)
-                        SizedBox(
-                          height: 180,
-                          width: 300,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final screenWidth = MediaQuery.of(context).size.width;
-                              final cardW = screenWidth < 600 ? 55.0 : 70.0;
-                              final cardH = screenWidth < 600 ? 82.5 : 105.0;
+              Column(
+                children: [
+                  // Top Opponents
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: state.players
+                            .where((p) => p.id != bottomPlayer.id)
+                            .map((p) {
+                              bool hasPower = p.id == state.powerPlayerId;
+                              bool isActive = p.id == state.currentPlayerId;
+                              // Determine if this player won the trick (just resolved)
+                              final trickWinnerId = state.trickResolving &&
+                                      state.currentTrick.isNotEmpty
+                                  ? state.currentTrick.first.playerId
+                                  : null;
+                              final isWinner = state.trickResolving &&
+                                  p.id == trickWinnerId;
 
                               return Stack(
                                 alignment: Alignment.center,
-                                children: List.generate(state.currentTrick.length, (
-                                  index,
-                                ) {
-                              final t = state.currentTrick[index];
-                              final offset =
-                                  (index -
-                                      (state.currentTrick.length - 1) / 2) *
-                                  35.0;
-                              final rotation =
-                                  (index -
-                                      (state.currentTrick.length - 1) / 2) *
-                                  0.1;
-
-                              return AnimatedPositioned(
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeOutCubic,
-                                left: 115 + offset,
-                                top: state.trickResolving ? -50 : 20,
-                                child: Transform.rotate(
-                                  angle: rotation,
-                                  child: AnimatedScale(
-                                    duration: const Duration(milliseconds: 350),
-                                    scale: state.trickResolving ? 0.8 : 1.0,
-                                    child: AnimatedOpacity(
-                                      opacity: state.trickResolving ? 0.0 : 1.0,
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInCubic,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            t.playerId,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Theme.of(
-                                                context,
-                                              ).textTheme.bodySmall?.color,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          PlayingCardWidget(
-                                            card: t.card,
-                                            width: cardW,
-                                            height: cardH,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                children: [
+                                  OpponentChip(
+                                    playerName: p.name,
+                                    cardCount: p.hand.length,
+                                    isActive: isActive,
+                                    hasPower: hasPower,
+                                    latestEmoji: p.latestEmoji,
                                   ),
-                                ),
+                                  // Winner pulse glow
+                                  if (isWinner)
+                                    WinnerPulseGlow(
+                                      show: isWinner,
+                                    ),
+                                ],
                               );
-                            }),
-                          );
-                        },
+                            })
+                            .toList(),
                       ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
 
-                // Bottom Player Hand
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
-                    ),
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 16.0,
-                            bottom: 4.0,
-                          ),
-                          child: Text(
-                            bottomPlayer.id == state.currentPlayerId
-                                ? 'YOUR TURN'
-                                : bottomPlayer.name.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.0,
-                              color: bottomPlayer.id == state.currentPlayerId
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.color,
+                  // Arena Center
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Status Banner
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isYourTurn
+                                  ? AppTheme.accentPrimary.withOpacity(0.15)
+                                  : AppTheme.surfaceElevated,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.accentPrimary.withOpacity(0.1),
+                                width: 1.5,
+                              ),
+                              boxShadow: isYourTurn
+                                  ? [
+                                      BoxShadow(
+                                        color: AppTheme.neonGlow,
+                                        blurRadius: 16,
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                            child: Text(
+                              bannerText.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 2.0,
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.textSecondary,
+                              ),
                             ),
                           ),
-                        ),
-                        HandWidget(
-                          hand: bottomPlayer.hand,
-                          isCardValid: (card) =>
-                              ThullaEngine.getMoveError(
-                                state,
-                                bottomPlayer.id,
-                                card,
-                              ) ==
-                              null,
-                          onCardTap: (card) async {
-                            if (widget.isOnline) {
-                              final user = ref.read(userProvider).value;
-                              if (user == null || user.uid != bottomPlayer.id) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "You can only play your own cards!",
-                                    ),
-                                  ),
+                          const SizedBox(height: 40),
+
+                          // Trick Area (Stack for clean positioning)
+                          SizedBox(
+                            height: 180,
+                            width: 300,
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final screenWidth = MediaQuery.of(context).size.width;
+                                final cardW = screenWidth < 600 ? 55.0 : 70.0;
+                                final cardH = screenWidth < 600 ? 82.5 : 105.0;
+
+                                return Stack(
+                                  alignment: Alignment.center,
+                                  children: List.generate(state.currentTrick.length, (
+                                    index,
+                                  ) {
+                                    final t = state.currentTrick[index];
+                                    final offset =
+                                        (index -
+                                            (state.currentTrick.length - 1) / 2) *
+                                        35.0;
+                                    final rotation =
+                                        (index -
+                                            (state.currentTrick.length - 1) / 2) *
+                                        0.1;
+
+                                    return AnimatedPositioned(
+                                      duration: const Duration(milliseconds: 350),
+                                      curve: Curves.easeOutCubic,
+                                      left: 115 + offset,
+                                      top: state.trickResolving ? -50 : 20,
+                                      child: Transform.rotate(
+                                        angle: rotation,
+                                        child: AnimatedScale(
+                                          duration: const Duration(milliseconds: 350),
+                                          scale: state.trickResolving ? 0.8 : 1.0,
+                                          child: AnimatedOpacity(
+                                            opacity: state.trickResolving ? 0.0 : 1.0,
+                                            duration: const Duration(milliseconds: 300),
+                                            curve: Curves.easeInCubic,
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  t.playerId,
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color: AppTheme.textSecondary,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                PlayingCardWidget(
+                                                  card: t.card,
+                                                  width: cardW,
+                                                  height: cardH,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
                                 );
-                                return;
-                              }
-                            }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
-                            String? error;
-                            if (widget.isOnline) {
-                              error = await ref
-                                  .read(onlineActionProvider)
-                                  .playCard(bottomPlayer.id, card);
-                            } else {
-                              error = await ref
-                                  .read(thullaProvider.notifier)
-                                  .playCard(bottomPlayer.id, card);
-                            }
-
-                            if (error != null && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(error),
-                                  duration: const Duration(seconds: 2),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.error,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
-                          },
+                  // Bottom Player Hand
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceElevated,
+                      border: Border(
+                        top: BorderSide(
+                          color: AppTheme.accentPrimary.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.neonGlow,
+                          blurRadius: 24,
+                          offset: const Offset(0, -8),
                         ),
                       ],
                     ),
+                    child: SafeArea(
+                      top: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: 16.0,
+                              bottom: 4.0,
+                            ),
+                            child: Text(
+                              isYourTurn
+                                  ? 'YOUR TURN'
+                                  : bottomPlayer.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 3.0,
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary
+                                    : AppTheme.textSecondary,
+                                shadows: isYourTurn
+                                    ? [
+                                        Shadow(
+                                          color: AppTheme.neonGlow,
+                                          blurRadius: 8,
+                                        )
+                                      ]
+                                    : [],
+                              ),
+                            ),
+                          ),
+                          HandWidget(
+                            hand: bottomPlayer.hand,
+                            isCardValid: (card) =>
+                                ThullaEngine.getMoveError(
+                                  state,
+                                  bottomPlayer.id,
+                                  card,
+                                ) ==
+                                null,
+                            onCardTap: (card) async {
+                              if (widget.isOnline) {
+                                final user = ref.read(userProvider).value;
+                                if (user == null || user.uid != bottomPlayer.id) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "You can only play your own cards!",
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
+
+                              String? error;
+                              if (widget.isOnline) {
+                                error = await ref
+                                    .read(onlineActionProvider)
+                                    .playCard(bottomPlayer.id, card);
+                              } else {
+                                error = await ref
+                                    .read(thullaProvider.notifier)
+                                    .playCard(bottomPlayer.id, card);
+                              }
+
+                              if (error != null && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: AppTheme.statusError,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              if (state.passToPlayerId != null && !widget.isOnline)
+                PassDeviceOverlay(
+                  playerName: state.passToPlayerId!,
+                  onAcknowledge: () =>
+                      ref.read(thullaProvider.notifier).acknowledgePass(),
                 ),
-              ],
-            ),
-            if (state.passToPlayerId != null && !widget.isOnline)
-              PassDeviceOverlay(
-                playerName: state.passToPlayerId!,
-                onAcknowledge: () =>
-                    ref.read(thullaProvider.notifier).acknowledgePass(),
-              ),
-            // Deal animation overlay (plays once at game start)
-            if (!widget.isOnline && !_dealAnimationComplete)
-              DealAnimationOverlay(
-                players: state.players,
-                playerCount: state.players.length,
-                onAnimationComplete: () {
-                  if (mounted) {
-                    setState(() {
-                      _dealAnimationComplete = true;
-                    });
-                  }
-                },
-              ),
-            if (widget.isOnline)
-              ChatOverlay(messages: state.chatMessages),
-          ],
+              // Deal animation overlay (plays once at game start)
+              if (!widget.isOnline && !_dealAnimationComplete)
+                DealAnimationOverlay(
+                  players: state.players,
+                  playerCount: state.players.length,
+                  onAnimationComplete: () {
+                    if (mounted) {
+                      setState(() {
+                        _dealAnimationComplete = true;
+                      });
+                    }
+                  },
+                ),
+              if (widget.isOnline)
+                ChatOverlay(messages: state.chatMessages),
+            ],
+          ),
         ),
       ),
-    ),
-    floatingActionButton: widget.isOnline
-        ? FloatingActionButton(
-            onPressed: () => _showChatModal(state!.gameId),
-            backgroundColor: AppTheme.accentPrimary,
-            child: const Icon(Icons.chat),
-          )
-        : null,
-  );
+      floatingActionButton: widget.isOnline
+          ? FloatingActionButton(
+              onPressed: () => _showChatModal(state.gameId),
+              backgroundColor: AppTheme.accentPrimary,
+              foregroundColor: AppTheme.backgroundPrimary,
+              child: const Icon(Icons.chat),
+            )
+          : null,
+    );
   }
 }

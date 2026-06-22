@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 
-/// A reusable opponent chip widget showing player avatar, card count badge,
-/// and animated glow ring when active (player's turn).
-/// 
-/// Features:
-/// - Circular avatar with player initials
-/// - Card-count badge anchored to the avatar
-/// - Animated glow ring on active turn (accentPrimary)
-/// - Optional power highlight for game-specific logic
-class OpponentChip extends StatelessWidget {
+class OpponentChip extends StatefulWidget {
   final String playerName;
   final int cardCount;
   final bool isActive;
@@ -25,157 +17,180 @@ class OpponentChip extends StatelessWidget {
     this.latestEmoji,
   });
 
-  /// Extract initials from player name (up to 2 characters).
+  @override
+  State<OpponentChip> createState() => _OpponentChipState();
+}
+
+class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _glowOpacity = Tween<double>(begin: 0.4, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    if (widget.isActive) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(OpponentChip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _controller.stop();
+      _controller.value = 0.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   String _getInitials(String name) {
-    final parts = name.split(' ');
+    final parts = name.trim().split(' ');
     if (parts.length > 1) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
+    if (name.isEmpty) return '?';
     return name.substring(0, 1).toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
-    final initials = _getInitials(playerName);
+    final initials = _getInitials(widget.playerName);
     const avatarSize = 56.0;
-    const glowWidth = 4.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Avatar with animated glow ring
           SizedBox(
-            width: avatarSize + (glowWidth * 2) + 8,
-            height: avatarSize + (glowWidth * 2) + 8,
+            width: avatarSize + 16, // Extra space for glows and badges
+            height: avatarSize + 16,
             child: Stack(
               alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
-                // Animated glow ring (only when active)
-                AnimatedOpacity(
-                  opacity: isActive ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: avatarSize + (glowWidth * 2) + 4,
-                    height: avatarSize + (glowWidth * 2) + 4,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.accentPrimary,
-                        width: glowWidth,
-                      ),
-                      boxShadow: isActive
-                          ? [
-                              BoxShadow(
-                                color: AppTheme.accentPrimary.withValues(alpha: 0.5),
-                                blurRadius: 12,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : [],
-                    ),
+                // Active glow ring
+                if (widget.isActive)
+                  AnimatedBuilder(
+                    animation: _glowOpacity,
+                    builder: (context, child) {
+                      return Container(
+                        width: avatarSize,
+                        height: avatarSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentPrimary.withOpacity(_glowOpacity.value),
+                              blurRadius: 16,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                ),
 
-                // Avatar circle with initials
+                // Avatar Container with gradient border
                 Container(
                   width: avatarSize,
                   height: avatarSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.surface,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      width: 1.0,
+                    gradient: SweepGradient(
+                      colors: [
+                        AppTheme.accentPrimary,
+                        AppTheme.accentSecondary,
+                        AppTheme.accentPrimary,
+                      ],
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      initials,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: hasPower
-                            ? Theme.of(context).colorScheme.secondary
-                            : AppTheme.textPrimary,
-                        letterSpacing: 0.5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0), // Border thickness
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.surfaceElevated,
+                      ),
+                      child: Center(
+                        child: Text(
+                          initials,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: widget.hasPower
+                                ? AppTheme.accentSecondary
+                                : AppTheme.textPrimary,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
 
-                // Card count badge (bottom-right)
+                // Card count badge
                 Positioned(
-                  right: 0,
-                  bottom: 0,
+                  right: -4,
+                  bottom: -4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.backgroundPrimary,
+                      color: AppTheme.accentSecondary.withOpacity(0.15),
                       border: Border.all(
-                        color: isActive
-                            ? AppTheme.accentPrimary
-                            : Colors.white.withValues(alpha: 0.2),
+                        color: AppTheme.accentSecondary.withOpacity(0.4),
                         width: 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16), // Pill shape
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.style,
-                          size: 12,
-                          color: hasPower
-                              ? Theme.of(context).colorScheme.secondary
-                              : Colors.white54,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$cardCount',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: hasPower
-                                ? Theme.of(context).colorScheme.secondary
-                                : AppTheme.textPrimary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      '${widget.cardCount}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.accentSecondary,
+                      ),
                     ),
                   ),
                 ),
-                
+
                 // Emoji (top-right)
-                if (latestEmoji != null && latestEmoji!.isNotEmpty)
+                if (widget.latestEmoji != null && widget.latestEmoji!.isNotEmpty)
                   Positioned(
-                    right: 0,
-                    top: 0,
+                    right: -4,
+                    top: -4,
                     child: Text(
-                      latestEmoji!,
+                      widget.latestEmoji!,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
               ],
             ),
           ),
-
           const SizedBox(height: 12),
-
           // Player name
           Text(
-            playerName.toUpperCase(),
+            widget.playerName.toUpperCase(),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
-              color: hasPower
-                  ? Theme.of(context).colorScheme.secondary
+              color: widget.hasPower
+                  ? AppTheme.accentSecondary
                   : AppTheme.textPrimary,
             ),
             textAlign: TextAlign.center,
