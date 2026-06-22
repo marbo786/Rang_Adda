@@ -16,7 +16,7 @@ import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
-import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'package:rang_adda/shared/ui/round_table_widget.dart';
 import 'dart:math' as math;
 
 class ThullaTableScreen extends ConsumerStatefulWidget {

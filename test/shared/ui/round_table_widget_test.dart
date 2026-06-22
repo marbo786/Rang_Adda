@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'package:rang_adda/shared/ui/round_table_widget.dart';
 
 void main() {
   testWidgets('RoundTableWidget renders with 3 and 4 players', (WidgetTester tester) async {

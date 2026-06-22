@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../shared/ui/theme.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 
 class RoundTableWidget extends StatefulWidget {
   final List<String> playerNames;

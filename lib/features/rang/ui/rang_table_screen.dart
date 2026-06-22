@@ -16,7 +16,7 @@ import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_over_overlay.dart'; // For ConfettiWidget
 import 'package:rang_adda/shared/ui/theme.dart';
-import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'package:rang_adda/shared/ui/round_table_widget.dart';
 import 'dart:math' as math;
 
 class RangTableScreen extends ConsumerStatefulWidget {
