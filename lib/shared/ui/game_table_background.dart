@@ -33,7 +33,7 @@ class GameTableBackground extends StatelessWidget {
                         center: const Alignment(0, 0),
                         radius: 0.8,
                         colors: [
-                          AppTheme.accentPrimary.withOpacity(0.06),
+                          AppTheme.accentPrimary.withValues(alpha: 0.06),
                           Colors.transparent,
                         ],
                       ),
@@ -46,7 +46,7 @@ class GameTableBackground extends StatelessWidget {
                         center: const Alignment(0, -0.2),
                         radius: 0.5,
                         colors: [
-                          AppTheme.accentSecondary.withOpacity(0.04),
+                          AppTheme.accentSecondary.withValues(alpha: 0.04),
                           Colors.transparent,
                         ],
                       ),
@@ -69,7 +69,7 @@ class GameTableBackground extends StatelessWidget {
                     colors: [
                       Colors.transparent,
                       Colors.transparent,
-                      AppTheme.backgroundPrimary.withOpacity(0.5),
+                      AppTheme.backgroundPrimary.withValues(alpha: 0.5),
                     ],
                     stops: const [0.0, 0.7, 1.0],
                   ),
@@ -87,7 +87,7 @@ class _PerspectiveGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.accentPrimary.withOpacity(0.04)
+      ..color = AppTheme.accentPrimary.withValues(alpha: 0.04)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 

@@ -49,7 +49,7 @@ class ThullaGameState extends GameState {
     this.isOnline = false,
   });
 
-  bool get isFirstTrick => wastePile.isEmpty && currentTrick.isEmpty;
+  bool get isFirstTrick => wastePile.isEmpty;
 
   Suit? get leadSuit =>
       currentTrick.isNotEmpty ? currentTrick.first.card.suit : null;

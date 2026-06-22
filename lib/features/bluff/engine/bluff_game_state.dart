@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/shared/models/game_state.dart';

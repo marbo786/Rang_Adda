@@ -327,7 +327,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                           color: AppTheme.surfaceElevated,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppTheme.accentPrimary.withOpacity(0.20),
+                            color: AppTheme.accentPrimary.withValues(alpha: 0.20),
                           ),
                           boxShadow: isOnlineFocused
                               ? [
@@ -364,7 +364,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                               decoration: InputDecoration(
                                 hintText: 'ROOM CODE',
                                 hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withValues(alpha: 0.15),
                                   fontSize: 18,
                                   letterSpacing: 4.0,
                                   fontWeight: FontWeight.w600,

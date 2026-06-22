@@ -263,6 +263,8 @@ class ThullaEngine {
         status: GameStatus.finished,
         passToPlayerId: null,
         clearPassToPlayerId: true,
+        currentPlayerId: null,
+        clearCurrentPlayerId: true,
       );
     }
     return state;

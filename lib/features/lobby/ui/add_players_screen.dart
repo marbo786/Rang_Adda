@@ -197,7 +197,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                       color: AppTheme.accentSecondary,
                       shadows: [
                         Shadow(
-                          color: AppTheme.accentSecondary.withOpacity(0.5),
+                          color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                           blurRadius: 16,
                         ),
                       ],
@@ -251,7 +251,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                                 child: Icon(
                                   Icons.close,
                                   size: 20,
-                                  color: AppTheme.statusError.withOpacity(0.7),
+                                  color: AppTheme.statusError.withValues(alpha: 0.7),
                                 ),
                               ),
                           ],
@@ -295,7 +295,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                             decoration: InputDecoration(
                               hintText: 'PLAYER NAME',
                               hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 fontSize: 16,
                                 letterSpacing: 2.0,
                               ),
@@ -406,8 +406,8 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.accentPrimary,
                         foregroundColor: AppTheme.backgroundPrimary,
-                        disabledBackgroundColor: AppTheme.accentPrimary.withOpacity(0.3),
-                        disabledForegroundColor: AppTheme.backgroundPrimary.withOpacity(0.5),
+                        disabledBackgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                        disabledForegroundColor: AppTheme.backgroundPrimary.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

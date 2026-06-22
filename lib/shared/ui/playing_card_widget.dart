@@ -23,19 +23,15 @@ class PlayingCardWidget extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          gradient: const RadialGradient(
-            colors: [AppTheme.surfaceElevated, AppTheme.backgroundPrimary],
-            center: Alignment.center,
-            radius: 1.0,
-          ),
+          color: const Color(0xFF0F2335),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppTheme.accentPrimary.withOpacity(0.15),
+            color: const Color(0xFF00FF88).withValues(alpha: 0.30),
             width: 1.5,
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12.5), // slightly less than 14 to fit inside border
+          borderRadius: BorderRadius.circular(12.5),
           child: CustomPaint(
             painter: _CardBackPainter(),
           ),
@@ -44,9 +40,9 @@ class PlayingCardWidget extends StatelessWidget {
     }
 
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
-    final color = isRed ? AppTheme.statusError : AppTheme.textPrimary;
-    final borderColor = isRed ? AppTheme.statusError.withOpacity(0.25) : AppTheme.accentPrimary.withOpacity(0.25);
-    final glowColor = isRed ? AppTheme.statusError.withOpacity(0.25) : AppTheme.neonGlow;
+    final color = isRed ? const Color(0xFFFF4D6A) : Colors.white;
+    final borderColor = const Color(0xFF3A5068);
+    final glowColor = isRed ? AppTheme.statusError.withValues(alpha: 0.25) : AppTheme.neonGlow;
 
     String suitSymbol;
     switch (card.suit) {
@@ -87,7 +83,7 @@ class PlayingCardWidget extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
+        color: const Color(0xFF1E2D3D),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: borderColor,
@@ -96,8 +92,8 @@ class PlayingCardWidget extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: glowColor,
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 6,
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -108,7 +104,7 @@ class PlayingCardWidget extends StatelessWidget {
             child: Text(
               suitSymbol,
               style: TextStyle(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.18),
                 fontSize: 32,
               ),
             ),
@@ -148,8 +144,8 @@ class _CardBackPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.accentPrimary.withOpacity(0.08)
-      ..strokeWidth = 1.0
+      ..color = const Color(0xFF00FF88).withValues(alpha: 0.12)
+      ..strokeWidth = 0.5
       ..style = PaintingStyle.stroke;
 
     final double width = size.width;

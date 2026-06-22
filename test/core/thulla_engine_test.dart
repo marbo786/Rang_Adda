@@ -99,7 +99,7 @@ void main() {
 
     test('Tochoo logic forces highest lead player to pick up cards', () {
       var state = getTestState().copyWith(
-        
+        wastePile: const [PlayingCard(suit: Suit.clubs, rank: Rank.two)],
       ); // Bypass first trick
 
       // Change hands to force a Tochoo
@@ -141,13 +141,12 @@ void main() {
 
       final p1 = state.players.firstWhere((p) => p.id == 'p1');
       expect(p1.hand.length, 2); // Picked up both cards
-      expect(state.wastePile.length, 0); // Nothing to waste
+      expect(state.wastePile.length, 1); // Nothing added to waste
       expect(state.currentPlayerId, 'p1'); // p1 has to lead again
     });
 
     test('Empty Hand Draw logic (Winning a trick with 0 cards forces draw)', () {
       var state = getTestState().copyWith(
-        
         wastePile: const [PlayingCard(suit: Suit.clubs, rank: Rank.two)],
       );
 

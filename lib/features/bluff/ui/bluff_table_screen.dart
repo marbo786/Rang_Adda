@@ -12,15 +12,14 @@ import 'package:rang_adda/features/bluff/state/online_bluff_provider.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
-import 'package:rang_adda/shared/ui/opponent_chip.dart';
 import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
-import 'package:rang_adda/shared/ui/winner_pulse_glow.dart';
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/shared/models/player.dart';
-import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
+import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'dart:math' as math;
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
@@ -34,6 +33,7 @@ class BluffTableScreen extends ConsumerStatefulWidget {
 class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
   bool _dealAnimationComplete = false; 
   int? _lastGameStartTick;
+  bool _isRotating = false;
 
   void _showChatModal(String gameId) {
     showModalBottomSheet(
@@ -61,6 +61,26 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     final state = widget.isOnline
         ? ref.watch(onlineBluffProvider).value
         : ref.watch(bluffProvider);
+        
+    if (widget.isOnline) {
+      ref.listen(onlineBluffProvider, (previous, next) {
+        if (previous?.value?.currentPlayerId != next.value?.currentPlayerId) {
+          setState(() => _isRotating = true);
+          Future.delayed(const Duration(milliseconds: 700), () {
+            if (mounted) setState(() => _isRotating = false);
+          });
+        }
+      });
+    } else {
+      ref.listen(bluffProvider, (previous, next) {
+        if (previous?.currentPlayerId != next.currentPlayerId) {
+          setState(() => _isRotating = true);
+          Future.delayed(const Duration(milliseconds: 700), () {
+            if (mounted) setState(() => _isRotating = false);
+          });
+        }
+      });
+    }
         
     if (state == null || state.players.isEmpty) {
       return const Scaffold(
@@ -131,7 +151,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
             fontWeight: FontWeight.w900,
             shadows: [
               Shadow(
-                color: AppTheme.accentSecondary.withOpacity(0.5),
+                color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 blurRadius: 12,
               )
             ],
@@ -150,41 +170,14 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
             children: [
               Column(
                 children: [
-                  // Top Opponents
+                  // Round Table
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: state.players
-                            .where((p) => p.id != bottomPlayer.id)
-                            .map((p) {
-                              bool isActive = p.id == state.currentPlayerId;
-                              // Show pulse glow when player won the last bluff challenge
-                              final isWinner = state.resolvingBluffMessage != null &&
-                                  state.lastPlayerId == p.id;
-
-                              return Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  OpponentChip(
-                                    playerName: p.name,
-                                    cardCount: p.hand.length,
-                                    isActive: isActive,
-                                    hasPower: false,
-                                    latestEmoji: p.latestEmoji,
-                                  ),
-                                  // Winner pulse glow
-                                  if (isWinner)
-                                    WinnerPulseGlow(
-                                      show: isWinner,
-                                    ),
-                                ],
-                              );
-                            })
-                            .toList(),
-                      ),
+                    padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+                    child: RoundTableWidget(
+                      playerNames: state.players.map((p) => p.name).toList(),
+                      activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
+                      cardCounts: state.players.map((p) => p.hand.length).toList(),
+                      size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                     ),
                   ),
 
@@ -203,13 +196,13 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isYourTurn
-                                  ? AppTheme.accentPrimary.withOpacity(0.15)
+                                  ? AppTheme.accentPrimary.withValues(alpha: 0.15)
                                   : AppTheme.surfaceElevated,
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
                                 color: isYourTurn
                                     ? AppTheme.accentPrimary
-                                    : AppTheme.accentPrimary.withOpacity(0.1),
+                                    : AppTheme.accentPrimary.withValues(alpha: 0.1),
                                 width: 1.5,
                               ),
                               boxShadow: isYourTurn
@@ -249,12 +242,12 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                   shape: BoxShape.circle,
                                   color: AppTheme.surfaceElevated,
                                   border: Border.all(
-                                    color: AppTheme.accentSecondary.withOpacity(0.5),
+                                    color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                                     width: 2,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppTheme.accentSecondary.withOpacity(0.3),
+                                      color: AppTheme.accentSecondary.withValues(alpha: 0.3),
                                       blurRadius: 24,
                                       spreadRadius: 2,
                                     ),
@@ -271,7 +264,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                         color: AppTheme.textPrimary,
                                         shadows: [
                                           Shadow(
-                                            color: AppTheme.accentSecondary.withOpacity(0.5),
+                                            color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                                             blurRadius: 12,
                                           )
                                         ],
@@ -310,7 +303,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       color: AppTheme.surfaceElevated,
                       border: Border(
                         top: BorderSide(
-                          color: AppTheme.accentPrimary.withOpacity(0.3),
+                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                           width: 1.5,
                         ),
                       ),
@@ -354,9 +347,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               ),
                             ),
                           ),
-                          BluffHandWidget(
-                            hand: bottomPlayer.hand,
-                            isFirstTurn: state.centerPile.isEmpty,
+                          IgnorePointer(
+                            ignoring: _isRotating,
+                            child: BluffHandWidget(
+                              hand: bottomPlayer.hand,
+                              isFirstTurn: state.centerPile.isEmpty,
                             canPass: true,
                             onPass: () async {
                               if (widget.isOnline) {
@@ -407,6 +402,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               );
                             },
                           ),
+                        ),
                         ],
                       ),
                     ),
@@ -477,11 +473,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Dialog(
-            backgroundColor: AppTheme.surfaceElevated.withOpacity(0.9),
+            backgroundColor: AppTheme.surfaceElevated.withValues(alpha: 0.9),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
               side: BorderSide(
-                color: AppTheme.accentPrimary.withOpacity(0.5),
+                color: AppTheme.accentPrimary.withValues(alpha: 0.5),
                 width: 1.5,
               ),
             ),
@@ -510,7 +506,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       letterSpacing: 2.0,
                       shadows: [
                         Shadow(
-                          color: AppTheme.accentSecondary.withOpacity(0.5),
+                          color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                           blurRadius: 8,
                         )
                       ],
@@ -557,9 +553,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.accentPrimary.withOpacity(0.1),
+                            color: AppTheme.accentPrimary.withValues(alpha: 0.1),
                             border: Border.all(
-                              color: AppTheme.accentPrimary.withOpacity(0.5),
+                              color: AppTheme.accentPrimary.withValues(alpha: 0.5),
                               width: 1.5,
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -604,21 +600,21 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: AppTheme.backgroundPrimary.withOpacity(0.6),
+        color: AppTheme.backgroundPrimary.withValues(alpha: 0.6),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceElevated.withOpacity(0.95),
+              color: AppTheme.surfaceElevated.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: AppTheme.statusWarning.withOpacity(0.5),
+                color: AppTheme.statusWarning.withValues(alpha: 0.5),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.statusWarning.withOpacity(0.2),
+                  color: AppTheme.statusWarning.withValues(alpha: 0.2),
                   blurRadius: 32,
                   spreadRadius: -8,
                 ),
@@ -630,7 +626,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.statusWarning.withOpacity(0.15),
+                    color: AppTheme.statusWarning.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -658,7 +654,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     letterSpacing: 2.0,
                     shadows: [
                       Shadow(
-                        color: AppTheme.statusWarning.withOpacity(0.5),
+                        color: AppTheme.statusWarning.withValues(alpha: 0.5),
                         blurRadius: 8,
                       )
                     ],
@@ -746,21 +742,21 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: AppTheme.backgroundPrimary.withOpacity(0.6),
+        color: AppTheme.backgroundPrimary.withValues(alpha: 0.6),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceElevated.withOpacity(0.95),
+              color: AppTheme.surfaceElevated.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: AppTheme.accentSecondary.withOpacity(0.5),
+                color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentSecondary.withOpacity(0.2),
+                  color: AppTheme.accentSecondary.withValues(alpha: 0.2),
                   blurRadius: 32,
                   spreadRadius: -8,
                 ),
@@ -772,7 +768,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentSecondary.withOpacity(0.15),
+                    color: AppTheme.accentSecondary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.gavel_rounded, size: 48, color: AppTheme.accentSecondary),

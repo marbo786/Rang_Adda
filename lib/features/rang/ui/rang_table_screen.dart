@@ -10,13 +10,14 @@ import 'package:rang_adda/features/rang/engine/rang_engine.dart';
 import 'package:rang_adda/features/rang/state/rang_provider.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
-import 'package:rang_adda/shared/ui/opponent_chip.dart';
 import 'package:rang_adda/shared/ui/hand_widget.dart';
 import 'package:rang_adda/shared/ui/playing_card_widget.dart';
 import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_over_overlay.dart'; // For ConfettiWidget
 import 'package:rang_adda/shared/ui/theme.dart';
+import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'dart:math' as math;
 
 class RangTableScreen extends ConsumerStatefulWidget {
   final List<String>? playerNames;
@@ -29,6 +30,7 @@ class RangTableScreen extends ConsumerStatefulWidget {
 class _RangTableScreenState extends ConsumerState<RangTableScreen> {
   bool _dealAnimationComplete = false; // Track if deal animation has played
   String? _lastGameStartTick; // Track the last game start to detect new games
+  bool _isRotating = false;
 
   @override
   void initState() {
@@ -42,6 +44,16 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(rangProvider);
+    
+    ref.listen(rangProvider, (previous, next) {
+      if (previous?.currentPlayerId != next?.currentPlayerId) {
+        setState(() => _isRotating = true);
+        Future.delayed(const Duration(milliseconds: 700), () {
+          if (mounted) setState(() => _isRotating = false);
+        });
+      }
+    });
+
     if (state == null) {
       return const Scaffold(
         backgroundColor: AppTheme.backgroundPrimary,
@@ -87,9 +99,6 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
     );
 
     final bottomIndex = state.players.indexOf(bottomPlayer);
-    final leftPlayer = state.players[(bottomIndex + 1) % 4];
-    final topPlayer = state.players[(bottomIndex + 2) % 4];
-    final rightPlayer = state.players[(bottomIndex + 3) % 4];
 
     final isTrumpSelection = state.phase == RangPhase.trumpSelection;
     final isTrumpCaller = bottomPlayer.id == state.trumpCallerId;
@@ -108,7 +117,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
             fontWeight: FontWeight.w900,
             shadows: [
               Shadow(
-                color: AppTheme.accentSecondary.withOpacity(0.5),
+                color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 blurRadius: 12,
               )
             ],
@@ -134,12 +143,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                   color: AppTheme.surfaceElevated,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.accentPrimary.withOpacity(0.5),
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.5),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.accentPrimary.withOpacity(0.2),
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.2),
                       blurRadius: 12,
                     )
                   ],
@@ -164,7 +173,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         color: _getSuitColor(state.trumpSuit!),
                         shadows: [
                           Shadow(
-                            color: _getSuitColor(state.trumpSuit!).withOpacity(0.5),
+                            color: _getSuitColor(state.trumpSuit!).withValues(alpha: 0.5),
                             blurRadius: 8,
                           )
                         ],
@@ -206,44 +215,18 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              // 1. Top Opponent (Partner)
+              // Round Table
               Positioned(
-                top: 70,
+                top: 40,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: OpponentChip(
-                    playerName: topPlayer.name,
-                    cardCount: topPlayer.hand.length,
-                    isActive: topPlayer.id == state.currentPlayerId,
-                  ),
-                ),
-              ),
-
-              // 2. Left Opponent
-              Positioned(
-                left: 12,
-                top: 160,
-                bottom: 160,
-                child: Center(
-                  child: OpponentChip(
-                    playerName: leftPlayer.name,
-                    cardCount: leftPlayer.hand.length,
-                    isActive: leftPlayer.id == state.currentPlayerId,
-                  ),
-                ),
-              ),
-
-              // 3. Right Opponent
-              Positioned(
-                right: 12,
-                top: 160,
-                bottom: 160,
-                child: Center(
-                  child: OpponentChip(
-                    playerName: rightPlayer.name,
-                    cardCount: rightPlayer.hand.length,
-                    isActive: rightPlayer.id == state.currentPlayerId,
+                  child: RoundTableWidget(
+                    playerNames: state.players.map((p) => p.name).toList(),
+                    activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
+                    cardCounts: state.players.map((p) => p.hand.length).toList(),
+                    trumpSuit: state.trumpSuit != null ? _getSuitSymbol(state.trumpSuit!) : null,
+                    size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                   ),
                 ),
               ),
@@ -270,12 +253,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                 color: AppTheme.surfaceElevated,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppTheme.statusError.withOpacity(0.5),
+                                  color: AppTheme.statusError.withValues(alpha: 0.5),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.statusError.withOpacity(0.2),
+                                    color: AppTheme.statusError.withValues(alpha: 0.2),
                                     blurRadius: 16,
                                   )
                                 ],
@@ -354,13 +337,13 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
                       color: isYourTurn || (isTrumpSelection && isTrumpCaller)
-                          ? AppTheme.accentPrimary.withOpacity(0.15)
+                          ? AppTheme.accentPrimary.withValues(alpha: 0.15)
                           : AppTheme.surfaceElevated,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: isYourTurn || (isTrumpSelection && isTrumpCaller)
                             ? AppTheme.accentPrimary
-                            : AppTheme.accentPrimary.withOpacity(0.1),
+                            : AppTheme.accentPrimary.withValues(alpha: 0.1),
                         width: 1.5,
                       ),
                       boxShadow: isYourTurn || (isTrumpSelection && isTrumpCaller)
@@ -398,7 +381,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                     color: AppTheme.surfaceElevated,
                     border: Border(
                       top: BorderSide(
-                        color: AppTheme.accentPrimary.withOpacity(0.3),
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -445,27 +428,30 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         if (isTrumpSelection && isTrumpCaller)
                           _buildSuitPicker(context, bottomPlayer.id)
                         else
-                          HandWidget(
-                            hand: bottomPlayer.hand,
-                            onCardTap: (card) async {
-                              final error = await ref.read(rangProvider.notifier).playCard(bottomPlayer.id, card);
-                              if (error != null && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: AppTheme.statusError,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              }
-                            },
-                            isCardValid: (card) {
-                              if (state.phase != RangPhase.trickPlay) return false;
-                              if (state.currentPlayerId != bottomPlayer.id) return false;
-                              if (state.passToPlayerId != null) return false;
-                              return RangEngine.getMoveError(state, bottomPlayer.id, card) == null;
-                            },
+                          IgnorePointer(
+                            ignoring: _isRotating,
+                            child: HandWidget(
+                              hand: bottomPlayer.hand,
+                              onCardTap: (card) async {
+                                final error = await ref.read(rangProvider.notifier).playCard(bottomPlayer.id, card);
+                                if (error != null && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(error),
+                                      duration: const Duration(seconds: 2),
+                                      backgroundColor: AppTheme.statusError,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              isCardValid: (card) {
+                                if (state.phase != RangPhase.trickPlay) return false;
+                                if (state.currentPlayerId != bottomPlayer.id) return false;
+                                if (state.passToPlayerId != null) return false;
+                                return RangEngine.getMoveError(state, bottomPlayer.id, card) == null;
+                              },
+                            ),
                           ),
                       ],
                     ),
@@ -535,12 +521,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                   width: 75,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundPrimary.withOpacity(0.5),
+                    color: AppTheme.backgroundPrimary.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+                    border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(0.2),
+                        color: color.withValues(alpha: 0.2),
                         blurRadius: 16,
                         spreadRadius: -4,
                       ),
@@ -554,7 +540,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         color: color,
                         shadows: [
                           Shadow(
-                            color: color.withOpacity(0.5),
+                            color: color.withValues(alpha: 0.5),
                             blurRadius: 12,
                           )
                         ],
@@ -701,7 +687,7 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
       children: [
         ConfettiWidget(controller: _confettiController),
         Container(
-          color: AppTheme.backgroundPrimary.withOpacity(0.85),
+          color: AppTheme.backgroundPrimary.withValues(alpha: 0.85),
         ),
         Center(
           child: SingleChildScrollView(
@@ -786,7 +772,7 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                               color: AppTheme.statusSuccess,
                               shadows: [
                                 Shadow(
-                                  color: AppTheme.statusSuccess.withOpacity(0.5),
+                                  color: AppTheme.statusSuccess.withValues(alpha: 0.5),
                                   blurRadius: 12,
                                 )
                               ],
@@ -799,12 +785,12 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                               color: AppTheme.surfaceElevated,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: AppTheme.accentPrimary.withOpacity(0.3),
+                                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.accentPrimary.withOpacity(0.15),
+                                  color: AppTheme.accentPrimary.withValues(alpha: 0.15),
                                   blurRadius: 24,
                                   spreadRadius: -4,
                                 )
@@ -843,15 +829,15 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     decoration: BoxDecoration(
-                                      color: Colors.orangeAccent.withOpacity(0.1),
+                                      color: Colors.orangeAccent.withValues(alpha: 0.1),
                                       border: Border.all(
-                                        color: Colors.orangeAccent.withOpacity(0.5),
+                                        color: Colors.orangeAccent.withValues(alpha: 0.5),
                                         width: 1.5,
                                       ),
                                       borderRadius: BorderRadius.circular(24),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.orangeAccent.withOpacity(0.2),
+                                          color: Colors.orangeAccent.withValues(alpha: 0.2),
                                           blurRadius: 16,
                                           spreadRadius: -4,
                                         )
@@ -871,15 +857,15 @@ class _RangGameOverOverlayState extends State<RangGameOverOverlay>
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withOpacity(0.1),
+                                      color: Colors.amber.withValues(alpha: 0.1),
                                       border: Border.all(
-                                        color: Colors.amber.withOpacity(0.5),
+                                        color: Colors.amber.withValues(alpha: 0.5),
                                         width: 1.5,
                                       ),
                                       borderRadius: BorderRadius.circular(24),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.amber.withOpacity(0.2),
+                                          color: Colors.amber.withValues(alpha: 0.2),
                                           blurRadius: 16,
                                           spreadRadius: -4,
                                         )

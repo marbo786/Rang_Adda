@@ -20,8 +20,8 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF8BA3BE);
   static const Color textDisabled = Color(0xFF3D5166);
 
-  static Color get neonGlow => const Color(0xFF00FF88).withOpacity(0.35);
-  static Color get cyanGlow => const Color(0xFF00CCFF).withOpacity(0.30);
+  static Color get neonGlow => const Color(0xFF00FF88).withValues(alpha: 0.35);
+  static Color get cyanGlow => const Color(0xFF00CCFF).withValues(alpha: 0.30);
 
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,

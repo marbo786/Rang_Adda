@@ -96,7 +96,7 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.accentPrimary.withOpacity(_glowOpacity.value),
+                              color: AppTheme.accentPrimary.withValues(alpha: _glowOpacity.value),
                               blurRadius: 16,
                               spreadRadius: 2,
                             ),
@@ -150,9 +150,9 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentSecondary.withOpacity(0.15),
+                      color: AppTheme.accentSecondary.withValues(alpha: 0.15),
                       border: Border.all(
-                        color: AppTheme.accentSecondary.withOpacity(0.4),
+                        color: AppTheme.accentSecondary.withValues(alpha: 0.4),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(16), // Pill shape

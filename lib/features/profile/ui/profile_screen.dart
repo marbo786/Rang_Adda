@@ -28,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
             letterSpacing: 4.0,
             shadows: [
               Shadow(
-                color: AppTheme.accentSecondary.withOpacity(0.5),
+                color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 blurRadius: 12,
               )
             ],
@@ -54,7 +54,7 @@ class ProfileScreen extends ConsumerWidget {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: AppTheme.accentPrimary.withOpacity(0.1),
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppTheme.accentPrimary, width: 2),
                       boxShadow: [
@@ -81,7 +81,7 @@ class ProfileScreen extends ConsumerWidget {
                     letterSpacing: 2.0,
                     shadows: [
                       Shadow(
-                        color: AppTheme.accentPrimary.withOpacity(0.3),
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                         blurRadius: 8,
                       )
                     ],
@@ -138,10 +138,10 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             blurRadius: 24,
             spreadRadius: -4,
           )
@@ -157,7 +157,7 @@ class _StatCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
               shadows: [
                 Shadow(
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                   blurRadius: 12,
                 )
               ],

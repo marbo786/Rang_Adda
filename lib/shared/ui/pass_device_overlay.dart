@@ -17,7 +17,7 @@ class PassDeviceOverlay extends StatelessWidget {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        color: AppTheme.backgroundPrimary.withOpacity(0.85),
+        color: AppTheme.backgroundPrimary.withValues(alpha: 0.85),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
@@ -26,7 +26,7 @@ class PassDeviceOverlay extends StatelessWidget {
               color: AppTheme.surfaceElevated,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppTheme.accentPrimary.withOpacity(0.30),
+                color: AppTheme.accentPrimary.withValues(alpha: 0.30),
                 width: 1.5,
               ),
               boxShadow: [
@@ -89,7 +89,7 @@ class PassDeviceOverlay extends StatelessWidget {
                       overlayColor: WidgetStateProperty.resolveWith(
                         (states) {
                           if (states.contains(WidgetState.pressed)) {
-                            return AppTheme.accentPrimary.withOpacity(0.15);
+                            return AppTheme.accentPrimary.withValues(alpha: 0.15);
                           }
                           return null;
                         },

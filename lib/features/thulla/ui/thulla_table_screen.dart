@@ -7,18 +7,17 @@ import 'package:rang_adda/shared/ui/playing_card_widget.dart';
 import 'package:rang_adda/shared/ui/hand_widget.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
-import 'package:rang_adda/shared/ui/opponent_chip.dart';
-import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
-import 'package:rang_adda/shared/ui/winner_pulse_glow.dart';
+
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
 import 'package:rang_adda/features/thulla/state/online_thulla_provider.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
-import 'package:rang_adda/features/profile/state/user_profile_provider.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
+import 'package:rang_adda/ui/widgets/round_table_widget.dart';
+import 'dart:math' as math;
 
 class ThullaTableScreen extends ConsumerStatefulWidget {
   final bool isOnline;
@@ -34,8 +33,8 @@ class ThullaTableScreen extends ConsumerStatefulWidget {
 }
 
 class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
-  bool _dealAnimationComplete = false; // Track if deal animation has played
   int? _lastGameStartTick; // Track the last game start to detect new games
+  bool _isRotating = false;
 
   void _showChatModal(String gameId) {
     showModalBottomSheet(
@@ -63,6 +62,26 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
         ? ref.watch(onlineThullaProvider).value
         : ref.watch(thullaProvider);
 
+    if (widget.isOnline) {
+      ref.listen(onlineThullaProvider, (previous, next) {
+        if (previous?.value?.currentPlayerId != next.value?.currentPlayerId) {
+          setState(() => _isRotating = true);
+          Future.delayed(const Duration(milliseconds: 700), () {
+            if (mounted) setState(() => _isRotating = false);
+          });
+        }
+      });
+    } else {
+      ref.listen(thullaProvider, (previous, next) {
+        if (previous?.currentPlayerId != next?.currentPlayerId) {
+          setState(() => _isRotating = true);
+          Future.delayed(const Duration(milliseconds: 700), () {
+            if (mounted) setState(() => _isRotating = false);
+          });
+        }
+      });
+    }
+
     if (state == null) {
       return const Scaffold(
           backgroundColor: AppTheme.backgroundPrimary,
@@ -73,7 +92,6 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     if (!widget.isOnline && state.isFirstTrick) {
       if (_lastGameStartTick != state.hashCode) {
         _lastGameStartTick = state.hashCode;
-        _dealAnimationComplete = false;
       }
     }
 
@@ -157,7 +175,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
             fontWeight: FontWeight.w900,
             shadows: [
               Shadow(
-                color: AppTheme.accentSecondary.withOpacity(0.5),
+                color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 blurRadius: 12,
               )
             ],
@@ -179,14 +197,14 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: hasWaste
-                        ? AppTheme.statusError.withOpacity(0.5)
+                        ? AppTheme.statusError.withValues(alpha: 0.5)
                         : AppTheme.textDisabled,
                     width: 1.5,
                   ),
                   boxShadow: hasWaste
                       ? [
                           BoxShadow(
-                            color: AppTheme.statusError.withOpacity(0.2),
+                            color: AppTheme.statusError.withValues(alpha: 0.2),
                             blurRadius: 12,
                           )
                         ]
@@ -212,46 +230,14 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
             children: [
               Column(
                 children: [
-                  // Top Opponents
+                  // Round Table
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: state.players
-                            .where((p) => p.id != bottomPlayer.id)
-                            .map((p) {
-                              bool hasPower = p.id == state.powerPlayerId;
-                              bool isActive = p.id == state.currentPlayerId;
-                              // Determine if this player won the trick (just resolved)
-                              final trickWinnerId = state.trickResolving &&
-                                      state.currentTrick.isNotEmpty
-                                  ? state.currentTrick.first.playerId
-                                  : null;
-                              final isWinner = state.trickResolving &&
-                                  p.id == trickWinnerId;
-
-                              return Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  OpponentChip(
-                                    playerName: p.name,
-                                    cardCount: p.hand.length,
-                                    isActive: isActive,
-                                    hasPower: hasPower,
-                                    latestEmoji: p.latestEmoji,
-                                  ),
-                                  // Winner pulse glow
-                                  if (isWinner)
-                                    WinnerPulseGlow(
-                                      show: isWinner,
-                                    ),
-                                ],
-                              );
-                            })
-                            .toList(),
-                      ),
+                    padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+                    child: RoundTableWidget(
+                      playerNames: state.players.map((p) => p.name).toList(),
+                      activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
+                      cardCounts: state.players.map((p) => p.hand.length).toList(),
+                      size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                     ),
                   ),
 
@@ -270,13 +256,13 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isYourTurn
-                                  ? AppTheme.accentPrimary.withOpacity(0.15)
+                                  ? AppTheme.accentPrimary.withValues(alpha: 0.15)
                                   : AppTheme.surfaceElevated,
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
                                 color: isYourTurn
                                     ? AppTheme.accentPrimary
-                                    : AppTheme.accentPrimary.withOpacity(0.1),
+                                    : AppTheme.accentPrimary.withValues(alpha: 0.1),
                                 width: 1.5,
                               ),
                               boxShadow: isYourTurn
@@ -380,7 +366,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       color: AppTheme.surfaceElevated,
                       border: Border(
                         top: BorderSide(
-                          color: AppTheme.accentPrimary.withOpacity(0.3),
+                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                           width: 1.5,
                         ),
                       ),
@@ -424,15 +410,17 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                               ),
                             ),
                           ),
-                          HandWidget(
-                            hand: bottomPlayer.hand,
-                            isCardValid: (card) =>
-                                ThullaEngine.getMoveError(
-                                  state,
-                                  bottomPlayer.id,
-                                  card,
-                                ) ==
-                                null,
+                          IgnorePointer(
+                            ignoring: _isRotating,
+                            child: HandWidget(
+                              hand: bottomPlayer.hand,
+                              isCardValid: (card) =>
+                                  ThullaEngine.getMoveError(
+                                    state,
+                                    bottomPlayer.id,
+                                    card,
+                                  ) ==
+                                  null,
                             onCardTap: (card) async {
                               if (widget.isOnline) {
                                 final user = ref.read(userProvider).value;
@@ -471,6 +459,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                               }
                             },
                           ),
+                        ),
                         ],
                       ),
                     ),
@@ -483,19 +472,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                   onAcknowledge: () =>
                       ref.read(thullaProvider.notifier).acknowledgePass(),
                 ),
-              // Deal animation overlay (plays once at game start)
-              if (!widget.isOnline && !_dealAnimationComplete)
-                DealAnimationOverlay(
-                  players: state.players,
-                  playerCount: state.players.length,
-                  onAnimationComplete: () {
-                    if (mounted) {
-                      setState(() {
-                        _dealAnimationComplete = true;
-                      });
-                    }
-                  },
-                ),
+
               if (widget.isOnline)
                 ChatOverlay(messages: state.chatMessages),
             ],

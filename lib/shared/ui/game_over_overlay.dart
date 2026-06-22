@@ -64,7 +64,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
         children: [
           // Semi-transparent overlay
           Container(
-            color: AppTheme.backgroundPrimary.withOpacity(0.85),
+            color: AppTheme.backgroundPrimary.withValues(alpha: 0.85),
           ),
           // Confetti effect
           ConfettiWidget(
@@ -100,7 +100,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentTertiary.withOpacity(0.2),
+                                color: AppTheme.accentTertiary.withValues(alpha: 0.2),
                                 border: Border.all(color: AppTheme.accentTertiary),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -339,7 +339,7 @@ class ConfettiPainter extends CustomPainter {
       // Only draw if particle is still visible
       if (particle.y < 1.0 && opacity > 0) {
         final paint = Paint()
-          ..color = particle.color.withOpacity(opacity.clamp(0.0, 1.0))
+          ..color = particle.color.withValues(alpha: opacity.clamp(0.0, 1.0))
           ..style = PaintingStyle.fill;
 
         canvas.save();
