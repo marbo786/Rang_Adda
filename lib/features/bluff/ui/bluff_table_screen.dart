@@ -157,7 +157,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                   // Arena Center
                   Expanded(
                     child: Center(
-                      child: Column(
+                      child: SingleChildScrollView(
+                        child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Status Banner
@@ -267,6 +268,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             ),
                         ],
                       ),
+                    ),
                     ),
                   ),
 

@@ -218,7 +218,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                   // Arena Center
                   Expanded(
                     child: Center(
-                      child: Column(
+                      child: SingleChildScrollView(
+                        child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Status Banner
@@ -331,6 +332,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                           ),
                         ],
                       ),
+                    ),
                     ),
                   ),
 
