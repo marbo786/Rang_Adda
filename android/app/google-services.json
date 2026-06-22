@@ -1,12 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789",
-    "project_id": "dummy-project"
+    "project_number": "787052337803",
+    "project_id": "rangadda-57efc",
+    "storage_bucket": "rangadda-57efc.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789:android:abcdef",
+        "mobilesdk_app_id": "1:787052337803:android:46faca76004e8ad63b528e",
         "android_client_info": {
           "package_name": "com.marbo.rang_adda"
         }
@@ -14,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "dummy_api_key_run_flutterfire_configure_to_fix"
+          "current_key": "AIzaSyCSVPRW1SiF7mDNPfKcWMhhN8NSaYce4Io"
         }
       ],
       "services": {
