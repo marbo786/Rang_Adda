@@ -28,9 +28,6 @@ class RangTableScreen extends ConsumerStatefulWidget {
 }
 
 class _RangTableScreenState extends ConsumerState<RangTableScreen> {
-  bool _dealAnimationComplete = false; // Track if deal animation has played
-  String? _lastGameStartTick; // Track the last game start to detect new games
-  bool _isRotating = false;
 
   @override
   void initState() {
@@ -45,15 +42,6 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(rangProvider);
     
-    ref.listen(rangProvider, (previous, next) {
-      if (previous?.currentPlayerId != next?.currentPlayerId) {
-        setState(() => _isRotating = true);
-        Future.delayed(const Duration(milliseconds: 700), () {
-          if (mounted) setState(() => _isRotating = false);
-        });
-      }
-    });
-
     if (state == null) {
       return const Scaffold(
         backgroundColor: AppTheme.backgroundPrimary,
@@ -61,12 +49,6 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
           child: CircularProgressIndicator(color: AppTheme.accentPrimary),
         ),
       );
-    }
-
-    // Reset deal animation when game ID changes (e.g. new game)
-    if (_lastGameStartTick != state.gameId) {
-      _lastGameStartTick = state.gameId;
-      _dealAnimationComplete = false;
     }
 
     // Handle Game Over Screen
@@ -223,9 +205,13 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                 child: Center(
                   child: RoundTableWidget(
                     playerNames: state.players.map((p) => p.name).toList(),
+                    playerIds: state.players.map((p) => p.id).toList(),
                     activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
                     cardCounts: state.players.map((p) => p.hand.length).toList(),
                     trumpSuit: state.trumpSuit != null ? _getSuitSymbol(state.trumpSuit!) : null,
+                    currentTrickPlays: Map.fromEntries(
+                      state.currentTrick.map((play) => MapEntry(play.playerId, play.card)),
+                    ),
                     size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                   ),
                 ),
@@ -428,9 +414,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         if (isTrumpSelection && isTrumpCaller)
                           _buildSuitPicker(context, bottomPlayer.id)
                         else
-                          IgnorePointer(
-                            ignoring: _isRotating,
-                            child: HandWidget(
+                          HandWidget(
                               hand: bottomPlayer.hand,
                               onCardTap: (card) async {
                                 final error = await ref.read(rangProvider.notifier).playCard(bottomPlayer.id, card);
@@ -452,7 +436,6 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                 return RangEngine.getMoveError(state, bottomPlayer.id, card) == null;
                               },
                             ),
-                          ),
                       ],
                     ),
                   ),
@@ -460,26 +443,12 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               ),
 
               // 7. Pass Device Overlay
-              if (_dealAnimationComplete && state.passToPlayerId != null)
+              if (state.passToPlayerId != null)
                 Positioned.fill(
                   child: PassDeviceOverlay(
                     playerName: state.players.firstWhere((p) => p.id == state.passToPlayerId).name,
                     onAcknowledge: () {
                       ref.read(rangProvider.notifier).acknowledgePass();
-                    },
-                  ),
-                ),
-
-              // 8. Deal Animation Overlay
-              if (!_dealAnimationComplete)
-                Positioned.fill(
-                  child: DealAnimationOverlay(
-                    players: state.players,
-                    playerCount: 4,
-                    onAnimationComplete: () {
-                      setState(() {
-                        _dealAnimationComplete = true;
-                      });
                     },
                   ),
                 ),

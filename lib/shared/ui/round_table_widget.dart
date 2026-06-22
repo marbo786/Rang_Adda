@@ -1,19 +1,25 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
+import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/ui/playing_card_widget.dart';
 
 class RoundTableWidget extends StatefulWidget {
   final List<String> playerNames;
+  final List<String> playerIds;
   final int activePlayerIndex;
   final List<int> cardCounts;
   final String? trumpSuit;
   final double size;
+  final Map<String, PlayingCard?> currentTrickPlays;
 
   const RoundTableWidget({
     super.key,
     required this.playerNames,
+    required this.playerIds,
     required this.activePlayerIndex,
     required this.cardCounts,
+    required this.currentTrickPlays,
     this.trumpSuit,
     this.size = 280,
   });
@@ -122,7 +128,35 @@ class _RoundTableWidgetState extends State<RoundTableWidget> with TickerProvider
                 angle: _rotation.value,
                 child: Stack(
                   alignment: Alignment.center,
-                  children: List.generate(n, (i) {
+                  children: [
+                    ...List.generate(n, (i) {
+                      double angle = -math.pi / 2 + (2 * math.pi / n) * i;
+                      double radius = widget.size / 2 * 0.55;
+                      double x = radius * math.cos(angle);
+                      double y = radius * math.sin(angle);
+                      String playerId = i < widget.playerIds.length ? widget.playerIds[i] : '';
+                      PlayingCard? playedCard = widget.currentTrickPlays[playerId];
+
+                      return Transform.translate(
+                        offset: Offset(x, y),
+                        child: Transform.rotate(
+                          angle: -_rotation.value,
+                          child: AnimatedOpacity(
+                            opacity: playedCard != null ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: playedCard != null
+                                ? PlayingCardWidget(
+                                    card: playedCard,
+                                    isFaceUp: true,
+                                    width: 28,
+                                    height: 40,
+                                  )
+                                : const SizedBox(width: 28, height: 40),
+                          ),
+                        ),
+                      );
+                    }),
+                    ...List.generate(n, (i) {
                     double angle = -math.pi / 2 + (2 * math.pi / n) * i;
                     double radius = widget.size / 2 * 0.78;
                     double x = radius * math.cos(angle);
@@ -205,9 +239,10 @@ class _RoundTableWidgetState extends State<RoundTableWidget> with TickerProvider
                       ),
                     );
                   }),
-                ),
-              );
-            },
+                ],
+              ),
+            );
+          },
           ),
 
           // Layer 4 - Center badge

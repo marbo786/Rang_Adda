@@ -10,8 +10,10 @@ void main() {
         home: Scaffold(
           body: RoundTableWidget(
             playerNames: ['Alice', 'Bob', 'Charlie'],
+            playerIds: ['p1', 'p2', 'p3'],
             activePlayerIndex: 0,
             cardCounts: [3, 3, 3],
+            currentTrickPlays: {},
           ),
         ),
       ),
@@ -30,8 +32,10 @@ void main() {
         home: Scaffold(
           body: RoundTableWidget(
             playerNames: ['Alice', 'Bob', 'Charlie', 'Diana'],
+            playerIds: ['p1', 'p2', 'p3', 'p4'],
             activePlayerIndex: 0,
             cardCounts: [3, 3, 3, 3],
+            currentTrickPlays: {},
           ),
         ),
       ),

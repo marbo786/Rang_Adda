@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/features/rang/state/rang_provider.dart';
+import 'package:rang_adda/shared/ui/game_table_background.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Game-type configuration
@@ -170,264 +171,251 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     final canAdd = count < _config.maxPlayers;
     final canRemove = count > _config.minPlayers;
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
+    final gameTypeLabel = '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '$_config.minPlayers-$_config.maxPlayers'} PLAYERS';
+
+    final playerFields = List.generate(count, (index) {
+      final errorText = _errorFor(index);
+      final hasFocus = _focusNodes[index].hasFocus;
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-              child: Column(
-                children: [
-                  Text(
-                    _config.displayName.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 8.0,
-                      color: AppTheme.accentSecondary,
-                      shadows: [
-                        Shadow(
-                          color: AppTheme.accentSecondary.withValues(alpha: 0.5),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
+            Row(
+              children: [
+                Text(
+                  'P${index + 1}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    color: hasFocus ? AppTheme.accentPrimary : AppTheme.textDisabled,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'ENTER ALL PLAYERS',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2.0,
-                      color: AppTheme.textSecondary,
+                ),
+                const Spacer(),
+                if (canRemove)
+                  GestureDetector(
+                    onTap: () => _removeSlotAt(index),
+                    child: Icon(
+                      Icons.close,
+                      size: 20,
+                      color: AppTheme.statusError.withValues(alpha: 0.7),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ],
-              ),
+              ],
             ),
-
-            // ── Player slots ─────────────────────────────────────────────────
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                itemCount: count,
-                itemBuilder: (context, index) {
-                  final errorText = _errorFor(index);
-                  final hasFocus = _focusNodes[index].hasFocus;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'P${index + 1}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.5,
-                                color: hasFocus ? AppTheme.accentPrimary : AppTheme.textDisabled,
-                              ),
-                            ),
-                            const Spacer(),
-                            if (canRemove)
-                              GestureDetector(
-                                onTap: () => _removeSlotAt(index),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 20,
-                                  color: AppTheme.statusError.withValues(alpha: 0.7),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          decoration: BoxDecoration(
-                            boxShadow: hasFocus
-                                ? [
-                                    BoxShadow(
-                                      color: AppTheme.neonGlow,
-                                      blurRadius: 16,
-                                      spreadRadius: -8,
-                                      offset: const Offset(0, 8),
-                                    )
-                                  ]
-                                : [],
-                          ),
-                          child: TextField(
-                            key: ValueKey('player_name_field_$index'),
-                            controller: _controllers[index],
-                            focusNode: _focusNodes[index],
-                            textCapitalization: TextCapitalization.words,
-                            textInputAction: (index < count - 1)
-                                ? TextInputAction.next
-                                : TextInputAction.done,
-                            onSubmitted: (_) {
-                              if (index < count - 1) {
-                                FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-                              } else {
-                                _onStartGame();
-                              }
-                            },
-                            cursorColor: AppTheme.accentPrimary,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 2.0,
-                              color: AppTheme.accentPrimary,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'PLAYER NAME',
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                fontSize: 16,
-                                letterSpacing: 2.0,
-                              ),
-                              filled: true,
-                              fillColor: AppTheme.surfaceElevated,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                              border: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
-                              ),
-                              enabledBorder: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: errorText != null
-                                      ? AppTheme.statusError
-                                      : AppTheme.accentPrimary,
-                                  width: 2,
-                                ),
-                              ),
-                              suffixIcon: errorText != null
-                                  ? const Icon(
-                                      Icons.error_outline_rounded,
-                                      color: AppTheme.statusError,
-                                      size: 20,
-                                    )
-                                  : null,
-                            ),
-                          ),
-                        ),
-                        if (errorText != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              errorText,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.statusError,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // ── Footer ───────────────────────────────────────────────────────
+            const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (canAdd)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setState(() => _addSlot());
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (_focusNodes.isNotEmpty) {
-                              FocusScope.of(context).requestFocus(_focusNodes.last);
-                            }
-                          });
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.accentPrimary, width: 1.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'ADD PLAYER',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.accentPrimary,
-                            letterSpacing: 2.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (canAdd) const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      boxShadow: _canStart
-                          ? [
-                              BoxShadow(
-                                color: AppTheme.neonGlow,
-                                blurRadius: 16,
-                                spreadRadius: -4,
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: ElevatedButton(
-                      key: const ValueKey('start_game_button'),
-                      onPressed: _canStart ? _onStartGame : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentPrimary,
-                        foregroundColor: AppTheme.backgroundPrimary,
-                        disabledBackgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                        disabledForegroundColor: AppTheme.backgroundPrimary.withValues(alpha: 0.5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'START GAME',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 3.0,
-                        ),
-                      ),
+              decoration: BoxDecoration(
+                boxShadow: hasFocus
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.neonGlow,
+                          blurRadius: 16,
+                          spreadRadius: -8,
+                          offset: const Offset(0, 8),
+                        )
+                      ]
+                    : [],
+              ),
+              child: TextField(
+                key: ValueKey('player_name_field_$index'),
+                controller: _controllers[index],
+                focusNode: _focusNodes[index],
+                textCapitalization: TextCapitalization.words,
+                textInputAction: (index < count - 1)
+                    ? TextInputAction.next
+                    : TextInputAction.done,
+                onSubmitted: (_) {
+                  if (index < count - 1) {
+                    FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
+                  } else {
+                    _onStartGame();
+                  }
+                },
+                cursorColor: AppTheme.accentPrimary,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 2.0,
+                  color: AppTheme.accentPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'PLAYER NAME',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    fontSize: 16,
+                    letterSpacing: 2.0,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.surfaceElevated,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  border: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
+                  ),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: errorText != null
+                          ? AppTheme.statusError
+                          : AppTheme.accentPrimary,
+                      width: 2,
                     ),
                   ),
-                ],
+                  suffixIcon: errorText != null
+                      ? const Icon(
+                          Icons.error_outline_rounded,
+                          color: AppTheme.statusError,
+                          size: 20,
+                        )
+                      : null,
+                ),
               ),
             ),
+            if (errorText != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  errorText,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.statusError,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
           ],
         ),
+      );
+    });
+
+    final addRemoveButtons = [
+      if (canAdd)
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            onPressed: () {
+              setState(() => _addSlot());
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_focusNodes.isNotEmpty) {
+                  FocusScope.of(context).requestFocus(_focusNodes.last);
+                }
+              });
+            },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppTheme.accentPrimary, width: 1.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'ADD PLAYER',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.accentPrimary,
+                letterSpacing: 2.0,
+              ),
+            ),
+          ),
+        ),
+    ];
+
+    final startGameButton = Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        boxShadow: _canStart
+            ? [
+                BoxShadow(
+                  color: AppTheme.neonGlow,
+                  blurRadius: 16,
+                  spreadRadius: -4,
+                ),
+              ]
+            : [],
+      ),
+      child: ElevatedButton(
+        key: const ValueKey('start_game_button'),
+        onPressed: _canStart ? _onStartGame : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.accentPrimary,
+          foregroundColor: AppTheme.backgroundPrimary,
+          disabledBackgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.3),
+          disabledForegroundColor: AppTheme.backgroundPrimary.withValues(alpha: 0.5),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'START GAME',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 3.0,
+          ),
+        ),
+      ),
+    );
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundPrimary,
+      body: Stack(
+        children: [
+          const GameTableBackground(child: SizedBox.shrink()),
+
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                        color: AppTheme.textSecondary,
+                        onPressed: () => context.pop(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    const Text('WHO\'S PLAYING',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 3.0,
+                      ),
+                    ),
+                    Text(gameTypeLabel,
+                      style: const TextStyle(color: AppTheme.accentSecondary, fontSize: 12, letterSpacing: 2),
+                    ),
+                    const SizedBox(height: 28),
+
+                    ...playerFields,
+                    const SizedBox(height: 12),
+                    ...addRemoveButtons,
+                    const SizedBox(height: 32),
+                    startGameButton,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

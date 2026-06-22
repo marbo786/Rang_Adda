@@ -33,8 +33,7 @@ class ThullaTableScreen extends ConsumerStatefulWidget {
 }
 
 class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
-  int? _lastGameStartTick; // Track the last game start to detect new games
-  bool _isRotating = false;
+  String? _lastGameStartTick;
 
   void _showChatModal(String gameId) {
     showModalBottomSheet(
@@ -62,37 +61,10 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
         ? ref.watch(onlineThullaProvider).value
         : ref.watch(thullaProvider);
 
-    if (widget.isOnline) {
-      ref.listen(onlineThullaProvider, (previous, next) {
-        if (previous?.value?.currentPlayerId != next.value?.currentPlayerId) {
-          setState(() => _isRotating = true);
-          Future.delayed(const Duration(milliseconds: 700), () {
-            if (mounted) setState(() => _isRotating = false);
-          });
-        }
-      });
-    } else {
-      ref.listen(thullaProvider, (previous, next) {
-        if (previous?.currentPlayerId != next?.currentPlayerId) {
-          setState(() => _isRotating = true);
-          Future.delayed(const Duration(milliseconds: 700), () {
-            if (mounted) setState(() => _isRotating = false);
-          });
-        }
-      });
-    }
-
-    if (state == null) {
+    if (state == null || state.players.isEmpty) {
       return const Scaffold(
           backgroundColor: AppTheme.backgroundPrimary,
           body: Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)));
-    }
-
-    // Detect new game start for local games
-    if (!widget.isOnline && state.isFirstTrick) {
-      if (_lastGameStartTick != state.hashCode) {
-        _lastGameStartTick = state.hashCode;
-      }
     }
 
     if (state.status == GameStatus.finished) {
@@ -235,8 +207,10 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                     padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
                     child: RoundTableWidget(
                       playerNames: state.players.map((p) => p.name).toList(),
+                      playerIds: state.players.map((p) => p.id).toList(),
                       activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
                       cardCounts: state.players.map((p) => p.hand.length).toList(),
+                      currentTrickPlays: const {},
                       size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                     ),
                   ),
@@ -410,9 +384,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                               ),
                             ),
                           ),
-                          IgnorePointer(
-                            ignoring: _isRotating,
-                            child: HandWidget(
+                          HandWidget(
                               hand: bottomPlayer.hand,
                               isCardValid: (card) =>
                                   ThullaEngine.getMoveError(
@@ -459,7 +431,6 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                               }
                             },
                           ),
-                        ),
                         ],
                       ),
                     ),

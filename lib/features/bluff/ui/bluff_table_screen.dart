@@ -31,9 +31,6 @@ class BluffTableScreen extends ConsumerStatefulWidget {
 }
 
 class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
-  bool _dealAnimationComplete = false; 
-  int? _lastGameStartTick;
-  bool _isRotating = false;
 
   void _showChatModal(String gameId) {
     showModalBottomSheet(
@@ -61,26 +58,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     final state = widget.isOnline
         ? ref.watch(onlineBluffProvider).value
         : ref.watch(bluffProvider);
-        
-    if (widget.isOnline) {
-      ref.listen(onlineBluffProvider, (previous, next) {
-        if (previous?.value?.currentPlayerId != next.value?.currentPlayerId) {
-          setState(() => _isRotating = true);
-          Future.delayed(const Duration(milliseconds: 700), () {
-            if (mounted) setState(() => _isRotating = false);
-          });
-        }
-      });
-    } else {
-      ref.listen(bluffProvider, (previous, next) {
-        if (previous?.currentPlayerId != next.currentPlayerId) {
-          setState(() => _isRotating = true);
-          Future.delayed(const Duration(milliseconds: 700), () {
-            if (mounted) setState(() => _isRotating = false);
-          });
-        }
-      });
-    }
         
     if (state == null || state.players.isEmpty) {
       return const Scaffold(
@@ -114,12 +91,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           },
         ),
       );
-    }
-
-    // Detect new game start
-    if (_lastGameStartTick != state.hashCode && state.status == GameStatus.playing) {
-      _lastGameStartTick = state.hashCode;
-      _dealAnimationComplete = false;
     }
 
     Player bottomPlayer = state.players.firstWhere(
@@ -175,8 +146,10 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
                     child: RoundTableWidget(
                       playerNames: state.players.map((p) => p.name).toList(),
+                      playerIds: state.players.map((p) => p.id).toList(),
                       activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
                       cardCounts: state.players.map((p) => p.hand.length).toList(),
+                      currentTrickPlays: const {},
                       size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
                     ),
                   ),
@@ -347,9 +320,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               ),
                             ),
                           ),
-                          IgnorePointer(
-                            ignoring: _isRotating,
-                            child: BluffHandWidget(
+                          BluffHandWidget(
                               hand: bottomPlayer.hand,
                               isFirstTurn: state.centerPile.isEmpty,
                             canPass: true,
@@ -402,7 +373,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               );
                             },
                           ),
-                        ),
                         ],
                       ),
                     ),
@@ -431,19 +401,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
               if (state.resolvingBluffMessage != null)
                 _buildResultOverlay(context, state.resolvingBluffMessage!),
 
-              // Deal animation overlay (plays once at game start)
-              if (!_dealAnimationComplete)
-                DealAnimationOverlay(
-                  players: state.players,
-                  playerCount: state.players.length,
-                  onAnimationComplete: () {
-                    if (mounted) {
-                      setState(() {
-                        _dealAnimationComplete = true;
-                      });
-                    }
-                  },
-                ),
               if (widget.isOnline)
                 ChatOverlay(messages: state.chatMessages),
             ],
