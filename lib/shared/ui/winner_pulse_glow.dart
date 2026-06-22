@@ -28,8 +28,23 @@ class _WinnerPulseGlowState extends State<WinnerPulseGlow>
     );
 
     if (widget.show) {
-      _controller.forward();
+      _startPulse();
     }
+  }
+
+  void _startPulse() {
+    _controller.forward(from: 0.0);
+    int cycles = 0;
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        cycles++;
+        if (cycles < 5) {
+          _controller.reverse();
+        }
+      } else if (status == AnimationStatus.dismissed && cycles < 5) {
+        _controller.forward();
+      }
+    });
   }
 
   @override

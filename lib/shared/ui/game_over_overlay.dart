@@ -28,6 +28,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   late AnimationController _confettiController;
   late AnimationController _titleController;
   late AnimationController _buttonsController;
+  bool _showConfetti = true;
 
   @override
   void initState() {
@@ -35,7 +36,9 @@ class _GameOverOverlayState extends State<GameOverOverlay>
     _confettiController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
-    )..forward();
+    )..forward().then((_) {
+      if (mounted) setState(() => _showConfetti = false);
+    });
 
     _titleController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -67,9 +70,10 @@ class _GameOverOverlayState extends State<GameOverOverlay>
             color: AppTheme.backgroundPrimary.withValues(alpha: 0.85),
           ),
           // Confetti effect
-          ConfettiWidget(
-            controller: _confettiController,
-          ),
+          if (_showConfetti)
+            ConfettiWidget(
+              controller: _confettiController,
+            ),
           // Content
           Center(
             child: SingleChildScrollView(
@@ -130,6 +134,16 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                               ],
                             ),
                             textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '🏆 WINS!',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textSecondary,
+                              letterSpacing: 3.0,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           if (widget.score != null)

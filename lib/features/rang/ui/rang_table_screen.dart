@@ -312,73 +312,73 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                 ),
               ),
 
-              // 5. Turn / Phase Status Banner
-              Positioned(
-                bottom: 160,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isYourTurn || (isTrumpSelection && isTrumpCaller)
-                          ? AppTheme.accentPrimary.withValues(alpha: 0.15)
-                          : AppTheme.surfaceElevated,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: isYourTurn || (isTrumpSelection && isTrumpCaller)
-                            ? AppTheme.accentPrimary
-                            : AppTheme.accentPrimary.withValues(alpha: 0.1),
-                        width: 1.5,
-                      ),
-                      boxShadow: isYourTurn || (isTrumpSelection && isTrumpCaller)
-                          ? [
-                              BoxShadow(
-                                color: AppTheme.neonGlow,
-                                blurRadius: 16,
-                              )
-                            ]
-                          : [],
-                    ),
-                    child: Text(
-                      _getBannerText(state, bottomPlayer).toUpperCase(),
-                      style: TextStyle(
-                        color: isYourTurn || (isTrumpSelection && isTrumpCaller)
-                            ? AppTheme.accentPrimary
-                            : AppTheme.textSecondary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        letterSpacing: 2.0,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
-
-              // 6. Bottom Area: Suit Picker (Trump Selection) or HandWidget
+              // 5 & 6. Turn Banner and Bottom Area
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceElevated,
-                    border: Border(
-                      top: BorderSide(
-                        color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                        width: 1.5,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Turn / Phase Status Banner
+                    Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                              ? AppTheme.accentPrimary.withValues(alpha: 0.15)
+                              : AppTheme.surfaceElevated,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                                ? AppTheme.accentPrimary
+                                : AppTheme.accentPrimary.withValues(alpha: 0.1),
+                            width: 1.5,
+                          ),
+                          boxShadow: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.neonGlow,
+                                    blurRadius: 16,
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Text(
+                          _getBannerText(state, bottomPlayer).toUpperCase(),
+                          style: TextStyle(
+                            color: isYourTurn || (isTrumpSelection && isTrumpCaller)
+                                ? AppTheme.accentPrimary
+                                : AppTheme.textSecondary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: 2.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.neonGlow,
-                        blurRadius: 24,
-                        offset: const Offset(0, -8),
+                    const SizedBox(height: 16),
+                    
+                    // Bottom Area: Suit Picker (Trump Selection) or HandWidget
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceElevated,
+                        border: Border(
+                          top: BorderSide(
+                            color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.neonGlow,
+                            blurRadius: 24,
+                            offset: const Offset(0, -8),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                   child: SafeArea(
                     top: false,
                     child: Column(
@@ -439,6 +439,8 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                       ],
                     ),
                   ),
+                ),
+                  ],
                 ),
               ),
 

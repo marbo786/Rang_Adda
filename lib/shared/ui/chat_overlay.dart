@@ -53,7 +53,7 @@ class _ChatMessageToast extends StatelessWidget {
             TextSpan(
               text: "${message.senderName}: ",
               style: const TextStyle(
-                color: AppTheme.surface,
+                color: AppTheme.accentPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -143,6 +143,7 @@ class _ChatInputModalState extends ConsumerState<ChatInputModal> {
               Expanded(
                 child: TextField(
                   controller: _controller,
+                  autofocus: true,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Send a message...",

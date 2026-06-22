@@ -52,12 +52,7 @@ class HandWidget extends ConsumerWidget {
                 curve: Curves.easeOutCubic,
                 transform: Matrix4.identity()
                   // ignore: deprecated_member_use
-                  ..translate(
-                    0.0,
-                    valid ? -10.0 : 0.0,
-                  )
-                  // ignore: deprecated_member_use
-                  ..scale(valid ? 1.03 : 0.95), // Scale 1.03
+                  ..scale(valid ? 1.0 : 0.92),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: valid

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 
 class PassDeviceOverlay extends StatelessWidget {
@@ -40,7 +41,7 @@ class PassDeviceOverlay extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.swap_horiz_rounded,
                   size: 48,
                   color: AppTheme.accentPrimary,
@@ -96,7 +97,10 @@ class PassDeviceOverlay extends StatelessWidget {
                       ),
                       foregroundColor: WidgetStateProperty.all(AppTheme.accentPrimary),
                     ),
-                    onPressed: onAcknowledge,
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      onAcknowledge();
+                    },
                     child: const Text(
                       'READY',
                       style: TextStyle(

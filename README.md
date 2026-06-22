@@ -27,9 +27,13 @@ The classic game of deception and card-counting!
   - **Any Rank, Any Time:** Players can claim *any* rank they want on their turn. There is no required sequence!
   - **The Interrogator:** When your turn starts, you are presented with a clean frosted-glass dialog to either CALL BLUFF on the previous player, or ACCEPT & PLAY.
 
-### 3. Rang (Coming Soon)
-The traditional South Asian trick-taking game is next on the roadmap!
-
+### 3. Rang (Online & Pass & Play)
+The traditional South Asian trick-taking game is fully playable!
+- **Objective:** Win 7 "Sars" (tricks) before the opposing team.
+- **Mechanics:** 
+  - **Trump Caller Selection:** Trump caller is assigned dynamically.
+  - **Team Play:** Fully supports 4-player team dynamics.
+  - **Kot/Bavney:** Detects massive wins (Kot) when one team achieves 7 Sars before the other gets 1.
 ## Design System
 
 The application is built on a **Minimal Premium Design System**:

@@ -50,7 +50,8 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.transparent, // Default to no background color
+        backgroundColor: accentPrimary,
+        foregroundColor: backgroundPrimary,
         shadowColor: Colors.transparent,
       ),
     ),

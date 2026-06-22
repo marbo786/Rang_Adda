@@ -212,7 +212,7 @@ class _RoundTableWidgetState extends State<RoundTableWidget> with TickerProvider
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '🂠 $cards',
+                              '✦ $cards',
                               style: TextStyle(
                                 color: isActive ? AppTheme.accentSecondary : AppTheme.textDisabled,
                                 fontSize: 10,

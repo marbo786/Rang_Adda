@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/features/profile/state/user_profile_provider.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
+import 'package:rang_adda/shared/ui/game_table_background.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -36,7 +37,8 @@ class ProfileScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      body: profileAsync.when(
+      body: GameTableBackground(
+        child: profileAsync.when(
         data: (profile) {
           if (profile == null) {
             return const Center(
@@ -120,6 +122,7 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)),
         error: (err, stack) => Center(child: Text("Error: $err", style: const TextStyle(color: AppTheme.statusError))),
       ),
+      ),
     );
   }
 }
@@ -134,11 +137,16 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.8),
+            color.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.15),
@@ -147,6 +155,13 @@ class _StatCard extends StatelessWidget {
           )
         ],
       ),
+      padding: const EdgeInsets.all(1.5),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceElevated,
+          borderRadius: BorderRadius.circular(18.5),
+        ),
       child: Column(
         children: [
           Text(
@@ -174,6 +189,7 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

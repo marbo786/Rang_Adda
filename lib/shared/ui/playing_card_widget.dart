@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
@@ -34,8 +35,24 @@ class PlayingCardWidget extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12.5),
-          child: CustomPaint(
-            painter: _CardBackPainter(),
+          child: Stack(
+            children: [
+              CustomPaint(
+                size: Size(width, height),
+                painter: _CardBackPainter(),
+              ),
+              // Center emblem for card back identity
+              Center(
+                child: Text(
+                  '♠',
+                  style: TextStyle(
+                    color: const Color(0xFF00FF88).withValues(alpha: 0.20),
+                    fontSize: width * 0.45,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -107,15 +124,15 @@ class PlayingCardWidget extends StatelessWidget {
               suitSymbol,
               style: TextStyle(
                 color: color.withValues(alpha: 0.18),
-                fontSize: 32,
+                fontSize: width * 0.533,
               ),
             ),
           ),
           
           // Top Left Rank and Suit
           Positioned(
-            top: 6,
-            left: 8,
+            top: height * 0.066,
+            left: width * 0.133,
             child: Column(
               children: [
                 Text(
@@ -123,17 +140,49 @@ class PlayingCardWidget extends StatelessWidget {
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.w800,
-                    fontSize: 18,
+                    fontSize: width * 0.3,
+                    height: 1.0,
                   ),
                 ),
                 Text(
                   suitSymbol,
                   style: TextStyle(
                     color: color,
-                    fontSize: 14,
-                  )
+                    fontSize: width * 0.233,
+                    height: 1.0,
+                  ),
                 ),
               ],
+            ),
+          ),
+
+          // Bottom Right Rank and Suit (mirrored)
+          Positioned(
+            bottom: height * 0.066,
+            right: width * 0.133,
+            child: Transform.rotate(
+              angle: math.pi,
+              child: Column(
+                children: [
+                  Text(
+                    rankSymbol,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: width * 0.3,
+                      height: 1.0,
+                    ),
+                  ),
+                  Text(
+                    suitSymbol,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: width * 0.233,
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -387,6 +387,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new_rounded),
                         color: AppTheme.textSecondary,
+                        tooltip: 'Back',
                         onPressed: () => context.pop(),
                       ),
                     ),

@@ -183,19 +183,22 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
           ),
           const SizedBox(height: 12),
           // Player name
-          Text(
-            widget.playerName.toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: widget.hasPower
-                  ? AppTheme.accentSecondary
-                  : AppTheme.textPrimary,
+          SizedBox(
+            width: 72,
+            child: Text(
+              widget.playerName.toUpperCase(),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: widget.hasPower
+                    ? AppTheme.accentSecondary
+                    : AppTheme.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

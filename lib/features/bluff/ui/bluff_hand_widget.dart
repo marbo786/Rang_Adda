@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
 import 'package:rang_adda/shared/ui/playing_card_widget.dart';
+import 'package:rang_adda/shared/ui/theme.dart';
 
 class BluffHandWidget extends ConsumerStatefulWidget {
   final List<PlayingCard> hand;
@@ -74,9 +75,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: Theme.of(
-                          context,
-                        ).primaryColor.withValues(alpha: 0.5),
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.5),
                       ),
                     ),
                     elevation: 0,
@@ -99,8 +98,8 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
-                      ? Theme.of(context).primaryColor
-                      : Theme.of(context).colorScheme.surface,
+                      ? AppTheme.accentPrimary
+                      : AppTheme.surfaceElevated,
                   foregroundColor:
                       _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
                       ? Colors.white
