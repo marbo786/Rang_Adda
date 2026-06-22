@@ -185,6 +185,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                           card: card,
                           width: cardW,
                           height: cardH,
+                          hasShadow: false,
                         ),
                       ),
                     ),

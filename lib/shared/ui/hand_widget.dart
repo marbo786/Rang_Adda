@@ -74,7 +74,7 @@ class HandWidget extends ConsumerWidget {
                 ),
                 child: Opacity(
                   opacity: valid ? 1.0 : 0.5,
-                  child: PlayingCardWidget(card: card, width: cardW, height: cardH),
+                  child: PlayingCardWidget(card: card, width: cardW, height: cardH, hasShadow: false),
                 ),
               ),
             ),

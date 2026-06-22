@@ -7,6 +7,7 @@ class PlayingCardWidget extends StatelessWidget {
   final bool isFaceUp;
   final double width;
   final double height;
+  final bool hasShadow;
 
   const PlayingCardWidget({
     super.key,
@@ -14,6 +15,7 @@ class PlayingCardWidget extends StatelessWidget {
     this.isFaceUp = true,
     this.width = 60,
     this.height = 90,
+    this.hasShadow = true,
   });
 
   @override
@@ -89,13 +91,13 @@ class PlayingCardWidget extends StatelessWidget {
           color: borderColor,
           width: 1.5,
         ),
-        boxShadow: [
+        boxShadow: hasShadow ? [
           BoxShadow(
             color: glowColor,
             blurRadius: 6,
             spreadRadius: 0,
           ),
-        ],
+        ] : null,
       ),
       child: Stack(
         children: [

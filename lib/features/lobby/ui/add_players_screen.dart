@@ -171,7 +171,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     final canAdd = count < _config.maxPlayers;
     final canRemove = count > _config.minPlayers;
 
-    final gameTypeLabel = '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '$_config.minPlayers-$_config.maxPlayers'} PLAYERS';
+    final gameTypeLabel = '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '${_config.minPlayers}-${_config.maxPlayers}'} PLAYERS';
 
     final playerFields = List.generate(count, (index) {
       final errorText = _errorFor(index);
