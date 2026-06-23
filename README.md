@@ -1,77 +1,134 @@
-# Rang-Adda
+<div align="center">
 
-Welcome to **Rang-Adda**, a premium digital tabletop experience for classic card games! This application is built with Flutter and designed with a minimalist, high-contrast aesthetic that focuses on smooth interactions and an engaging multiplayer feel.
+# 🎴 Rang-Adda
 
-## Architecture: Feature-First
-This repository is structured using a clean, scalable **Feature-First Architecture**. The codebase is organized by functionality rather than layer:
-- `lib/features/bluff/` - The Bluff game mode
-- `lib/features/thulla/` - The Thulla game mode
-- `lib/features/rang/` - The Rang game mode (WIP)
-- `lib/features/lobby/` - Matchmaking, Waiting Rooms, and Room creation
-- `lib/features/profile/` - Player Stats, Profiles, and Leaderboards
-- `lib/shared/` - Core models, services (Auth/Firestore), and global UI widgets
+**A premium digital tabletop for classic South Asian card games — built with Flutter, real-time multiplayer, and a minimalist neon-dark aesthetic.**
 
-## Current Game Modes
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Riverpod](https://img.shields.io/badge/State-Riverpod%203.0-1E88E5)](https://riverpod.dev)
+[![License](https://img.shields.io/badge/license-MIT-green)](#license)
 
-### 1. Thulla (Online & Pass & Play)
-A fast-paced trick-taking game where players must follow suit if possible, or play a power card. 
-- **Objective:** Win tricks by playing the highest card of the led suit or a powerful trump card.
-- **Rules:** The game enforces strict suit-following and automatically determines trick winners.
+</div>
 
-### 2. Bluff / BS / Cheat (Online & Pass & Play)
-The classic game of deception and card-counting!
-- **Objective:** Be the first player to get rid of all your cards by successfully bluffing or telling the truth.
-- **Mechanics:** 
-  - **Round Starts:** The first player in a round MUST play 2, 3, or 4 cards to start the pile. (If they only have 1 card left, they must pass).
-  - **Ongoing Play:** Subsequent players can play 1, 2, 3, or 4 cards.
-  - **Any Rank, Any Time:** Players can claim *any* rank they want on their turn. There is no required sequence!
-  - **The Interrogator:** When your turn starts, you are presented with a clean frosted-glass dialog to either CALL BLUFF on the previous player, or ACCEPT & PLAY.
+---
 
-### 3. Rang (Online & Pass & Play)
-The traditional South Asian trick-taking game is fully playable!
-- **Objective:** Win 7 "Sars" (tricks) before the opposing team.
-- **Mechanics:** 
-  - **Trump Caller Selection:** Trump caller is assigned dynamically.
-  - **Team Play:** Fully supports 4-player team dynamics.
-  - **Kot/Bavney:** Detects massive wins (Kot) when one team achieves 7 Sars before the other gets 1.
+## Overview
+
+**Rang-Adda** ("the card hub") is a Flutter app that brings three classic trick-taking and bluffing card games — **Thulla**, **Bluff**, and **Rang** — onto a single polished, real-time multiplayer platform. It's built around a high-contrast, minimal-premium design system and a clean feature-first architecture, with full Firebase-backed online play alongside local pass-and-play.
+
+This isn't a tech demo — it's a complete game engine: strict rule enforcement, trick resolution, team play, reconnection handling, lobbies, profiles, and live chat, all wired together with Riverpod and Firestore.
+
+---
+
+## Game Modes
+
+### 🃏 Thulla
+A fast-paced trick-taking game with strict suit-following rules. The engine automatically validates legal plays and determines trick winners — no house-ruling required.
+
+### 🎭 Bluff / BS / Cheat
+The classic game of deception. Players claim ranks on cards they may or may not actually hold, and opponents decide whether to call the bluff. Round-starters must play 2–4 cards; everyone else has the same range. The "Interrogator" is a frosted-glass call-bluff-or-accept dialog that keeps the tension readable at a glance.
+
+### 🂠 Rang
+A traditional South Asian 4-player team trick-taking game. Dynamic trump-caller assignment, full team-based scoring to 7 "Sars" (tricks), and automatic detection of a **Kot** (a clean sweep win). *(Currently WIP.)*
+
+All three modes support both **online multiplayer** and **local pass & play**.
+
+---
+
+## Online Multiplayer
+
+- **Real-time sync** across devices via Firestore, with Riverpod streaming state into the UI
+- **Reconnection handling** — close the app or crash mid-game and rejoin straight from the lobby
+- **Host-controlled lobbies** — kick inactive players, hide "Start Game" from non-hosts
+- **Profiles & leaderboards** — wins/losses tracked per authenticated player
+- **In-game chat & emoji reactions** rendered live over player avatars
+- **Locked-down Firestore rules** — only authenticated players in a room can mutate that room's state
+
+---
+
+## Architecture
+
+Feature-first, not layer-first — each game and each cross-cutting concern owns its own folder:
+
+```
+lib/
+├── features/
+│   ├── bluff/      # Bluff game mode: rules, UI, state
+│   ├── thulla/     # Thulla game mode: rules, UI, state
+│   ├── rang/        # Rang game mode (WIP): team logic, trump calling, Kot detection
+│   ├── lobby/        # Matchmaking, waiting rooms, room creation
+│   └── profile/      # Player stats, profiles, leaderboards
+└── shared/
+    ├── models/        # Core game/player/room models
+    ├── services/      # Auth + Firestore service layer
+    └── widgets/        # Global UI components
+```
+
+---
+
 ## Design System
 
-The application is built on a **Minimal Premium Design System**:
-- **Palette:** Deep dark backgrounds (`#0F1115`, `#1E232D`) with striking primary accents (`#5B8CFF`).
-- **Cards:** Crisp geometry with 20px border radii, clean typography without overpowering symbols, and soft drop shadows.
-- **Motion:** Fast and responsive animations (120ms - 350ms) for card interactions and trick resolutions using custom physics curves.
-- **Interactions:** "Pass Device" prompts use frosted-glass overlays to keep the game flow elegant.
+A **Minimal Premium** look, tuned for fast readability mid-game:
 
-## Online Multiplayer 🌐
-The app now supports real-time online multiplayer powered by Firebase Firestore!
-- **Real-Time Sync**: True cross-device state management using Riverpod.
-- **Robust Reconnection**: If the app is closed or crashes, you can instantly reconnect to your active game straight from the Lobby.
-- **Lobby Management**: The game host has full control over the waiting room and can kick inactive players. The "Start Game" option is securely hidden from non-hosts.
-- **Player Profiles & Leaderboards**: Track your global wins and losses securely using Firebase Auth.
-- **In-Game Chat & Emojis**: Real-time pop-up chat messages and emoji reactions over player avatars.
-- **Security Rules**: Locked down database rules ensure only authenticated players in the room can modify game state.
+| Element | Detail |
+|---|---|
+| Palette | Deep dark backgrounds (`#0F1115`, `#1E232D`) with a striking primary accent (`#5B8CFF`) |
+| Cards | 20px border radii, clean typography, soft drop shadows — no overpowering suit symbols |
+| Motion | 120ms–350ms custom physics-curve animations for card plays and trick resolution |
+| Interactions | "Pass Device" prompts use frosted-glass overlays for a seamless local hand-off |
+| Feedback | Integrated audio + haptics for tactile, premium-feeling input |
+
+---
 
 ## Tech Stack
 
-- **Framework:** Flutter / Dart
-- **State Management:** Riverpod 3.0
-- **Routing:** GoRouter
-- **Backend:** Firebase (Firestore & Authentication)
-- **Feedback:** Audio and Haptics engine integrated for premium tactile feedback.
+| Layer | Choice |
+|---|---|
+| Framework | Flutter / Dart |
+| State Management | Riverpod 3.0 |
+| Routing | GoRouter |
+| Backend | Firebase (Firestore + Authentication) |
+| Local Persistence | shared_preferences |
+| Reactive Streams | rxdart |
+| Audio | just_audio |
+| Fonts | google_fonts |
 
-## Running the Project
+---
 
-Ensure you have Flutter installed.
+## Getting Started
 
 ```bash
+# Clone the repo
+git clone https://github.com/marbo786/Rang_Adda.git
+cd Rang_Adda
+
+# Install dependencies
 flutter pub get
+
+# Run the app
 flutter run
 ```
 
-To run tests on the native Dart game engines:
+Run the test suite (native Dart game engines):
+
 ```bash
 flutter test
 ```
 
+> **Note:** Online multiplayer requires a Firebase project wired up via `firebase.json` / `firestore.rules`. Pass & play modes work fully offline out of the box.
+
+---
+
 ## Contributing
-Feel free to open an issue or pull request if you want to add new games or improve the engine!
+
+Issues and PRs are welcome — especially around finishing up **Rang**, adding new game modes, or improving the multiplayer engine.
+
+---
+
+<div align="center">
+
+Built by [Marbo](https://github.com/marbo786)
+
+</div>
