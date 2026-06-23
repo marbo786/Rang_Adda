@@ -129,6 +129,5 @@ Issues and PRs are welcome — especially around finishing up **Rang**, adding n
 
 <div align="center">
 
-Built by [Marbo](https://github.com/marbo786)
 
 </div>
