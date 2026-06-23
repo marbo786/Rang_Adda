@@ -547,7 +547,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             );
                           } else {
                             HapticFeedback.mediumImpact();
-                            ref.read(audioServiceProvider).playHeavySlam();
                           }
                         },
                         child: Container(

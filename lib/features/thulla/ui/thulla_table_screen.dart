@@ -479,7 +479,6 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                 );
                               } else {
                                 HapticFeedback.mediumImpact();
-                                ref.read(audioServiceProvider).playHeavySlam();
                               }
                             },
                           ),
