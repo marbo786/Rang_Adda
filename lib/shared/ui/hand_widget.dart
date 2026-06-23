@@ -72,12 +72,12 @@ class HandWidget extends ConsumerWidget {
                 child: GestureDetector(
                   onTap: valid
                       ? () {
-                          HapticFeedback.lightImpact();
+                          // HapticFeedback.lightImpact();
                           ref.read(audioServiceProvider).playCardFlip();
                           onCardTap(card);
                         }
                       : () {
-                          HapticFeedback.vibrate();
+                          // HapticFeedback.vibrate();
                           ref.read(audioServiceProvider).playError();
                         },
                   child: AnimatedContainer(

@@ -467,7 +467,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
 
                               if (error != null) {
                                 if (!context.mounted) return;
-                                HapticFeedback.vibrate();
+                                // HapticFeedback.vibrate();
                                 ref.read(audioServiceProvider).playError();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -478,7 +478,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                   ),
                                 );
                               } else {
-                                HapticFeedback.mediumImpact();
+                                // HapticFeedback.mediumImpact();
                               }
                             },
                           ),

@@ -30,14 +30,7 @@ class AudioService {
   }
 
   Future<void> _playSound(String assetPath) async {
-    try {
-      final player = _pool[_poolIndex];
-      _poolIndex = (_poolIndex + 1) % _pool.length;
-      await player.setAsset(assetPath);
-      await player.play();
-    } catch (e) {
-      // Ignore audio errors gracefully
-    }
+    // SFX Disabled
   }
 
   void playCardFlip() {

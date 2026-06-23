@@ -38,7 +38,7 @@ class _GameOverOverlayState extends ConsumerState<GameOverOverlay>
   @override
   void initState() {
     super.initState();
-    HapticFeedback.heavyImpact();
+    // HapticFeedback.heavyImpact();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(audioServiceProvider).playGameOver();
     });

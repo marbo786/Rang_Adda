@@ -547,7 +547,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               final color = isRed ? Colors.redAccent : Colors.white;
               return GestureDetector(
                 onTap: () {
-                  HapticFeedback.mediumImpact();
+                  // HapticFeedback.mediumImpact();
                   ref.read(audioServiceProvider).playClick();
                   ref.read(rangProvider.notifier).declareTrump(callerId, suit);
                 },

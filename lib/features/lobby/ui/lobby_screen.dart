@@ -580,7 +580,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
       },
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.lightImpact();
+          // HapticFeedback.lightImpact();
           ref.read(audioServiceProvider).playClick();
           onTap();
         },

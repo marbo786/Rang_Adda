@@ -30,7 +30,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
   final Set<PlayingCard> _selectedCards = {};
 
   void _toggleCard(PlayingCard card) {
-    HapticFeedback.lightImpact();
+    // HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playCardFlip();
     setState(() {
       if (_selectedCards.contains(card)) {
@@ -39,7 +39,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
         if (_selectedCards.length < 4) {
           _selectedCards.add(card);
         } else {
-          HapticFeedback.vibrate();
+          // HapticFeedback.vibrate();
           ref.read(audioServiceProvider).playError();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("You can only select up to 4 cards.")),
@@ -81,7 +81,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    // HapticFeedback.mediumImpact();
                     ref.read(audioServiceProvider).playClick();
                     _selectedCards.clear();
                     widget.onPass();
@@ -114,7 +114,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                 ),
                 onPressed: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
                     ? () {
-                        HapticFeedback.mediumImpact();
+                        // HapticFeedback.mediumImpact();
                         ref.read(audioServiceProvider).playClick();
                         widget.onPlayCards(_selectedCards.toList());
                         setState(() {
