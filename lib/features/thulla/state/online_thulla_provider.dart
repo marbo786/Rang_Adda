@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
@@ -54,7 +55,34 @@ class OnlineActionController {
   final Ref ref;
   bool _isProcessing = false;
 
-  OnlineActionController(this.ref);
+  OnlineActionController(this.ref) {
+    ref.listen<AsyncValue<ThullaGameState?>>(onlineThullaProvider, (previous, next) {
+      final state = next.value;
+      if (state != null && state.trickResolving && (previous?.value?.trickResolving != true)) {
+        _handleTrickResolution(state);
+      }
+    });
+  }
+
+  Future<void> _handleTrickResolution(ThullaGameState state) async {
+    // Wait for players to see the trick
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    final resolvedState = ThullaEngine.resolveTrick(state);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    
+    // Only the player who gets the next turn (winner or loser who picks up) runs the transaction
+    if (currentUser != null && resolvedState.currentPlayerId == currentUser.uid) {
+      final firestore = ref.read(firestoreServiceProvider);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        final thullaState = latestState as ThullaGameState;
+        if (thullaState.trickResolving) {
+          return ThullaEngine.resolveTrick(thullaState);
+        }
+        return thullaState;
+      });
+    }
+  }
 
   Future<String?> playCard(String playerId, PlayingCard card) async {
     if (_isProcessing) return "Processing...";
@@ -68,19 +96,11 @@ class OnlineActionController {
       String? error = ThullaEngine.getMoveError(state, playerId, card);
       if (error != null) return error;
 
-      var newState = ThullaEngine.playCard(state, playerId, card);
       final firestore = ref.read(firestoreServiceProvider);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        return ThullaEngine.playCard(latestState as ThullaGameState, playerId, card);
+      });
 
-      await firestore.updateGameState(newState);
-
-      if (newState.trickResolving) {
-        await Future.delayed(const Duration(milliseconds: 1500));
-        final currentState = ref.read(onlineThullaProvider).value;
-        if (currentState != null && currentState.trickResolving) {
-          final resolvedState = ThullaEngine.resolveTrick(currentState);
-          await firestore.updateGameState(resolvedState);
-        }
-      }
       return null;
     } finally {
       _isProcessing = false;

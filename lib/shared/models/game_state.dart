@@ -15,6 +15,8 @@ abstract class GameState extends Equatable {
   final GameStatus status;
   final String? currentPlayerId;
   final List<ChatMessage> chatMessages;
+  final List<String> participantIds;
+  final String? hostUid;
 
   const GameState({
     required this.gameId,
@@ -23,6 +25,8 @@ abstract class GameState extends Equatable {
     required this.status,
     this.currentPlayerId,
     this.chatMessages = const [],
+    this.participantIds = const [],
+    this.hostUid,
   });
 
   @override
@@ -33,6 +37,8 @@ abstract class GameState extends Equatable {
         status,
         currentPlayerId,
         chatMessages,
+        participantIds,
+        hostUid,
       ];
 
   Map<String, dynamic> toJson();

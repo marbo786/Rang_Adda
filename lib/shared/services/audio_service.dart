@@ -6,18 +6,21 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 });
 
 class AudioService {
-  final AudioPlayer _player = AudioPlayer();
+  final List<AudioPlayer> _pool = List.generate(5, (_) => AudioPlayer());
+  int _poolIndex = 0;
 
   AudioService() {
-    // Optionally preload if needed, but just_audio is fast enough for local assets
+    // Pool initialized
   }
 
   Future<void> _playSound(String assetPath) async {
     try {
-      await _player.setAsset(assetPath);
-      await _player.play();
+      final player = _pool[_poolIndex];
+      _poolIndex = (_poolIndex + 1) % _pool.length;
+      await player.setAsset(assetPath);
+      await player.play();
     } catch (e) {
-      // Ignore audio errors gracefully (e.g., in tests or missing files)
+      // Ignore audio errors gracefully
     }
   }
 

@@ -31,9 +31,9 @@ class BluffEngine {
       pIdx = (pIdx + 1) % players.length;
     }
 
-    // Sort hands
-    for (var player in players) {
-      player.hand.sort((a, b) => a.rank.index.compareTo(b.rank.index));
+    for (var i = 0; i < players.length; i++) {
+      players[i].hand.sort((a, b) => a.rank.index.compareTo(b.rank.index));
+      players[i] = players[i].copyWith(cardCount: players[i].hand.length);
     }
 
     return BluffGameState(
@@ -96,7 +96,7 @@ class BluffEngine {
     for (var card in cards) {
       newHand.remove(card);
     }
-    updatedPlayers[pIdx] = player.copyWith(hand: newHand);
+    updatedPlayers[pIdx] = player.copyWith(hand: newHand, cardCount: newHand.length);
 
     List<PlayingCard> newCenterPile = List.from(state.centerPile)
       ..addAll(cards);
@@ -108,7 +108,13 @@ class BluffEngine {
       // So the game isn't finished YET. We just wait for a challenge.
     }
 
-    int nextPIdx = (pIdx + 1) % updatedPlayers.length;
+    int nextPIdx = pIdx;
+    for (int i = 1; i <= updatedPlayers.length; i++) {
+      nextPIdx = (pIdx + i) % updatedPlayers.length;
+      if (updatedPlayers[nextPIdx].cardCount > 0 || updatedPlayers[nextPIdx].id == state.lastPlayerId) {
+        break;
+      }
+    }
     String nextPlayerId = updatedPlayers[nextPIdx].id;
 
     return state.copyWith(
@@ -136,7 +142,13 @@ class BluffEngine {
     List<Player> updatedPlayers = List.from(state.players);
     int pIdx = updatedPlayers.indexWhere((p) => p.id == playerId);
 
-    int nextPIdx = (pIdx + 1) % updatedPlayers.length;
+    int nextPIdx = pIdx;
+    for (int i = 1; i <= updatedPlayers.length; i++) {
+      nextPIdx = (pIdx + i) % updatedPlayers.length;
+      if (updatedPlayers[nextPIdx].cardCount > 0 || updatedPlayers[nextPIdx].id == state.lastPlayerId) {
+        break;
+      }
+    }
     String nextPlayerId = updatedPlayers[nextPIdx].id;
 
     int newConsecutivePasses = state.consecutivePasses + 1;
@@ -152,6 +164,17 @@ class BluffEngine {
       newLastClaimed = null;
       newLastPlayerId = null;
       newConsecutivePasses = 0;
+      
+      // If the player who won the trick (lastPlayerId) has 0 cards, they win the game!
+      if (state.lastPlayerId != null) {
+        int prevIdx = updatedPlayers.indexWhere((p) => p.id == state.lastPlayerId!);
+        if (prevIdx != -1 && updatedPlayers[prevIdx].cardCount == 0) {
+          return state.copyWith(
+            status: GameStatus.finished,
+            resolvingBluffMessage: "${updatedPlayers[prevIdx].name} WINS!",
+          );
+        }
+      }
     }
 
     return state.copyWith(
@@ -179,6 +202,16 @@ class BluffEngine {
       throw Exception("You can't call bluff on yourself.");
     }
 
+    return state.copyWith(
+      pendingBluffCallerId: callerId,
+    );
+  }
+
+  static BluffGameState resolveBluffCall(BluffGameState state) {
+    if (state.status == GameStatus.finished) return state;
+    if (state.pendingBluffCallerId == null) return state;
+    
+    String callerId = state.pendingBluffCallerId!;
     bool isBluff = false;
     for (var card in state.lastPlayedCards) {
       if (card.rank != state.lastClaimedRank) {
@@ -193,21 +226,20 @@ class BluffEngine {
     int loserIdx = updatedPlayers.indexWhere((p) => p.id == loserId);
     Player loser = updatedPlayers[loserIdx];
 
-    List<PlayingCard> newHand = List.from(loser.hand)..addAll(state.centerPile);
+    List<PlayingCard> newHand = List.from(loser.hand)..addAll(state.centerPile)..addAll(state.lastPlayedCards);
     newHand.sort((a, b) => a.rank.index.compareTo(b.rank.index));
-    updatedPlayers[loserIdx] = loser.copyWith(hand: newHand);
+    updatedPlayers[loserIdx] = loser.copyWith(hand: newHand, cardCount: loser.cardCount + state.centerPile.length + state.lastPlayedCards.length);
 
     String message = isBluff
         ? "\${updatedPlayers.firstWhere((p)=>p.id==state.lastPlayerId!).name} WAS BLUFFING! They pick up the pile."
         : "\${updatedPlayers.firstWhere((p)=>p.id==state.lastPlayerId!).name} told the TRUTH! \${updatedPlayers.firstWhere((p)=>p.id==callerId).name} picks up the pile.";
 
-    // Check if the previous player told the truth AND emptied their hand -> They win!
     GameStatus newStatus = state.status;
     if (!isBluff) {
       int prevIdx = updatedPlayers.indexWhere(
         (p) => p.id == state.lastPlayerId!,
       );
-      if (updatedPlayers[prevIdx].hand.isEmpty) {
+      if (updatedPlayers[prevIdx].cardCount == 0) {
         newStatus = GameStatus.finished;
         message +=
             " And they have no cards left! ${updatedPlayers[prevIdx].name} WINS!";
@@ -223,6 +255,7 @@ class BluffEngine {
       consecutivePasses: 0,
       resolvingBluffMessage: message,
       status: newStatus,
+      clearPendingBluffCallerId: true,
     );
   }
 }

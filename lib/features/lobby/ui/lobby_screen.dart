@@ -416,6 +416,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
             focusNode: _codeFocus,
             textAlign: TextAlign.center,
             cursorColor: AppTheme.accentPrimary,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             style: const TextStyle(
               fontSize: 24,
               letterSpacing: 4.0,
@@ -424,6 +429,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
             ),
             decoration: InputDecoration(
               hintText: 'ENTER ROOM CODE',
+              counterText: '', // Hide the length counter
               hintStyle: TextStyle(
                 color: Colors.white.withValues(alpha: 0.15),
                 fontSize: 16,
@@ -522,6 +528,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                   iconsColor: AppTheme.accentTertiary.withValues(alpha: 0.10),
                   onTap: () => context.push('/setup/rang'),
                   interval: const Interval(0.285, 1.0, curve: Curves.easeOutCubic),
+                  isComingSoon: true,
                 ),
               ],
             ),
@@ -540,6 +547,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
     required Color iconsColor,
     required VoidCallback onTap,
     required Interval interval,
+    bool isComingSoon = false,
   }) {
     return AnimatedBuilder(
       animation: _cardsController,
@@ -582,6 +590,27 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
           ),
           child: Stack(
             children: [
+              if (isComingSoon)
+                Positioned(
+                  top: 12,
+                  right: -30,
+                  child: Transform.rotate(
+                    angle: 0.785398, // 45 degrees
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 4),
+                      color: AppTheme.accentSecondary,
+                      child: const Text(
+                        'SOON',
+                        style: TextStyle(
+                          color: AppTheme.backgroundPrimary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               // Diagonal Icons
               ...List.generate(icons.length, (index) {
                 return Positioned(

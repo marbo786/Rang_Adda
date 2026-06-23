@@ -3,6 +3,7 @@ import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_game_state.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
 import 'package:rang_adda/shared/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rang_adda/features/thulla/state/online_thulla_provider.dart';
 
 final onlineBluffProvider = StreamProvider<BluffGameState?>((ref) {
@@ -21,7 +22,40 @@ class OnlineBluffActionController {
   final Ref ref;
   bool _isProcessing = false;
 
-  OnlineBluffActionController(this.ref);
+  OnlineBluffActionController(this.ref) {
+    ref.listen<AsyncValue<BluffGameState?>>(onlineBluffProvider, (previous, next) {
+      final state = next.value;
+      if (state != null && state.pendingBluffCallerId != null && previous?.value?.pendingBluffCallerId == null) {
+        _handleBluffResolution(state);
+      }
+    });
+  }
+
+  Future<void> _handleBluffResolution(BluffGameState state) async {
+    final callerId = state.pendingBluffCallerId!;
+    bool isBluff = false;
+    for (var card in state.lastPlayedCards) {
+      if (card.rank != state.lastClaimedRank) {
+        isBluff = true;
+        break;
+      }
+    }
+    
+    final loserId = isBluff ? state.lastPlayerId! : callerId;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    
+    // Only the loser who picks up the pile runs the transaction
+    if (currentUser != null && loserId == currentUser.uid) {
+      final firestore = ref.read(firestoreServiceProvider);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        final bluffState = latestState as BluffGameState;
+        if (bluffState.pendingBluffCallerId != null) {
+          return BluffEngine.resolveBluffCall(bluffState);
+        }
+        return bluffState;
+      });
+    }
+  }
 
   Future<String?> playCard(String playerId, List<PlayingCard> cards, Rank claimedRank) async {
     if (_isProcessing) return "Processing...";
@@ -34,10 +68,10 @@ class OnlineBluffActionController {
       String? error = BluffEngine.getMoveError(state, playerId, cards);
       if (error != null) return error;
 
-      var newState = BluffEngine.playCards(state, playerId, cards, claimedRank);
       final firestore = ref.read(firestoreServiceProvider);
-
-      await firestore.updateGameState(newState);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        return BluffEngine.playCards(latestState as BluffGameState, playerId, cards, claimedRank);
+      });
       return null;
     } catch(e) {
       return e.toString();
@@ -54,12 +88,11 @@ class OnlineBluffActionController {
       final state = ref.read(onlineBluffProvider).value;
       if (state == null) return;
 
-      var newState = BluffEngine.passTurn(state, playerId);
-      // Online doesn't need "pass device" so we instantly acknowledge
-      newState = newState.copyWith(passToPlayerId: null);
-      
       final firestore = ref.read(firestoreServiceProvider);
-      await firestore.updateGameState(newState);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        var newState = BluffEngine.passTurn(latestState as BluffGameState, playerId);
+        return newState.copyWith(passToPlayerId: null);
+      });
     } catch (e) {
       print("Error passing turn: $e");
     } finally {
@@ -75,9 +108,10 @@ class OnlineBluffActionController {
       final state = ref.read(onlineBluffProvider).value;
       if (state == null) return;
 
-      var newState = BluffEngine.callBluff(state, callerId);
       final firestore = ref.read(firestoreServiceProvider);
-      await firestore.updateGameState(newState);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        return BluffEngine.callBluff(latestState as BluffGameState, callerId);
+      });
     } catch (e) {
       print("Error calling bluff: $e");
     } finally {

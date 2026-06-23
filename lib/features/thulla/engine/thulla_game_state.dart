@@ -47,6 +47,8 @@ class ThullaGameState extends GameState {
     this.passToPlayerId,
     this.trickResolving = false,
     this.isOnline = false,
+    super.participantIds = const [],
+    super.hostUid,
   });
 
   bool get isFirstTrick => wastePile.isEmpty;
@@ -69,6 +71,8 @@ class ThullaGameState extends GameState {
     bool? trickResolving,
     bool? isOnline,
     List<ChatMessage>? chatMessages,
+    List<String>? participantIds,
+    String? hostUid,
   }) {
     return ThullaGameState(
       gameId: gameId ?? this.gameId,
@@ -88,6 +92,8 @@ class ThullaGameState extends GameState {
       trickResolving: trickResolving ?? this.trickResolving,
       isOnline: isOnline ?? this.isOnline,
       chatMessages: chatMessages ?? this.chatMessages,
+      participantIds: participantIds ?? this.participantIds,
+      hostUid: hostUid ?? this.hostUid,
     );
   }
 
@@ -100,6 +106,7 @@ class ThullaGameState extends GameState {
         passToPlayerId,
         trickResolving,
         isOnline,
+        hostUid,
       ];
 
   @override
@@ -116,6 +123,8 @@ class ThullaGameState extends GameState {
     'passToPlayerId': passToPlayerId,
     'trickResolving': trickResolving,
     'isOnline': isOnline,
+    'participantIds': participantIds,
+    'hostUid': hostUid,
   };
 
   factory ThullaGameState.fromJson(Map<String, dynamic> json) {
@@ -140,6 +149,8 @@ class ThullaGameState extends GameState {
       passToPlayerId: json['passToPlayerId'] as String?,
       trickResolving: json['trickResolving'] as bool? ?? false,
       isOnline: json['isOnline'] as bool? ?? false,
+      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      hostUid: json['hostUid'] as String?,
     );
   }
 }

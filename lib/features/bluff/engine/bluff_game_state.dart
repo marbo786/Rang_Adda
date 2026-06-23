@@ -11,6 +11,7 @@ class BluffGameState extends GameState {
   final int consecutivePasses;
   final String? passToPlayerId;
   final String? resolvingBluffMessage;
+  final String? pendingBluffCallerId;
   final bool isOnline;
 
   const BluffGameState({
@@ -27,7 +28,10 @@ class BluffGameState extends GameState {
     this.consecutivePasses = 0,
     this.passToPlayerId,
     this.resolvingBluffMessage,
+    this.pendingBluffCallerId,
     this.isOnline = false,
+    super.participantIds = const [],
+    super.hostUid,
   }) : super(currentPlayerId: currentPlayerId);
 
   BluffGameState copyWith({
@@ -42,8 +46,12 @@ class BluffGameState extends GameState {
     int? consecutivePasses,
     String? passToPlayerId,
     String? resolvingBluffMessage,
+    String? pendingBluffCallerId,
+    bool clearPendingBluffCallerId = false,
     bool? isOnline,
     List<ChatMessage>? chatMessages,
+    List<String>? participantIds,
+    String? hostUid,
   }) {
     return BluffGameState(
       gameId: gameId ?? this.gameId,
@@ -58,8 +66,13 @@ class BluffGameState extends GameState {
       passToPlayerId: passToPlayerId ?? this.passToPlayerId,
       resolvingBluffMessage:
           resolvingBluffMessage ?? this.resolvingBluffMessage,
+      pendingBluffCallerId: clearPendingBluffCallerId 
+          ? null 
+          : (pendingBluffCallerId ?? this.pendingBluffCallerId),
       isOnline: isOnline ?? this.isOnline,
       chatMessages: chatMessages ?? this.chatMessages,
+      participantIds: participantIds ?? this.participantIds,
+      hostUid: hostUid ?? this.hostUid,
     );
   }
 
@@ -76,7 +89,10 @@ class BluffGameState extends GameState {
       consecutivePasses: consecutivePasses,
       passToPlayerId: null,
       resolvingBluffMessage: null,
+      pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      participantIds: participantIds,
+      hostUid: hostUid,
     );
   }
 
@@ -93,7 +109,10 @@ class BluffGameState extends GameState {
       consecutivePasses: consecutivePasses,
       passToPlayerId: passTo,
       resolvingBluffMessage: resolvingBluffMessage,
+      pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      participantIds: participantIds,
+      hostUid: hostUid,
     );
   }
 
@@ -110,7 +129,10 @@ class BluffGameState extends GameState {
       consecutivePasses: consecutivePasses,
       passToPlayerId: passToPlayerId,
       resolvingBluffMessage: message,
+      pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      participantIds: participantIds,
+      hostUid: hostUid,
     );
   }
 
@@ -124,7 +146,9 @@ class BluffGameState extends GameState {
     consecutivePasses,
     passToPlayerId,
     resolvingBluffMessage,
+    pendingBluffCallerId,
     isOnline,
+    hostUid,
   ];
 
   @override
@@ -142,7 +166,10 @@ class BluffGameState extends GameState {
         'consecutivePasses': consecutivePasses,
         'passToPlayerId': passToPlayerId,
         'resolvingBluffMessage': resolvingBluffMessage,
+        'pendingBluffCallerId': pendingBluffCallerId,
         'isOnline': isOnline,
+        'participantIds': participantIds,
+        'hostUid': hostUid,
       };
 
   factory BluffGameState.fromJson(Map<String, dynamic> json) {
@@ -170,7 +197,10 @@ class BluffGameState extends GameState {
       consecutivePasses: json['consecutivePasses'] as int? ?? 0,
       passToPlayerId: json['passToPlayerId'] as String?,
       resolvingBluffMessage: json['resolvingBluffMessage'] as String?,
+      pendingBluffCallerId: json['pendingBluffCallerId'] as String?,
       isOnline: json['isOnline'] as bool? ?? false,
+      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      hostUid: json['hostUid'] as String?,
     );
   }
 }

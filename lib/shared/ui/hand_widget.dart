@@ -25,57 +25,74 @@ class HandWidget extends ConsumerWidget {
     final cardH = isSmallScreen ? 82.5 : 105.0;
     final containerHeight = isSmallScreen ? 110.0 : 140.0;
 
-    return SizedBox(
-      height: containerHeight, // Enough height for the lift and shadow
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-        itemCount: hand.length,
-        itemBuilder: (context, index) {
-          final card = hand[index];
-          bool valid = isCardValid == null || isCardValid!(card);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth - 48.0; // 24.0 padding on each side
+        
+        // Calculate the maximum widthFactor that allows all cards to fit
+        double dynamicWidthFactor = 0.6;
+        if (hand.length > 1) {
+          final requiredWidth = cardW + (cardW * 0.6 * (hand.length - 1));
+          if (requiredWidth > availableWidth) {
+            dynamicWidthFactor = (availableWidth - cardW) / (cardW * (hand.length - 1));
+            if (dynamicWidthFactor < 0.2) dynamicWidthFactor = 0.2; // Don't let them overlap entirely
+          }
+        }
 
-          return Align(
-            alignment: Alignment.bottomCenter,
-            widthFactor: 0.6, // Clean overlap
-            child: GestureDetector(
-              onTap: valid ? () {
-                HapticFeedback.lightImpact();
-                ref.read(audioServiceProvider).playCardFlip();
-                onCardTap(card);
-              } : () {
-                HapticFeedback.vibrate();
-                ref.read(audioServiceProvider).playError();
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                curve: Curves.easeOutCubic,
-                transform: Matrix4.identity()
-                  // ignore: deprecated_member_use
-                  ..scale(valid ? 1.0 : 0.92),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: valid
-                      ? [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          ),
-                        ]
-                      : null,
+        return SizedBox(
+          height: containerHeight,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            itemCount: hand.length,
+            itemBuilder: (context, index) {
+              final card = hand[index];
+              bool valid = isCardValid == null || isCardValid!(card);
+
+              return Align(
+                alignment: Alignment.bottomCenter,
+                widthFactor: dynamicWidthFactor,
+                child: GestureDetector(
+                  onTap: valid ? () {
+                    HapticFeedback.lightImpact();
+                    ref.read(audioServiceProvider).playCardFlip();
+                    onCardTap(card);
+                  } : () {
+                    HapticFeedback.vibrate();
+                    ref.read(audioServiceProvider).playError();
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    curve: Curves.easeOutCubic,
+                    transform: Matrix4.identity()
+                      // ignore: deprecated_member_use
+                      ..scale(valid ? 1.0 : 0.92),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: valid
+                          ? [
+                              BoxShadow(
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Opacity(
+                      opacity: valid ? 1.0 : 0.5,
+                      child: PlayingCardWidget(card: card, width: cardW, height: cardH, hasShadow: false),
+                    ),
+                  ),
                 ),
-                child: Opacity(
-                  opacity: valid ? 1.0 : 0.5,
-                  child: PlayingCardWidget(card: card, width: cardW, height: cardH, hasShadow: false),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

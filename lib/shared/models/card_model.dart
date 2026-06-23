@@ -33,9 +33,14 @@ class PlayingCard extends Equatable {
   Map<String, dynamic> toJson() => {'suit': suit.index, 'rank': rank.index};
 
   factory PlayingCard.fromJson(Map<String, dynamic> json) {
+    int suitIndex = json['suit'] as int? ?? 0;
+    int rankIndex = json['rank'] as int? ?? 0;
+    if (suitIndex < 0 || suitIndex >= Suit.values.length) suitIndex = 0;
+    if (rankIndex < 0 || rankIndex >= Rank.values.length) rankIndex = 0;
+    
     return PlayingCard(
-      suit: Suit.values[json['suit'] as int],
-      rank: Rank.values[json['rank'] as int],
+      suit: Suit.values[suitIndex],
+      rank: Rank.values[rankIndex],
     );
   }
 }

@@ -32,7 +32,7 @@ class ThullaEngine {
             b.rank,
           ).compareTo(_rankValue(a.rank)); // Highest first
         });
-      return p.copyWith(hand: sortedHand);
+      return p.copyWith(hand: sortedHand, cardCount: sortedHand.length);
     }).toList();
 
     // Find Ace of Spades
@@ -75,7 +75,7 @@ class ThullaEngine {
           if (suitCompare != 0) return suitCompare;
           return _rankValue(b.rank).compareTo(_rankValue(a.rank));
         });
-      return p.copyWith(hand: sortedHand);
+      return p.copyWith(hand: sortedHand, cardCount: sortedHand.length);
     }).toList();
 
     String startPlayerId = players.first.id;
@@ -136,7 +136,8 @@ class ThullaEngine {
 
     final players = state.players.map((p) {
       if (p.id == playerId) {
-        return p.copyWith(hand: p.hand.where((c) => c != card).toList());
+        final newHand = p.hand.where((c) => c != card).toList();
+        return p.copyWith(hand: newHand, cardCount: newHand.length);
       }
       return p;
     }).toList();
@@ -156,7 +157,7 @@ class ThullaEngine {
     int activePlayersCount = players
         .where(
           (p) =>
-              p.hand.isNotEmpty || currentTrick.any((t) => t.playerId == p.id),
+              p.cardCount > 0 || currentTrick.any((t) => t.playerId == p.id),
         )
         .length;
     bool roundCompletedNormal = currentTrick.length == activePlayersCount;
@@ -200,7 +201,8 @@ class ThullaEngine {
 
       final updatedPlayers = players.map((p) {
         if (p.id == highestPlayerId) {
-          return p.copyWith(hand: [...p.hand, ...trickCards]);
+          final newHand = [...p.hand, ...trickCards];
+          return p.copyWith(hand: newHand, cardCount: p.cardCount + trickCards.length);
         }
         return p;
       }).toList();
@@ -230,13 +232,13 @@ class ThullaEngine {
         (p) => p.id == highestPlayerId,
       );
 
-      if (highestPlayer.hand.isEmpty) {
+      if (highestPlayer.cardCount == 0) {
         final random = Random();
         if (newWastePile.isNotEmpty) {
           int drawIndex = random.nextInt(newWastePile.length);
           PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
           updatedPlayers = updatedPlayers.map((p) {
-            if (p.id == highestPlayerId) return p.copyWith(hand: [drawnCard]);
+            if (p.id == highestPlayerId) return p.copyWith(hand: [drawnCard], cardCount: 1);
             return p;
           }).toList();
         }
@@ -257,7 +259,7 @@ class ThullaEngine {
   }
 
   static ThullaGameState _checkWinCondition(ThullaGameState state) {
-    var activePlayers = state.players.where((p) => p.hand.isNotEmpty).toList();
+    var activePlayers = state.players.where((p) => p.cardCount > 0).toList();
     if (activePlayers.length <= 1) {
       return state.copyWith(
         status: GameStatus.finished,
@@ -274,7 +276,7 @@ class ThullaEngine {
     int idx = players.indexWhere((p) => p.id == currentPlayerId);
     for (int i = 1; i < players.length; i++) {
       int nextIdx = (idx + i) % players.length;
-      if (players[nextIdx].hand.isNotEmpty) return players[nextIdx].id;
+      if (players[nextIdx].cardCount > 0) return players[nextIdx].id;
     }
     return currentPlayerId;
   }

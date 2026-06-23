@@ -97,6 +97,8 @@ class RangGameState extends GameState {
     this.winningTeam,
     this.kot = false,
     this.bavney = false,
+    super.participantIds = const [],
+    super.hostUid,
   });
 
   // ── Convenience getters ──────────────────────────────────────────────────
@@ -133,6 +135,8 @@ class RangGameState extends GameState {
     bool? kot,
     bool? bavney,
     List<ChatMessage>? chatMessages,
+    List<String>? participantIds,
+    String? hostUid,
   }) {
     return RangGameState(
       gameId: gameId ?? this.gameId,
@@ -163,6 +167,8 @@ class RangGameState extends GameState {
           clearWinningTeam ? null : (winningTeam ?? this.winningTeam),
       kot: kot ?? this.kot,
       bavney: bavney ?? this.bavney,
+      participantIds: participantIds ?? this.participantIds,
+      hostUid: hostUid ?? this.hostUid,
     );
   }
 
@@ -186,6 +192,7 @@ class RangGameState extends GameState {
         winningTeam,
         kot,
         bavney,
+        hostUid,
       ];
 
   // ── Serialisation (Firestore-compatible) ─────────────────────────────────
@@ -213,6 +220,8 @@ class RangGameState extends GameState {
         'winningTeam': winningTeam,
         'kot': kot,
         'bavney': bavney,
+        'participantIds': participantIds,
+        'hostUid': hostUid,
       };
 
   factory RangGameState.fromJson(Map<String, dynamic> json) {
@@ -251,6 +260,8 @@ class RangGameState extends GameState {
       winningTeam: json['winningTeam'] as String?,
       kot: json['kot'] as bool? ?? false,
       bavney: json['bavney'] as bool? ?? false,
+      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      hostUid: json['hostUid'] as String?,
     );
   }
 }

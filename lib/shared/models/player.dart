@@ -5,12 +5,14 @@ class Player extends Equatable {
   final String id;
   final String name;
   final List<PlayingCard> hand;
+  final int cardCount;
   final String? latestEmoji;
 
   const Player({
     required this.id,
     required this.name,
     this.hand = const [],
+    this.cardCount = 0,
     this.latestEmoji,
   });
 
@@ -18,23 +20,26 @@ class Player extends Equatable {
     String? id,
     String? name,
     List<PlayingCard>? hand,
+    int? cardCount,
     String? latestEmoji,
   }) {
     return Player(
       id: id ?? this.id,
       name: name ?? this.name,
       hand: hand ?? this.hand,
+      cardCount: cardCount ?? this.cardCount,
       latestEmoji: latestEmoji ?? this.latestEmoji,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, hand, latestEmoji];
+  List<Object?> get props => [id, name, hand, cardCount, latestEmoji];
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'hand': hand.map((c) => c.toJson()).toList(),
+        'cardCount': cardCount,
         'latestEmoji': latestEmoji,
       };
 
@@ -42,9 +47,11 @@ class Player extends Equatable {
     return Player(
       id: json['id'] as String,
       name: json['name'] as String,
-      hand: (json['hand'] as List)
-          .map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
-          .toList(),
+      hand: (json['hand'] as List?)
+              ?.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      cardCount: json['cardCount'] as int? ?? 0,
       latestEmoji: json['latestEmoji'] as String?,
     );
   }

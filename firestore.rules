@@ -2,23 +2,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /games/{gameId} {
-      // Anyone authenticated can create a game
-      allow create: if request.auth != null;
+      // Anyone authenticated can create a game if they are in participantIds
+      allow create: if request.auth != null && request.auth.uid in request.resource.data.participantIds;
       
-      // Anyone can read and update a game if it's in the waiting state
-      allow read, update: if resource.data.status == 'waiting';
+      // Waiting room (status == 0): anyone authenticated can read and join
+      allow read: if request.auth != null;
+      allow update: if request.auth != null && resource.data.status == 0;
       
-      // If the game has started, authenticated users can read/update it
-      allow read, update: if request.auth != null;
+      // Playing/Finished (status > 0): only participants can read/update
+      allow read, update: if request.auth != null && request.auth.uid in resource.data.participantIds;
       
-      // No one can delete a game
       allow delete: if false;
+
+      // Hands subcollection: users can only read/write their own hand
+      match /hands/{userId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
     match /users/{userId} {
-      // Anyone authenticated can read user profiles
       allow read: if request.auth != null;
-      // Users can only write their own profile
       allow write: if request.auth != null && request.auth.uid == userId;
     }
   }

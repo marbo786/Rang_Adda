@@ -30,13 +30,24 @@ class AppTheme {
     primaryColor: accentPrimary,
     colorScheme: const ColorScheme.dark(
       primary: accentPrimary,
+      onPrimary: backgroundPrimary,
       secondary: accentSecondary,
-      surface: backgroundPrimary,
+      onSecondary: backgroundPrimary,
+      tertiary: accentTertiary,
+      onTertiary: textPrimary,
+      surface: surface,
+      onSurface: textPrimary,
+      surfaceContainerHighest: surfaceElevated,
       error: statusError,
+      onError: textPrimary,
     ),
-    textTheme: GoogleFonts.spaceGroteskTextTheme(
+    textTheme: GoogleFonts.outfitTextTheme(
       ThemeData.dark().textTheme,
-    ).apply(bodyColor: textSecondary, displayColor: textPrimary),
+    ).apply(
+      bodyColor: textPrimary, 
+      displayColor: textPrimary,
+      decorationColor: accentPrimary,
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,

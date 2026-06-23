@@ -148,10 +148,10 @@ class _RoundTableWidgetState extends State<RoundTableWidget> with TickerProvider
                                 ? PlayingCardWidget(
                                     card: playedCard,
                                     isFaceUp: true,
-                                    width: 28,
-                                    height: 40,
+                                    width: widget.size * 0.1,
+                                    height: widget.size * 0.14,
                                   )
-                                : const SizedBox(width: 28, height: 40),
+                                : SizedBox(width: widget.size * 0.1, height: widget.size * 0.14),
                           ),
                         ),
                       );
@@ -179,8 +179,8 @@ class _RoundTableWidgetState extends State<RoundTableWidget> with TickerProvider
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 400),
                               curve: Curves.easeOutCubic,
-                              width: isActive ? 44 : 32,
-                              height: isActive ? 44 : 32,
+                              width: isActive ? widget.size * 0.15 : widget.size * 0.11,
+                              height: isActive ? widget.size * 0.15 : widget.size * 0.11,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: AppTheme.surfaceElevated,

@@ -18,8 +18,7 @@ class WaitingRoomScreen extends ConsumerWidget {
     
     final isHost = stateAsync.value != null && 
                    user != null && 
-                   stateAsync.value!.players.isNotEmpty && 
-                   stateAsync.value!.players.first.id == user.uid;
+                   stateAsync.value!.hostUid == user.uid;
 
     return Scaffold(
       appBar: AppBar(title: Text('Room Code: $gameId')),

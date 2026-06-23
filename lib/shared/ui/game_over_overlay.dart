@@ -9,6 +9,7 @@ class GameOverOverlay extends StatefulWidget {
   final bool isKotOrBavney;
   final VoidCallback onPlayAgain;
   final VoidCallback onBackToLobby;
+  final bool isHost;
 
   const GameOverOverlay({
     super.key,
@@ -17,6 +18,7 @@ class GameOverOverlay extends StatefulWidget {
     required this.onBackToLobby,
     this.score,
     this.isKotOrBavney = false,
+    this.isHost = true,
   });
 
   @override
@@ -189,18 +191,22 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                             height: 56,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.accentPrimary,
-                                foregroundColor: AppTheme.backgroundPrimary,
+                                backgroundColor: widget.isHost 
+                                    ? AppTheme.accentPrimary 
+                                    : AppTheme.surfaceElevated,
+                                foregroundColor: widget.isHost 
+                                    ? AppTheme.backgroundPrimary 
+                                    : AppTheme.textDisabled,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 elevation: 0,
                               ),
-                              onPressed: widget.onPlayAgain,
-                              child: const Text(
-                                'PLAY AGAIN',
+                              onPressed: widget.isHost ? widget.onPlayAgain : null,
+                              child: Text(
+                                widget.isHost ? 'PLAY AGAIN' : 'WAITING FOR HOST...',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: widget.isHost ? 18 : 14,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2.0,
                                 ),

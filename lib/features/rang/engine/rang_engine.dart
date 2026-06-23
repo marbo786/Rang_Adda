@@ -59,7 +59,7 @@ class RangEngine {
           if (suitCmp != 0) return suitCmp;
           return _rankValue(b.rank).compareTo(_rankValue(a.rank));
         });
-      return p.copyWith(hand: sorted);
+      return p.copyWith(hand: sorted, cardCount: sorted.length);
     }).toList();
 
     final dealerId = players[0].id;
@@ -156,7 +156,8 @@ class RangEngine {
     // ── 1. Remove card from hand ────────────────────────────────────────────
     final updatedPlayers = state.players.map((p) {
       if (p.id == playerId) {
-        return p.copyWith(hand: p.hand.where((c) => c != card).toList());
+        final newHand = p.hand.where((c) => c != card).toList();
+        return p.copyWith(hand: newHand, cardCount: newHand.length);
       }
       return p;
     }).toList();
@@ -215,7 +216,7 @@ class RangEngine {
     // A sar is scored when:
     //   • the same team wins 2 tricks in a row (consecutiveWins == 2), OR
     //   • this was the 13th (final) trick of the hand.
-    final bool isFinalTrick = players.every((p) => p.hand.isEmpty);
+    final bool isFinalTrick = players.every((p) => p.cardCount == 0);
     final bool sarScored = newConsecutive == 2 || isFinalTrick;
 
     int newTeamASars = state.teamASars;
@@ -318,7 +319,7 @@ class RangEngine {
     final idx = players.indexWhere((p) => p.id == currentPlayerId);
     for (int i = 1; i < players.length; i++) {
       final nextIdx = (idx + i) % players.length;
-      if (players[nextIdx].hand.isNotEmpty) return players[nextIdx].id;
+      if (players[nextIdx].cardCount > 0) return players[nextIdx].id;
     }
     return currentPlayerId; // Fallback (should never occur mid-hand).
   }

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:rang_adda/features/bluff/ui/bluff_hand_widget.dart';
 import 'package:rang_adda/features/bluff/state/online_bluff_provider.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
@@ -74,6 +75,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       return Scaffold(
         body: GameOverOverlay(
           winnerName: winner.name,
+          isHost: !widget.isOnline || FirebaseAuth.instance.currentUser?.uid == state.hostUid,
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {

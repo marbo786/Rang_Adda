@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rang_adda/features/thulla/ui/thulla_hand_widget.dart';
 import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/features/thulla/state/thulla_provider.dart';
 import 'package:rang_adda/shared/ui/playing_card_widget.dart';
@@ -76,11 +79,13 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
       return Scaffold(
         body: GameOverOverlay(
           winnerName: winner.name,
+          isHost: !widget.isOnline || FirebaseAuth.instance.currentUser?.uid == state.hostUid,
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
               ref.read(thullaProvider.notifier).startGame(
-                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie'],
+                    ['p1', 'p2', 'p3', 'p4'],
+                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'],
                   );
             } else {
               context.go('/');
