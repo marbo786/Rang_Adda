@@ -61,7 +61,9 @@ class PlayingCardWidget extends StatelessWidget {
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
     final color = isRed ? const Color(0xFFFF4D6A) : Colors.white;
     final borderColor = const Color(0xFF3A5068);
-    final glowColor = isRed ? AppTheme.statusError.withValues(alpha: 0.25) : AppTheme.neonGlow;
+    final glowColor = isRed
+        ? AppTheme.statusError.withValues(alpha: 0.25)
+        : AppTheme.neonGlow;
 
     String suitSymbol;
     switch (card.suit) {
@@ -104,17 +106,10 @@ class PlayingCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2D3D),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: borderColor,
-          width: 1.5,
-        ),
-        boxShadow: hasShadow ? [
-          BoxShadow(
-            color: glowColor,
-            blurRadius: 6,
-            spreadRadius: 0,
-          ),
-        ] : null,
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: hasShadow
+            ? [BoxShadow(color: glowColor, blurRadius: 6, spreadRadius: 0)]
+            : null,
       ),
       child: Stack(
         children: [
@@ -128,7 +123,7 @@ class PlayingCardWidget extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Top Left Rank and Suit
           Positioned(
             top: height * 0.066,

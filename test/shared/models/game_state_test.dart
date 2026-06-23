@@ -17,10 +17,15 @@ void main() {
             name: 'Player 1',
             hand: [const PlayingCard(suit: Suit.hearts, rank: Rank.ace)],
             cardCount: 1,
-          )
+          ),
         ],
         currentPlayerId: 'p1',
-        currentTrick: [const TrickPlay(playerId: 'p1', card: PlayingCard(suit: Suit.spades, rank: Rank.king))],
+        currentTrick: [
+          const TrickPlay(
+            playerId: 'p1',
+            card: PlayingCard(suit: Suit.spades, rank: Rank.king),
+          ),
+        ],
       );
 
       final json = state.toJson();

@@ -6,10 +6,7 @@ import 'package:rang_adda/shared/ui/theme.dart';
 class WinnerPulseGlow extends StatefulWidget {
   final bool show;
 
-  const WinnerPulseGlow({
-    super.key,
-    required this.show,
-  });
+  const WinnerPulseGlow({super.key, required this.show});
 
   @override
   State<WinnerPulseGlow> createState() => _WinnerPulseGlowState();
@@ -88,10 +85,7 @@ class _WinnerPulseGlowState extends State<WinnerPulseGlow>
           ),
           child: Transform.scale(
             scale: scale,
-            child: const SizedBox(
-              width: 64,
-              height: 64,
-            ),
+            child: const SizedBox(width: 64, height: 64),
           ),
         );
       },

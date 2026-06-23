@@ -30,12 +30,7 @@ class PassDeviceOverlay extends StatelessWidget {
                 color: AppTheme.accentPrimary.withValues(alpha: 0.30),
                 width: 1.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.neonGlow,
-                  blurRadius: 24,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: AppTheme.neonGlow, blurRadius: 24)],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -64,12 +59,7 @@ class PassDeviceOverlay extends StatelessWidget {
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: AppTheme.neonGlow,
-                        blurRadius: 8,
-                      ),
-                    ],
+                    shadows: [Shadow(color: AppTheme.neonGlow, blurRadius: 8)],
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -80,22 +70,25 @@ class PassDeviceOverlay extends StatelessWidget {
                   child: OutlinedButton(
                     style: ButtonStyle(
                       side: WidgetStateProperty.all(
-                        const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
+                        const BorderSide(
+                          color: AppTheme.accentPrimary,
+                          width: 1.5,
+                        ),
                       ),
                       shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      overlayColor: WidgetStateProperty.resolveWith(
-                        (states) {
-                          if (states.contains(WidgetState.pressed)) {
-                            return AppTheme.accentPrimary.withValues(alpha: 0.15);
-                          }
-                          return null;
-                        },
+                      overlayColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.pressed)) {
+                          return AppTheme.accentPrimary.withValues(alpha: 0.15);
+                        }
+                        return null;
+                      }),
+                      foregroundColor: WidgetStateProperty.all(
+                        AppTheme.accentPrimary,
                       ),
-                      foregroundColor: WidgetStateProperty.all(AppTheme.accentPrimary),
                     ),
                     onPressed: () {
                       HapticFeedback.mediumImpact();

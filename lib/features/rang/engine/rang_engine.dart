@@ -169,8 +169,7 @@ class RangEngine {
     ];
 
     // Set leadSuit on the first card played in this trick.
-    final newLeadSuit =
-        updatedTrick.length == 1 ? card.suit : state.leadSuit;
+    final newLeadSuit = updatedTrick.length == 1 ? card.suit : state.leadSuit;
 
     // ── 3. Mid-trick: more players still to play ────────────────────────────
     if (updatedTrick.length < 4) {
@@ -266,8 +265,8 @@ class RangEngine {
       return state.copyWith(
         status: GameStatus.finished,
         winningTeam: winningTeam,
-        kot: loserSars == 0,           // Kot: losers scored zero sars.
-        bavney: winnerSars == 13,      // Bavney: winners took all 13 tricks.
+        kot: loserSars == 0, // Kot: losers scored zero sars.
+        bavney: winnerSars == 13, // Bavney: winners took all 13 tricks.
         clearCurrentPlayerId: true,
         clearPassToPlayerId: true,
       );

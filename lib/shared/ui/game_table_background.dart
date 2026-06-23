@@ -4,10 +4,7 @@ import 'package:rang_adda/shared/ui/theme.dart';
 class GameTableBackground extends StatelessWidget {
   final Widget child;
 
-  const GameTableBackground({
-    super.key,
-    required this.child,
-  });
+  const GameTableBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +14,7 @@ class GameTableBackground extends StatelessWidget {
         children: [
           // Grid layer
           Positioned.fill(
-            child: CustomPaint(
-              painter: _PerspectiveGridPainter(),
-            ),
+            child: CustomPaint(painter: _PerspectiveGridPainter()),
           ),
           // Glow layer
           Positioned.fill(
@@ -105,10 +100,14 @@ class _PerspectiveGridPainter extends CustomPainter {
     // Draw vertical radiating lines
     final double vanishingPointY = -height * 0.5;
     final double vanishingPointX = width * 0.5;
-    
+
     for (int i = -10; i <= 10; i++) {
       double x = width * 0.5 + (i * width * 0.15);
-      canvas.drawLine(Offset(vanishingPointX, vanishingPointY), Offset(x, height), paint);
+      canvas.drawLine(
+        Offset(vanishingPointX, vanishingPointY),
+        Offset(x, height),
+        paint,
+      );
     }
   }
 

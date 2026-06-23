@@ -23,9 +23,14 @@ class OnlineBluffActionController {
   bool _isProcessing = false;
 
   OnlineBluffActionController(this.ref) {
-    ref.listen<AsyncValue<BluffGameState?>>(onlineBluffProvider, (previous, next) {
+    ref.listen<AsyncValue<BluffGameState?>>(onlineBluffProvider, (
+      previous,
+      next,
+    ) {
       final state = next.value;
-      if (state != null && state.pendingBluffCallerId != null && previous?.value?.pendingBluffCallerId == null) {
+      if (state != null &&
+          state.pendingBluffCallerId != null &&
+          previous?.value?.pendingBluffCallerId == null) {
         _handleBluffResolution(state);
       }
     });
@@ -40,10 +45,10 @@ class OnlineBluffActionController {
         break;
       }
     }
-    
+
     final loserId = isBluff ? state.lastPlayerId! : callerId;
     final currentUser = FirebaseAuth.instance.currentUser;
-    
+
     // Only the loser who picks up the pile runs the transaction
     if (currentUser != null && loserId == currentUser.uid) {
       final firestore = ref.read(firestoreServiceProvider);
@@ -57,7 +62,11 @@ class OnlineBluffActionController {
     }
   }
 
-  Future<String?> playCard(String playerId, List<PlayingCard> cards, Rank claimedRank) async {
+  Future<String?> playCard(
+    String playerId,
+    List<PlayingCard> cards,
+    Rank claimedRank,
+  ) async {
     if (_isProcessing) return "Processing...";
     _isProcessing = true;
 
@@ -70,10 +79,15 @@ class OnlineBluffActionController {
 
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.runGameTransaction(state.gameId, (latestState) {
-        return BluffEngine.playCards(latestState as BluffGameState, playerId, cards, claimedRank);
+        return BluffEngine.playCards(
+          latestState as BluffGameState,
+          playerId,
+          cards,
+          claimedRank,
+        );
       });
       return null;
-    } catch(e) {
+    } catch (e) {
       return e.toString();
     } finally {
       _isProcessing = false;
@@ -90,7 +104,10 @@ class OnlineBluffActionController {
 
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.runGameTransaction(state.gameId, (latestState) {
-        var newState = BluffEngine.passTurn(latestState as BluffGameState, playerId);
+        var newState = BluffEngine.passTurn(
+          latestState as BluffGameState,
+          playerId,
+        );
         return newState.copyWith(passToPlayerId: null);
       });
     } catch (e) {

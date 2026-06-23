@@ -41,10 +41,8 @@ class AppTheme {
       error: statusError,
       onError: textPrimary,
     ),
-    textTheme: GoogleFonts.outfitTextTheme(
-      ThemeData.dark().textTheme,
-    ).apply(
-      bodyColor: textPrimary, 
+    textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
+      bodyColor: textPrimary,
       displayColor: textPrimary,
       decorationColor: accentPrimary,
     ),

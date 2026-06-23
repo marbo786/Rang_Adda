@@ -15,24 +15,27 @@ class WaitingRoomScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(onlineGameProvider);
     final user = ref.watch(userProvider).value;
-    
-    final isHost = stateAsync.value != null && 
-                   user != null && 
-                   stateAsync.value!.hostUid == user.uid;
+
+    final isHost =
+        stateAsync.value != null &&
+        user != null &&
+        stateAsync.value!.hostUid == user.uid;
 
     return Scaffold(
       appBar: AppBar(title: Text('Room Code: $gameId')),
       body: stateAsync.when(
         data: (state) {
           if (state == null) return const Center(child: Text("Room not found"));
-          
+
           // If the user has been kicked (is no longer in the players list)
           if (user != null && !state.players.any((p) => p.id == user.uid)) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ref.read(currentGameIdProvider.notifier).setId(null);
               context.go('/');
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('You have been kicked from the room.')),
+                const SnackBar(
+                  content: Text('You have been kicked from the room.'),
+                ),
               );
             });
             return const Center(child: Text("You were kicked..."));
@@ -69,14 +72,19 @@ class WaitingRoomScreen extends ConsumerWidget {
                         color: isSelf ? Colors.greenAccent : Colors.tealAccent,
                       ),
                       title: Text(player.name + (isSelf ? " (You)" : "")),
-                      trailing: (isHost && !isSelf) 
-                        ? IconButton(
-                            icon: const Icon(Icons.person_remove, color: Colors.redAccent),
-                            onPressed: () async {
-                              await ref.read(firestoreServiceProvider).kickPlayer(gameId, player.id);
-                            },
-                          )
-                        : null,
+                      trailing: (isHost && !isSelf)
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.person_remove,
+                                color: Colors.redAccent,
+                              ),
+                              onPressed: () async {
+                                await ref
+                                    .read(firestoreServiceProvider)
+                                    .kickPlayer(gameId, player.id);
+                              },
+                            )
+                          : null,
                     );
                   },
                 ),

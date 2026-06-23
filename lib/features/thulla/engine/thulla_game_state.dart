@@ -99,15 +99,15 @@ class ThullaGameState extends GameState {
 
   @override
   List<Object?> get props => [
-        ...super.props,
-        wastePile,
-        currentTrick,
-        powerPlayerId,
-        passToPlayerId,
-        trickResolving,
-        isOnline,
-        hostUid,
-      ];
+    ...super.props,
+    wastePile,
+    currentTrick,
+    powerPlayerId,
+    passToPlayerId,
+    trickResolving,
+    isOnline,
+    hostUid,
+  ];
 
   @override
   Map<String, dynamic> toJson() => {
@@ -135,7 +135,8 @@ class ThullaGameState extends GameState {
           .toList(),
       status: GameStatus.values[json['status'] as int],
       currentPlayerId: json['currentPlayerId'] as String?,
-      chatMessages: (json['chatMessages'] as List?)
+      chatMessages:
+          (json['chatMessages'] as List?)
               ?.map((m) => ChatMessage.fromJson(m as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -149,7 +150,9 @@ class ThullaGameState extends GameState {
       passToPlayerId: json['passToPlayerId'] as String?,
       trickResolving: json['trickResolving'] as bool? ?? false,
       isOnline: json['isOnline'] as bool? ?? false,
-      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      participantIds:
+          (json['participantIds'] as List?)?.map((e) => e as String).toList() ??
+          const [],
       hostUid: json['hostUid'] as String?,
     );
   }

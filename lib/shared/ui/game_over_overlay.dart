@@ -35,12 +35,11 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   @override
   void initState() {
     super.initState();
-    _confettiController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..forward().then((_) {
-      if (mounted) setState(() => _showConfetti = false);
-    });
+    _confettiController =
+        AnimationController(duration: const Duration(seconds: 3), vsync: this)
+          ..forward().then((_) {
+            if (mounted) setState(() => _showConfetti = false);
+          });
 
     _titleController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -68,14 +67,9 @@ class _GameOverOverlayState extends State<GameOverOverlay>
       child: Stack(
         children: [
           // Semi-transparent overlay
-          Container(
-            color: AppTheme.backgroundPrimary.withValues(alpha: 0.85),
-          ),
+          Container(color: AppTheme.backgroundPrimary.withValues(alpha: 0.85)),
           // Confetti effect
-          if (_showConfetti)
-            ConfettiWidget(
-              controller: _confettiController,
-            ),
+          if (_showConfetti) ConfettiWidget(controller: _confettiController),
           // Content
           Center(
             child: SingleChildScrollView(
@@ -84,30 +78,35 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                 children: [
                   // Winner announcement
                   ScaleTransition(
-                    scale: Tween<double>(begin: 0.5, end: 1.0)
-                        .animate(
-                          CurvedAnimation(
-                            parent: _titleController,
-                            curve: Curves.elasticOut,
-                          ),
-                        ),
+                    scale: Tween<double>(begin: 0.5, end: 1.0).animate(
+                      CurvedAnimation(
+                        parent: _titleController,
+                        curve: Curves.elasticOut,
+                      ),
+                    ),
                     child: FadeTransition(
-                      opacity: Tween<double>(begin: 0.0, end: 1.0)
-                          .animate(
-                            CurvedAnimation(
-                              parent: _titleController,
-                              curve: Curves.easeInOut,
-                            ),
-                          ),
+                      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                        CurvedAnimation(
+                          parent: _titleController,
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
                       child: Column(
                         children: [
                           if (widget.isKotOrBavney)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
+                              ),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentTertiary.withValues(alpha: 0.2),
-                                border: Border.all(color: AppTheme.accentTertiary),
+                                color: AppTheme.accentTertiary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                border: Border.all(
+                                  color: AppTheme.accentTertiary,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -165,19 +164,18 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                   const SizedBox(height: 64),
                   // Action buttons
                   FadeTransition(
-                    opacity: Tween<double>(begin: 0.0, end: 1.0)
-                        .animate(
-                          CurvedAnimation(
-                            parent: _buttonsController,
-                            curve: Curves.easeInOut,
-                          ),
-                        ),
+                    opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                      CurvedAnimation(
+                        parent: _buttonsController,
+                        curve: Curves.easeInOut,
+                      ),
+                    ),
                     child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.3),
-                        end: Offset.zero,
-                      )
-                          .animate(
+                      position:
+                          Tween<Offset>(
+                            begin: const Offset(0, 0.3),
+                            end: Offset.zero,
+                          ).animate(
                             CurvedAnimation(
                               parent: _buttonsController,
                               curve: Curves.easeOutCubic,
@@ -191,20 +189,24 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                             height: 56,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.isHost 
-                                    ? AppTheme.accentPrimary 
+                                backgroundColor: widget.isHost
+                                    ? AppTheme.accentPrimary
                                     : AppTheme.surfaceElevated,
-                                foregroundColor: widget.isHost 
-                                    ? AppTheme.backgroundPrimary 
+                                foregroundColor: widget.isHost
+                                    ? AppTheme.backgroundPrimary
                                     : AppTheme.textDisabled,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 elevation: 0,
                               ),
-                              onPressed: widget.isHost ? widget.onPlayAgain : null,
+                              onPressed: widget.isHost
+                                  ? widget.onPlayAgain
+                                  : null,
                               child: Text(
-                                widget.isHost ? 'PLAY AGAIN' : 'WAITING FOR HOST...',
+                                widget.isHost
+                                    ? 'PLAY AGAIN'
+                                    : 'WAITING FOR HOST...',
                                 style: TextStyle(
                                   fontSize: widget.isHost ? 18 : 14,
                                   fontWeight: FontWeight.w800,
@@ -257,10 +259,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
 class ConfettiWidget extends StatefulWidget {
   final AnimationController controller;
 
-  const ConfettiWidget({
-    super.key,
-    required this.controller,
-  });
+  const ConfettiWidget({super.key, required this.controller});
 
   @override
   State<ConfettiWidget> createState() => _ConfettiWidgetState();
@@ -336,10 +335,7 @@ class ConfettiPainter extends CustomPainter {
   final List<Confetti> confetti;
   final double progress;
 
-  ConfettiPainter({
-    required this.confetti,
-    required this.progress,
-  });
+  ConfettiPainter({required this.confetti, required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -363,10 +359,7 @@ class ConfettiPainter extends CustomPainter {
           ..style = PaintingStyle.fill;
 
         canvas.save();
-        canvas.translate(
-          particle.x * size.width,
-          particle.y * size.height,
-        );
+        canvas.translate(particle.x * size.width, particle.y * size.height);
         canvas.rotate(particle.rotation * math.pi / 180);
         canvas.drawRect(
           Rect.fromCenter(

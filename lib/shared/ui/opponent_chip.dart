@@ -21,7 +21,8 @@ class OpponentChip extends StatefulWidget {
   State<OpponentChip> createState() => _OpponentChipState();
 }
 
-class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderStateMixin {
+class _OpponentChipState extends State<OpponentChip>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _glowOpacity;
 
@@ -32,9 +33,10 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _glowOpacity = Tween<double>(begin: 0.4, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _glowOpacity = Tween<double>(
+      begin: 0.4,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     if (widget.isActive) {
       _controller.repeat(reverse: true);
@@ -96,7 +98,9 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.accentPrimary.withValues(alpha: _glowOpacity.value),
+                              color: AppTheme.accentPrimary.withValues(
+                                alpha: _glowOpacity.value,
+                              ),
                               blurRadius: 16,
                               spreadRadius: 2,
                             ),
@@ -148,7 +152,10 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
                   right: -4,
                   bottom: -4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.accentSecondary.withValues(alpha: 0.15),
                       border: Border.all(
@@ -169,7 +176,8 @@ class _OpponentChipState extends State<OpponentChip> with SingleTickerProviderSt
                 ),
 
                 // Emoji (top-right)
-                if (widget.latestEmoji != null && widget.latestEmoji!.isNotEmpty)
+                if (widget.latestEmoji != null &&
+                    widget.latestEmoji!.isNotEmpty)
                   Positioned(
                     right: -4,
                     top: -4,

@@ -13,9 +13,9 @@ class RangTrickPlay extends Equatable {
   List<Object?> get props => [playerId, card];
 
   Map<String, dynamic> toJson() => {
-        'playerId': playerId,
-        'card': card.toJson(),
-      };
+    'playerId': playerId,
+    'card': card.toJson(),
+  };
 
   factory RangTrickPlay.fromJson(Map<String, dynamic> json) {
     return RangTrickPlay(

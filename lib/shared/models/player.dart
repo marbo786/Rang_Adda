@@ -36,18 +36,19 @@ class Player extends Equatable {
   List<Object?> get props => [id, name, hand, cardCount, latestEmoji];
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'hand': hand.map((c) => c.toJson()).toList(),
-        'cardCount': cardCount,
-        'latestEmoji': latestEmoji,
-      };
+    'id': id,
+    'name': name,
+    'hand': hand.map((c) => c.toJson()).toList(),
+    'cardCount': cardCount,
+    'latestEmoji': latestEmoji,
+  };
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
       id: json['id'] as String,
       name: json['name'] as String,
-      hand: (json['hand'] as List?)
+      hand:
+          (json['hand'] as List?)
               ?.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
               .toList() ??
           const [],

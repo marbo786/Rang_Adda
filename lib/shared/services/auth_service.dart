@@ -14,8 +14,10 @@ final userProvider = StreamProvider<User?>((ref) {
 });
 
 class AuthService {
-  FirebaseAuth? get _auth => Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null;
-  FirebaseFirestore? get _db => Firebase.apps.isNotEmpty ? FirebaseFirestore.instance : null;
+  FirebaseAuth? get _auth =>
+      Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null;
+  FirebaseFirestore? get _db =>
+      Firebase.apps.isNotEmpty ? FirebaseFirestore.instance : null;
 
   Future<User?> signInAnonymously(String displayName) async {
     if (_auth == null || _db == null) return null;

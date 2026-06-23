@@ -82,7 +82,7 @@ class _ChatInputModalState extends ConsumerState<ChatInputModal> {
 
   void _sendMessage() {
     if (_controller.text.trim().isEmpty) return;
-    
+
     final user = ref.read(userProvider).value;
     if (user == null) return;
 
@@ -101,8 +101,10 @@ class _ChatInputModalState extends ConsumerState<ChatInputModal> {
   void _sendEmoji(String emoji) {
     final user = ref.read(userProvider).value;
     if (user == null) return;
-    
-    ref.read(firestoreServiceProvider).sendEmoji(widget.gameId, user.uid, emoji);
+
+    ref
+        .read(firestoreServiceProvider)
+        .sendEmoji(widget.gameId, user.uid, emoji);
     Navigator.of(context).pop();
   }
 
@@ -130,7 +132,10 @@ class _ChatInputModalState extends ConsumerState<ChatInputModal> {
               itemCount: emojis.length,
               itemBuilder: (context, index) {
                 return IconButton(
-                  icon: Text(emojis[index], style: const TextStyle(fontSize: 24)),
+                  icon: Text(
+                    emojis[index],
+                    style: const TextStyle(fontSize: 24),
+                  ),
                   onPressed: () => _sendEmoji(emojis[index]),
                 );
               },
@@ -147,7 +152,9 @@ class _ChatInputModalState extends ConsumerState<ChatInputModal> {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Send a message...",
-                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
                     border: InputBorder.none,
                   ),
                   onSubmitted: (_) => _sendMessage(),

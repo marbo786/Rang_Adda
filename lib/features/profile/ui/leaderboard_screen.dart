@@ -34,7 +34,10 @@ class LeaderboardScreen extends ConsumerWidget {
         data: (users) {
           if (users.isEmpty) {
             return const Center(
-              child: Text("No data available yet.", style: TextStyle(color: Colors.white)),
+              child: Text(
+                "No data available yet.",
+                style: TextStyle(color: Colors.white),
+              ),
             );
           }
           return RefreshIndicator(
@@ -48,7 +51,10 @@ class LeaderboardScreen extends ConsumerWidget {
                 final user = users[index];
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.surface,
                     borderRadius: BorderRadius.circular(16),
@@ -64,17 +70,26 @@ class LeaderboardScreen extends ConsumerWidget {
                       Text(
                         "#${index + 1}",
                         style: TextStyle(
-                          color: index == 0 ? Colors.amber : Colors.white.withValues(alpha: 0.5),
+                          color: index == 0
+                              ? Colors.amber
+                              : Colors.white.withValues(alpha: 0.5),
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 16),
                       CircleAvatar(
-                        backgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                        backgroundColor: AppTheme.accentPrimary.withValues(
+                          alpha: 0.2,
+                        ),
                         child: Text(
-                          user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : "?",
-                          style: const TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold),
+                          user.displayName.isNotEmpty
+                              ? user.displayName[0].toUpperCase()
+                              : "?",
+                          style: const TextStyle(
+                            color: AppTheme.accentPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -114,8 +129,12 @@ class LeaderboardScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)),
-        error: (err, stack) => Center(child: Text("Error: $err", style: const TextStyle(color: Colors.red))),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.accentPrimary),
+        ),
+        error: (err, stack) => Center(
+          child: Text("Error: $err", style: const TextStyle(color: Colors.red)),
+        ),
       ),
     );
   }

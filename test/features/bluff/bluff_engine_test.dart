@@ -7,7 +7,7 @@ void main() {
   group('BluffEngine Game Logic', () {
     test('calling bluff on yourself throws exception', () {
       final state = BluffEngine.initializeGame(['p1', 'p2']);
-      
+
       // Simulate p1 played cards
       final stateAfterPlay = state.copyWith(
         lastPlayerId: 'p1',
@@ -18,30 +18,45 @@ void main() {
 
       expect(
         () => BluffEngine.callBluff(stateAfterPlay, 'p1'),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains("can't call bluff on yourself"))),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains("can't call bluff on yourself"),
+          ),
+        ),
       );
     });
 
     test('calling bluff with empty pile throws exception', () {
       final state = BluffEngine.initializeGame(['p1', 'p2']);
-      
+
       expect(
         () => BluffEngine.callBluff(state, 'p2'),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains("No cards to call bluff on"))),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains("No cards to call bluff on"),
+          ),
+        ),
       );
     });
 
     test('passTurn skips players with 0 cards', () {
       final state = BluffEngine.initializeGame(['p1', 'p2', 'p3']);
-      
+
       // Simulate p2 having 0 cards
       final players = state.players.toList();
       players[1] = players[1].copyWith(hand: [], cardCount: 0);
-      
-      final modifiedState = state.copyWith(players: players, currentPlayerId: 'p1');
-      
+
+      final modifiedState = state.copyWith(
+        players: players,
+        currentPlayerId: 'p1',
+      );
+
       final nextState = BluffEngine.passTurn(modifiedState, 'p1');
-      
+
       // Since p2 has 0 cards, turn should pass to p3
       expect(nextState.currentPlayerId, 'p3');
     });

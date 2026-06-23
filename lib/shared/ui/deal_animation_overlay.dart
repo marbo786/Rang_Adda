@@ -19,7 +19,8 @@ class DealAnimationOverlay extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DealAnimationOverlay> createState() => _DealAnimationOverlayState();
+  ConsumerState<DealAnimationOverlay> createState() =>
+      _DealAnimationOverlayState();
 }
 
 class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
@@ -35,7 +36,7 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
   @override
   void initState() {
     super.initState();
-    
+
     // Main controller to sequence the animation
     _mainController = AnimationController(
       duration: const Duration(milliseconds: totalDurationMs),
@@ -58,14 +59,19 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
     final audioService = ref.read(audioServiceProvider);
     int cardIndex = 0;
 
-    for (int playerIndex = 0; playerIndex < widget.players.length; playerIndex++) {
+    for (
+      int playerIndex = 0;
+      playerIndex < widget.players.length;
+      playerIndex++
+    ) {
       final player = widget.players[playerIndex];
       final cardCountForPlayer = player.hand.length;
 
       for (int cardIdx = 0; cardIdx < cardCountForPlayer; cardIdx++) {
-        final delay = playerIndex * cardDelayMs + (cardIdx * (cardDelayMs ~/ 2));
+        final delay =
+            playerIndex * cardDelayMs + (cardIdx * (cardDelayMs ~/ 2));
         final currentCardIndex = cardIndex; // Capture for closure
-        
+
         Future.delayed(Duration(milliseconds: delay), () {
           if (mounted && currentCardIndex < _cardControllers.length) {
             audioService.playCardFlip();
@@ -79,7 +85,9 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
 
     // Wait for all animations to complete
     await Future.delayed(
-      Duration(milliseconds: totalDurationMs + (cardDelayMs * widget.playerCount * 2)),
+      Duration(
+        milliseconds: totalDurationMs + (cardDelayMs * widget.playerCount * 2),
+      ),
     );
 
     if (mounted) {
@@ -103,9 +111,7 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
         // Semi-transparent overlay to block interaction
         Container(
           color: Colors.black.withValues(alpha: 0.3),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: CircularProgressIndicator()),
         ),
 
         // Animated cards
@@ -122,7 +128,11 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
 
     int cardIndex = 0;
 
-    for (int playerIndex = 0; playerIndex < widget.players.length; playerIndex++) {
+    for (
+      int playerIndex = 0;
+      playerIndex < widget.players.length;
+      playerIndex++
+    ) {
       final player = widget.players[playerIndex];
       final cardCountForPlayer = player.hand.length;
 
@@ -137,12 +147,16 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
         if (cardIndex >= _cardControllers.length) break;
 
         final currentCardIndex = cardIndex; // Capture for closure
-        final animation = Tween<Offset>(
-          begin: Offset(centerX, centerY),
-          end: targetPos,
-        ).animate(
-          CurvedAnimation(curve: Curves.easeOut, parent: _cardControllers[currentCardIndex]),
-        );
+        final animation =
+            Tween<Offset>(
+              begin: Offset(centerX, centerY),
+              end: targetPos,
+            ).animate(
+              CurvedAnimation(
+                curve: Curves.easeOut,
+                parent: _cardControllers[currentCardIndex],
+              ),
+            );
 
         cards.add(
           AnimatedBuilder(
@@ -152,10 +166,7 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
               return Positioned(
                 left: offset.dx - 30,
                 top: offset.dy - 45,
-                child: Opacity(
-                  opacity: 1.0,
-                  child: child!,
-                ),
+                child: Opacity(opacity: 1.0, child: child!),
               );
             },
             child: _buildCardWidget(),
@@ -219,29 +230,50 @@ class _DealAnimationOverlayState extends ConsumerState<DealAnimationOverlay>
         // 3-player layout: bottom, top-left, top-right
         if (playerIndex == 0) {
           // Bottom player
-          return Offset(screenSize.width / 2, screenSize.height - handAreaHeight);
+          return Offset(
+            screenSize.width / 2,
+            screenSize.height - handAreaHeight,
+          );
         } else if (playerIndex == 1) {
           // Top-left
-          return Offset(screenSize.width / 4, topAreaMargin + topAreaHeight / 2);
+          return Offset(
+            screenSize.width / 4,
+            topAreaMargin + topAreaHeight / 2,
+          );
         } else {
           // Top-right
-          return Offset((screenSize.width * 3) / 4, topAreaMargin + topAreaHeight / 2);
+          return Offset(
+            (screenSize.width * 3) / 4,
+            topAreaMargin + topAreaHeight / 2,
+          );
         }
 
       case 4:
         // 4-player layout: bottom, top-left, top-center, top-right
         if (playerIndex == 0) {
           // Bottom player
-          return Offset(screenSize.width / 2, screenSize.height - handAreaHeight);
+          return Offset(
+            screenSize.width / 2,
+            screenSize.height - handAreaHeight,
+          );
         } else if (playerIndex == 1) {
           // Top-left
-          return Offset(screenSize.width / 5, topAreaMargin + topAreaHeight / 2);
+          return Offset(
+            screenSize.width / 5,
+            topAreaMargin + topAreaHeight / 2,
+          );
         } else if (playerIndex == 2) {
           // Top-center
-          return Offset(screenSize.width / 2, topAreaMargin + topAreaHeight / 2);
+          return Offset(
+            screenSize.width / 2,
+            topAreaMargin + topAreaHeight / 2,
+          );
         } else {
           // Top-right
-          return Offset((screenSize.width * 4) / 5, topAreaMargin + topAreaHeight / 2);
+          return Offset(
+            (screenSize.width * 4) / 5,
+            topAreaMargin + topAreaHeight / 2,
+          );
         }
 
       default:

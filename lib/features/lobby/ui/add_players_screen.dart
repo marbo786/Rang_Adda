@@ -52,12 +52,9 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
   void initState() {
     super.initState();
 
-    _config = _configs[widget.gameType] ??
-        const _GameConfig(
-          displayName: 'Game',
-          minPlayers: 2,
-          maxPlayers: 8,
-        );
+    _config =
+        _configs[widget.gameType] ??
+        const _GameConfig(displayName: 'Game', minPlayers: 2, maxPlayers: 8);
 
     // Start at the minimum player count.
     for (int i = 0; i < _config.minPlayers; i++) {
@@ -127,8 +124,9 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
   }
 
   bool get _hasDuplicates {
-    final names =
-        _trimmedNames.where((n) => n.isNotEmpty).map((n) => n.toLowerCase());
+    final names = _trimmedNames
+        .where((n) => n.isNotEmpty)
+        .map((n) => n.toLowerCase());
     final set = <String>{};
     for (final name in names) {
       if (!set.add(name)) return true;
@@ -171,7 +169,8 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     final canAdd = count < _config.maxPlayers;
     final canRemove = count > _config.minPlayers;
 
-    final gameTypeLabel = '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '${_config.minPlayers}-${_config.maxPlayers}'} PLAYERS';
+    final gameTypeLabel =
+        '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '${_config.minPlayers}-${_config.maxPlayers}'} PLAYERS';
 
     final playerFields = List.generate(count, (index) {
       final errorText = _errorFor(index);
@@ -190,7 +189,9 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.5,
-                    color: hasFocus ? AppTheme.accentPrimary : AppTheme.textDisabled,
+                    color: hasFocus
+                        ? AppTheme.accentPrimary
+                        : AppTheme.textDisabled,
                   ),
                 ),
                 const Spacer(),
@@ -215,7 +216,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                           blurRadius: 16,
                           spreadRadius: -8,
                           offset: const Offset(0, 8),
-                        )
+                        ),
                       ]
                     : [],
               ),
@@ -255,10 +256,16 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                     vertical: 16,
                   ),
                   border: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
+                    borderSide: BorderSide(
+                      color: AppTheme.textDisabled,
+                      width: 1,
+                    ),
                   ),
                   enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.textDisabled, width: 1),
+                    borderSide: BorderSide(
+                      color: AppTheme.textDisabled,
+                      width: 1,
+                    ),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
@@ -349,8 +356,12 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.accentPrimary,
           foregroundColor: AppTheme.backgroundPrimary,
-          disabledBackgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.3),
-          disabledForegroundColor: AppTheme.backgroundPrimary.withValues(alpha: 0.5),
+          disabledBackgroundColor: AppTheme.accentPrimary.withValues(
+            alpha: 0.3,
+          ),
+          disabledForegroundColor: AppTheme.backgroundPrimary.withValues(
+            alpha: 0.5,
+          ),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -393,7 +404,8 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    const Text('WHO\'S PLAYING',
+                    const Text(
+                      'WHO\'S PLAYING',
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 22,
@@ -401,8 +413,13 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                         letterSpacing: 3.0,
                       ),
                     ),
-                    Text(gameTypeLabel,
-                      style: const TextStyle(color: AppTheme.accentSecondary, fontSize: 12, letterSpacing: 2),
+                    Text(
+                      gameTypeLabel,
+                      style: const TextStyle(
+                        color: AppTheme.accentSecondary,
+                        fontSize: 12,
+                        letterSpacing: 2,
+                      ),
                     ),
                     const SizedBox(height: 28),
 
@@ -421,5 +438,3 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     );
   }
 }
-
-

@@ -18,14 +18,17 @@ final firestoreServiceProvider = Provider<FirestoreService>((ref) {
 });
 
 class FirestoreService {
-  FirebaseFirestore? get _db => Firebase.apps.isNotEmpty ? FirebaseFirestore.instance : null;
+  FirebaseFirestore? get _db =>
+      Firebase.apps.isNotEmpty ? FirebaseFirestore.instance : null;
 
   Stream<GameState?> streamGame(String gameId) {
     if (_db == null) return const Stream.empty();
-    
-    final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
+
+    final currentUser = Firebase.apps.isNotEmpty
+        ? FirebaseAuth.instance.currentUser
+        : null;
     final gameStream = _db!.collection('games').doc(gameId).snapshots();
-    
+
     if (currentUser == null) {
       return gameStream.map((snapshot) {
         if (!snapshot.exists || snapshot.data() == null) return null;
@@ -37,42 +40,55 @@ class FirestoreService {
       });
     }
 
-    final handStream = _db!.collection('games').doc(gameId).collection('hands').doc(currentUser.uid).snapshots();
+    final handStream = _db!
+        .collection('games')
+        .doc(gameId)
+        .collection('hands')
+        .doc(currentUser.uid)
+        .snapshots();
 
-    return Rx.combineLatest2(
-      gameStream,
-      handStream,
-      (DocumentSnapshot gameSnap, DocumentSnapshot handSnap) {
-        if (!gameSnap.exists || gameSnap.data() == null) return null;
-        try {
-          GameState state = GameState.fromJson(gameSnap.data() as Map<String, dynamic>);
-          
-          if (handSnap.exists && handSnap.data() != null) {
-            final handData = (handSnap.data() as Map<String, dynamic>)['hand'] as List?;
-            if (handData != null) {
-              final hand = handData.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>)).toList();
-              
-              final updatedPlayers = state.players.map((p) {
-                if (p.id == currentUser.uid) {
-                  return p.copyWith(hand: hand);
-                }
-                return p;
-              }).toList();
-              
-              final json = state.toJson();
-              json['players'] = updatedPlayers.map((p) => p.toJson()).toList();
-              return GameState.fromJson(json);
-            }
+    return Rx.combineLatest2(gameStream, handStream, (
+      DocumentSnapshot gameSnap,
+      DocumentSnapshot handSnap,
+    ) {
+      if (!gameSnap.exists || gameSnap.data() == null) return null;
+      try {
+        GameState state = GameState.fromJson(
+          gameSnap.data() as Map<String, dynamic>,
+        );
+
+        if (handSnap.exists && handSnap.data() != null) {
+          final handData =
+              (handSnap.data() as Map<String, dynamic>)['hand'] as List?;
+          if (handData != null) {
+            final hand = handData
+                .map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
+                .toList();
+
+            final updatedPlayers = state.players.map((p) {
+              if (p.id == currentUser.uid) {
+                return p.copyWith(hand: hand);
+              }
+              return p;
+            }).toList();
+
+            final json = state.toJson();
+            json['players'] = updatedPlayers.map((p) => p.toJson()).toList();
+            return GameState.fromJson(json);
           }
-          return state;
-        } catch (e) {
-          return null;
         }
-      },
-    );
+        return state;
+      } catch (e) {
+        return null;
+      }
+    });
   }
 
-  Future<String> createWaitingRoom(String hostId, String hostName, String gameType) async {
+  Future<String> createWaitingRoom(
+    String hostId,
+    String hostName,
+    String gameType,
+  ) async {
     if (_db == null) throw Exception("Firebase not initialized");
     final _chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     final _rnd = DateTime.now().millisecondsSinceEpoch;
@@ -82,7 +98,7 @@ class FirestoreService {
       gameId += _chars[temp % 36];
       temp ~/= 36;
     }
-    
+
     GameState state;
     if (gameType == 'bluff') {
       state = BluffGameState(
@@ -102,7 +118,7 @@ class FirestoreService {
         hostUid: hostId,
       );
     }
-    
+
     await _db!.collection('games').doc(gameId).set(state.toJson());
     return gameId;
   }
@@ -141,88 +157,123 @@ class FirestoreService {
 
     final state = GameState.fromJson(doc.data()!);
     GameState playingState;
-    
+
     if (state.gameType == 'bluff') {
       final playerIds = state.players.map((p) => p.id).toList();
       final playerNames = state.players.map((p) => p.name).toList();
       final initialized = BluffEngine.initializeGame(playerIds, playerNames);
       playingState = initialized.copyWith(
-        gameId: state.gameId, 
+        gameId: state.gameId,
         status: GameStatus.playing,
         isOnline: true,
         participantIds: state.participantIds,
       );
     } else {
-      playingState = ThullaEngine.startGameFromWaitingRoom(state as ThullaGameState);
+      playingState = ThullaEngine.startGameFromWaitingRoom(
+        state as ThullaGameState,
+      );
       playingState = (playingState as ThullaGameState).copyWith(
         isOnline: true,
         participantIds: state.participantIds,
       );
     }
-    
+
     final batch = _db!.batch();
     for (var player in playingState.players) {
       if (player.hand.isNotEmpty) {
-        final handRef = _db!.collection('games').doc(gameId).collection('hands').doc(player.id);
-        batch.set(handRef, {'hand': player.hand.map((c) => c.toJson()).toList()});
+        final handRef = _db!
+            .collection('games')
+            .doc(gameId)
+            .collection('hands')
+            .doc(player.id);
+        batch.set(handRef, {
+          'hand': player.hand.map((c) => c.toJson()).toList(),
+        });
       }
     }
 
     final strippedPlayers = playingState.players.map((p) {
       return p.copyWith(hand: const [], cardCount: p.hand.length);
     }).toList();
-    
+
     final json = playingState.toJson();
     json['players'] = strippedPlayers.map((p) => p.toJson()).toList();
-    
+
     batch.update(_db!.collection('games').doc(gameId), json);
     await batch.commit();
   }
 
-  Future<void> runGameTransaction(String gameId, GameState Function(GameState currentState) updateFn) async {
+  Future<void> runGameTransaction(
+    String gameId,
+    GameState Function(GameState currentState) updateFn,
+  ) async {
     if (_db == null) return;
-    final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
-    
+    final currentUser = Firebase.apps.isNotEmpty
+        ? FirebaseAuth.instance.currentUser
+        : null;
+
     await _db!.runTransaction((transaction) async {
       final docRef = _db!.collection('games').doc(gameId);
       final doc = await transaction.get(docRef);
       if (!doc.exists || doc.data() == null) return;
-      
+
       GameState state = GameState.fromJson(doc.data()!);
-      
-      if (currentUser != null && state.players.any((p) => p.id == currentUser.uid)) {
-        final handRef = _db!.collection('games').doc(gameId).collection('hands').doc(currentUser.uid);
+
+      if (currentUser != null &&
+          state.players.any((p) => p.id == currentUser.uid)) {
+        final handRef = _db!
+            .collection('games')
+            .doc(gameId)
+            .collection('hands')
+            .doc(currentUser.uid);
         final handDoc = await transaction.get(handRef);
         if (handDoc.exists && handDoc.data() != null) {
           final handData = handDoc.data()!['hand'] as List?;
           if (handData != null) {
-            final hand = handData.map((c) => PlayingCard.fromJson(c as Map<String, dynamic>)).toList();
-            final updatedPlayers = state.players.map((p) => p.id == currentUser.uid ? p.copyWith(hand: hand) : p).toList();
+            final hand = handData
+                .map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
+                .toList();
+            final updatedPlayers = state.players
+                .map(
+                  (p) => p.id == currentUser.uid ? p.copyWith(hand: hand) : p,
+                )
+                .toList();
             final json = state.toJson();
             json['players'] = updatedPlayers.map((p) => p.toJson()).toList();
             state = GameState.fromJson(json);
           }
         }
       }
-      
+
       final newState = updateFn(state);
-      
+
       if (currentUser != null) {
-        final localPlayerIdx = newState.players.indexWhere((p) => p.id == currentUser.uid);
+        final localPlayerIdx = newState.players.indexWhere(
+          (p) => p.id == currentUser.uid,
+        );
         if (localPlayerIdx != -1) {
-           final localPlayer = newState.players[localPlayerIdx];
-           final handRef = _db!.collection('games').doc(gameId).collection('hands').doc(currentUser.uid);
-           transaction.set(handRef, {'hand': localPlayer.hand.map((c) => c.toJson()).toList()});
+          final localPlayer = newState.players[localPlayerIdx];
+          final handRef = _db!
+              .collection('games')
+              .doc(gameId)
+              .collection('hands')
+              .doc(currentUser.uid);
+          transaction.set(handRef, {
+            'hand': localPlayer.hand.map((c) => c.toJson()).toList(),
+          });
         }
       }
 
       final strippedPlayers = newState.players.map((p) {
-        return p.copyWith(hand: const [], cardCount: p.hand.isNotEmpty ? p.hand.length : p.cardCount);
+        return p.copyWith(
+          hand: const [],
+          cardCount: p.hand.isNotEmpty ? p.hand.length : p.cardCount,
+        );
       }).toList();
-      
+
       final newJson = newState.toJson();
       newJson['players'] = strippedPlayers.map((p) => p.toJson()).toList();
-      
+
       transaction.update(docRef, newJson);
     });
   }
@@ -238,8 +289,10 @@ class FirestoreService {
     if (!doc.exists) return;
 
     final state = GameState.fromJson(doc.data()!);
-    final newPlayers = state.players.where((p) => p.id != playerIdToKick).toList();
-    
+    final newPlayers = state.players
+        .where((p) => p.id != playerIdToKick)
+        .toList();
+
     await _db!.collection('games').doc(gameId).update({
       'players': newPlayers.map((p) => p.toJson()).toList(),
     });
@@ -282,12 +335,13 @@ class FirestoreService {
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) return;
       final state = GameState.fromJson(snapshot.data()!);
-      
-      final updatedMessages = List<ChatMessage>.from(state.chatMessages)..add(message);
+
+      final updatedMessages = List<ChatMessage>.from(state.chatMessages)
+        ..add(message);
       if (updatedMessages.length > 50) {
         updatedMessages.removeAt(0);
       }
-      
+
       transaction.update(docRef, {
         'chatMessages': updatedMessages.map((m) => m.toJson()).toList(),
       });
@@ -300,7 +354,7 @@ class FirestoreService {
     await _db!.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) return;
-      
+
       final state = GameState.fromJson(snapshot.data()!);
       final updatedPlayers = state.players.map((p) {
         if (p.id == playerId) {
@@ -308,7 +362,7 @@ class FirestoreService {
         }
         return p;
       }).toList();
-      
+
       transaction.update(docRef, {
         'players': updatedPlayers.map((p) => p.toJson()).toList(),
       });

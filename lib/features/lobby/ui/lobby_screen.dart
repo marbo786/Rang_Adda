@@ -19,7 +19,8 @@ class LobbyScreen extends ConsumerStatefulWidget {
   ConsumerState<LobbyScreen> createState() => _LobbyScreenState();
 }
 
-class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderStateMixin {
+class _LobbyScreenState extends ConsumerState<LobbyScreen>
+    with TickerProviderStateMixin {
   final _codeController = TextEditingController();
   final FocusNode _codeFocus = FocusNode();
 
@@ -102,10 +103,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
             borderRadius: BorderRadius.circular(12),
             side: isPrimary
                 ? BorderSide.none
-                : const BorderSide(
-                    color: AppTheme.accentPrimary,
-                    width: 1.5,
-                  ),
+                : const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
           ),
         ),
         onPressed: () {
@@ -139,7 +137,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
           ),
           title: const Text(
             'HOST GAME',
-            style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, letterSpacing: 2.0),
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2.0,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -163,33 +165,34 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
   Future<void> _hostGame(String gameType) async {
     final user = ref.read(userProvider).value;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Connecting...")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Connecting...")));
       try {
         await ref
             .read(authProvider)
             .signInAnonymously("Host_${DateTime.now().millisecond}");
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Auth Failed: $e")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Auth Failed: $e")));
         }
         return;
       }
     }
     try {
-      String? uid = user?.uid ??
+      String? uid =
+          user?.uid ??
           (await ref
                   .read(authProvider)
                   .signInAnonymously("Host_${DateTime.now().millisecond}"))
               ?.uid;
       if (uid == null) throw Exception("Auth failed");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Creating room...")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Creating room...")));
       }
       final gameId = await ref
           .read(firestoreServiceProvider)
@@ -201,9 +204,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
@@ -269,7 +272,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                           }, type: ButtonType.primary),
                           const SizedBox(height: 12),
                           _buildButton('LEAVE CURRENT GAME', () {
-                            ref.read(currentGameIdProvider.notifier).setId(null);
+                            ref
+                                .read(currentGameIdProvider.notifier)
+                                .setId(null);
                           }),
                           const SizedBox(height: 32),
                         ],
@@ -300,10 +305,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
         final translateY = 20.0 * (1 - opacity);
         return Transform.translate(
           offset: Offset(0, translateY),
-          child: Opacity(
-            opacity: opacity,
-            child: child,
-          ),
+          child: Opacity(opacity: opacity, child: child),
         );
       },
       child: Center(
@@ -418,9 +420,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
             cursorColor: AppTheme.accentPrimary,
             keyboardType: TextInputType.number,
             maxLength: 6,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: const TextStyle(
               fontSize: 24,
               letterSpacing: 4.0,
@@ -454,18 +454,23 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
             final user = ref.read(userProvider).value;
             if (user == null || _codeController.text.isEmpty) return;
             try {
-              await ref.read(firestoreServiceProvider).joinWaitingRoom(
+              await ref
+                  .read(firestoreServiceProvider)
+                  .joinWaitingRoom(
                     _codeController.text,
                     user.uid,
                     user.displayName ?? "Player",
                   );
-              ref.read(currentGameIdProvider.notifier).setId(_codeController.text);
-              if (mounted) context.push('/waiting_room/${_codeController.text}');
+              ref
+                  .read(currentGameIdProvider.notifier)
+                  .setId(_codeController.text);
+              if (mounted)
+                context.push('/waiting_room/${_codeController.text}');
             } catch (e) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(e.toString())),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(e.toString())));
               }
             }
           }, type: ButtonType.primary),
@@ -505,7 +510,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                   icons: const ['♠', '♠', '♠'],
                   iconsColor: AppTheme.accentPrimary.withValues(alpha: 0.08),
                   onTap: () => context.push('/setup/thulla'),
-                  interval: const Interval(0.0, 0.714, curve: Curves.easeOutCubic),
+                  interval: const Interval(
+                    0.0,
+                    0.714,
+                    curve: Curves.easeOutCubic,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 _buildGameCard(
@@ -516,7 +525,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                   icons: const ['♥', '♦', '♣'],
                   iconsColor: AppTheme.statusError.withValues(alpha: 0.08),
                   onTap: () => context.push('/setup/bluff'),
-                  interval: const Interval(0.142, 0.857, curve: Curves.easeOutCubic),
+                  interval: const Interval(
+                    0.142,
+                    0.857,
+                    curve: Curves.easeOutCubic,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 _buildGameCard(
@@ -527,7 +540,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                   icons: const ['♥', '♠', '♦', '♣'],
                   iconsColor: AppTheme.accentTertiary.withValues(alpha: 0.10),
                   onTap: () => context.push('/setup/rang'),
-                  interval: const Interval(0.285, 1.0, curve: Curves.easeOutCubic),
+                  interval: const Interval(
+                    0.285,
+                    1.0,
+                    curve: Curves.easeOutCubic,
+                  ),
                   isComingSoon: true,
                 ),
               ],
@@ -557,10 +574,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
         final translateY = 20.0 * (1 - progress);
         return Transform.translate(
           offset: Offset(0, translateY),
-          child: Opacity(
-            opacity: opacity,
-            child: child,
-          ),
+          child: Opacity(opacity: opacity, child: child),
         );
       },
       child: GestureDetector(
@@ -597,7 +611,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> with TickerProviderSt
                   child: Transform.rotate(
                     angle: 0.785398, // 45 degrees
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 4,
+                      ),
                       color: AppTheme.accentSecondary,
                       child: const Text(
                         'SOON',

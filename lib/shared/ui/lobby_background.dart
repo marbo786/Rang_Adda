@@ -119,12 +119,16 @@ class _BackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (var symbol in symbols) {
       // Calculate Y position with wrap around
-      double y = symbol.startY - (progress * size.height * 0.4) + (symbol.index * size.height / 18);
+      double y =
+          symbol.startY -
+          (progress * size.height * 0.4) +
+          (symbol.index * size.height / 18);
       y = y % size.height;
       if (y < 0) y += size.height;
 
       // Calculate X position with sway
-      final x = symbol.startX + math.sin(progress * 2 * math.pi + symbol.index) * 18;
+      final x =
+          symbol.startX + math.sin(progress * 2 * math.pi + symbol.index) * 18;
 
       // Calculate rotation angle
       final angle = progress * math.pi * (symbol.index.isEven ? 1 : -1);
@@ -137,10 +141,7 @@ class _BackgroundPainter extends CustomPainter {
       final textPainter = TextPainter(
         text: TextSpan(
           text: symbol.suit,
-          style: TextStyle(
-            color: color,
-            fontSize: symbol.size,
-          ),
+          style: TextStyle(color: color, fontSize: symbol.size),
         ),
         textDirection: TextDirection.ltr,
       );

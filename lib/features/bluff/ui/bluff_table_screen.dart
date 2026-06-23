@@ -32,7 +32,6 @@ class BluffTableScreen extends ConsumerStatefulWidget {
 }
 
 class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
-
   void _showChatModal(String gameId) {
     showModalBottomSheet(
       context: context,
@@ -47,7 +46,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!widget.isOnline) {
-        final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
+        final names =
+            widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
         final ids = List.generate(names.length, (i) => 'p${i + 1}');
         ref.read(bluffProvider.notifier).startGame(ids, names);
       }
@@ -59,13 +59,16 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     final state = widget.isOnline
         ? ref.watch(onlineBluffProvider).value
         : ref.watch(bluffProvider);
-        
+
     if (state == null || state.players.isEmpty) {
       return const Scaffold(
-          backgroundColor: AppTheme.backgroundPrimary,
-          body: Center(child: CircularProgressIndicator(color: AppTheme.accentPrimary)));
+        backgroundColor: AppTheme.backgroundPrimary,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.accentPrimary),
+        ),
+      );
     }
-    
+
     if (state.status == GameStatus.finished) {
       // Find the winner (player without remaining cards)
       final winner = state.players.firstWhere(
@@ -75,14 +78,18 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       return Scaffold(
         body: GameOverOverlay(
           winnerName: winner.name,
-          isHost: !widget.isOnline || FirebaseAuth.instance.currentUser?.uid == state.hostUid,
+          isHost:
+              !widget.isOnline ||
+              FirebaseAuth.instance.currentUser?.uid == state.hostUid,
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              ref.read(bluffProvider.notifier).startGame(
-                    ['p1', 'p2', 'p3', 'p4'],
-                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'],
-                  );
+              ref.read(bluffProvider.notifier).startGame([
+                'p1',
+                'p2',
+                'p3',
+                'p4',
+              ], widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana']);
             } else {
               context.go('/');
             }
@@ -99,7 +106,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       (p) => p.id == state.currentPlayerId,
       orElse: () => state.players.first,
     );
-    
+
     if (widget.isOnline) {
       final user = ref.read(userProvider).value;
       if (user != null) {
@@ -126,14 +133,17 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
               Shadow(
                 color: AppTheme.accentSecondary.withValues(alpha: 0.5),
                 blurRadius: 12,
-              )
+              ),
             ],
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.accentPrimary,
+          ),
           onPressed: () => context.go('/'),
         ),
       ),
@@ -149,10 +159,17 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     child: RoundTableWidget(
                       playerNames: state.players.map((p) => p.name).toList(),
                       playerIds: state.players.map((p) => p.id).toList(),
-                      activePlayerIndex: state.players.indexWhere((p) => p.id == state.currentPlayerId),
-                      cardCounts: state.players.map((p) => p.hand.length).toList(),
+                      activePlayerIndex: state.players.indexWhere(
+                        (p) => p.id == state.currentPlayerId,
+                      ),
+                      cardCounts: state.players
+                          .map((p) => p.hand.length)
+                          .toList(),
                       currentTrickPlays: const {},
-                      size: math.min(MediaQuery.of(context).size.width * 0.75, 300),
+                      size: math.min(
+                        MediaQuery.of(context).size.width * 0.75,
+                        300,
+                      ),
                     ),
                   ),
 
@@ -161,116 +178,125 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     child: Center(
                       child: SingleChildScrollView(
                         child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Status Banner
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isYourTurn
-                                  ? AppTheme.accentPrimary.withValues(alpha: 0.15)
-                                  : AppTheme.surfaceElevated,
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: isYourTurn
-                                    ? AppTheme.accentPrimary
-                                    : AppTheme.accentPrimary.withValues(alpha: 0.1),
-                                width: 1.5,
-                              ),
-                              boxShadow: isYourTurn
-                                  ? [
-                                      BoxShadow(
-                                        color: AppTheme.neonGlow,
-                                        blurRadius: 16,
-                                      )
-                                    ]
-                                  : [],
-                            ),
-                            child: Text(
-                              isYourTurn
-                                  ? 'CHOOSE YOUR BLUFF!'
-                                  : 'WAITING FOR ${state.players.firstWhere((p) => p.id == state.currentPlayerId).name.toUpperCase()}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 2.0,
-                                color: isYourTurn
-                                    ? AppTheme.accentPrimary
-                                    : AppTheme.textSecondary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-
-                          // Center Pile visualization
-                          if (state.centerPile.isNotEmpty)
-                            AnimatedOpacity(
-                              opacity: state.resolvingBluffMessage != null ? 0.0 : 1.0,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Status Banner
+                            AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInCubic,
-                              child: Container(
-                                padding: const EdgeInsets.all(28),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppTheme.surfaceElevated,
-                                  border: Border.all(
-                                    color: AppTheme.accentSecondary.withValues(alpha: 0.5),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.accentSecondary.withValues(alpha: 0.3),
-                                      blurRadius: 24,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${state.centerPile.length}',
-                                      style: TextStyle(
-                                        fontSize: 48,
-                                        fontWeight: FontWeight.w900,
-                                        color: AppTheme.textPrimary,
-                                        shadows: [
-                                          Shadow(
-                                            color: AppTheme.accentSecondary.withValues(alpha: 0.5),
-                                            blurRadius: 12,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    const Text(
-                                      'CARDS IN PILE',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppTheme.textSecondary,
-                                        letterSpacing: 2.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
                               ),
-                            )
-                          else
-                            const Text(
-                              'PILE IS EMPTY',
-                              style: TextStyle(
-                                color: AppTheme.textDisabled,
-                                letterSpacing: 2.0,
-                                fontWeight: FontWeight.bold,
+                              decoration: BoxDecoration(
+                                color: isYourTurn
+                                    ? AppTheme.accentPrimary.withValues(
+                                        alpha: 0.15,
+                                      )
+                                    : AppTheme.surfaceElevated,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: isYourTurn
+                                      ? AppTheme.accentPrimary
+                                      : AppTheme.accentPrimary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                  width: 1.5,
+                                ),
+                                boxShadow: isYourTurn
+                                    ? [
+                                        BoxShadow(
+                                          color: AppTheme.neonGlow,
+                                          blurRadius: 16,
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Text(
+                                isYourTurn
+                                    ? 'CHOOSE YOUR BLUFF!'
+                                    : 'WAITING FOR ${state.players.firstWhere((p) => p.id == state.currentPlayerId).name.toUpperCase()}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2.0,
+                                  color: isYourTurn
+                                      ? AppTheme.accentPrimary
+                                      : AppTheme.textSecondary,
+                                ),
                               ),
                             ),
-                        ],
+                            const SizedBox(height: 40),
+
+                            // Center Pile visualization
+                            if (state.centerPile.isNotEmpty)
+                              AnimatedOpacity(
+                                opacity: state.resolvingBluffMessage != null
+                                    ? 0.0
+                                    : 1.0,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInCubic,
+                                child: Container(
+                                  padding: const EdgeInsets.all(28),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppTheme.surfaceElevated,
+                                    border: Border.all(
+                                      color: AppTheme.accentSecondary
+                                          .withValues(alpha: 0.5),
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.accentSecondary
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 24,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '${state.centerPile.length}',
+                                        style: TextStyle(
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppTheme.textPrimary,
+                                          shadows: [
+                                            Shadow(
+                                              color: AppTheme.accentSecondary
+                                                  .withValues(alpha: 0.5),
+                                              blurRadius: 12,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Text(
+                                        'CARDS IN PILE',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.textSecondary,
+                                          letterSpacing: 2.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              const Text(
+                                'PILE IS EMPTY',
+                                style: TextStyle(
+                                  color: AppTheme.textDisabled,
+                                  letterSpacing: 2.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
                     ),
                   ),
 
@@ -318,32 +344,37 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                         Shadow(
                                           color: AppTheme.neonGlow,
                                           blurRadius: 8,
-                                        )
+                                        ),
                                       ]
                                     : [],
                               ),
                             ),
                           ),
                           BluffHandWidget(
-                              hand: bottomPlayer.hand,
-                              isFirstTurn: state.centerPile.isEmpty,
+                            hand: bottomPlayer.hand,
+                            isFirstTurn: state.centerPile.isEmpty,
                             canPass: true,
                             onPass: () async {
                               if (widget.isOnline) {
                                 final user = ref.read(userProvider).value;
-                                if (user == null || user.uid != bottomPlayer.id) {
+                                if (user == null ||
+                                    user.uid != bottomPlayer.id) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text("You can only play your own hand!"),
+                                      content: Text(
+                                        "You can only play your own hand!",
+                                      ),
                                     ),
                                   );
                                   return;
                                 }
                               }
-                              
+
                               String? error;
                               if (widget.isOnline) {
-                                await ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
+                                await ref
+                                    .read(onlineBluffActionProvider)
+                                    .passTurn(bottomPlayer.id);
                               } else {
                                 error = await ref
                                     .read(bluffProvider.notifier)
@@ -361,10 +392,13 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             onPlayCards: (cards) {
                               if (widget.isOnline) {
                                 final user = ref.read(userProvider).value;
-                                if (user == null || user.uid != bottomPlayer.id) {
+                                if (user == null ||
+                                    user.uid != bottomPlayer.id) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text("You can only play your own hand!"),
+                                      content: Text(
+                                        "You can only play your own hand!",
+                                      ),
                                     ),
                                   );
                                   return;
@@ -405,8 +439,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
               if (state.resolvingBluffMessage != null)
                 _buildResultOverlay(context, state.resolvingBluffMessage!),
 
-              if (widget.isOnline)
-                ChatOverlay(messages: state.chatMessages),
+              if (widget.isOnline) ChatOverlay(messages: state.chatMessages),
             ],
           ),
         ),
@@ -467,9 +500,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       letterSpacing: 2.0,
                       shadows: [
                         Shadow(
-                          color: AppTheme.accentSecondary.withValues(alpha: 0.5),
+                          color: AppTheme.accentSecondary.withValues(
+                            alpha: 0.5,
+                          ),
                           blurRadius: 8,
-                        )
+                        ),
                       ],
                     ),
                     textAlign: TextAlign.center,
@@ -485,7 +520,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           HapticFeedback.mediumImpact();
                           ref.read(audioServiceProvider).playClick();
                           Navigator.of(dialogContext).pop();
-                          
+
                           String? error;
                           if (widget.isOnline) {
                             error = await ref
@@ -496,7 +531,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 .read(bluffProvider.notifier)
                                 .playCard(playerId, cards, rank);
                           }
-                          
+
                           if (error != null && mounted) {
                             HapticFeedback.vibrate();
                             ref.read(audioServiceProvider).playError();
@@ -514,9 +549,13 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.accentPrimary.withValues(alpha: 0.1),
+                            color: AppTheme.accentPrimary.withValues(
+                              alpha: 0.1,
+                            ),
                             border: Border.all(
-                              color: AppTheme.accentPrimary.withValues(alpha: 0.5),
+                              color: AppTheme.accentPrimary.withValues(
+                                alpha: 0.5,
+                              ),
                               width: 1.5,
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -554,7 +593,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     );
   }
 
-  Widget _buildChallengeOverlay(BuildContext context, BluffGameState state, Player bottomPlayer) {
+  Widget _buildChallengeOverlay(
+    BuildContext context,
+    BluffGameState state,
+    Player bottomPlayer,
+  ) {
     String pName = state.players
         .firstWhere((p) => p.id == state.lastPlayerId)
         .name;
@@ -617,7 +660,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       Shadow(
                         color: AppTheme.statusWarning.withValues(alpha: 0.5),
                         blurRadius: 8,
-                      )
+                      ),
                     ],
                   ),
                   textAlign: TextAlign.center,
@@ -639,7 +682,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       HapticFeedback.heavyImpact();
                       ref.read(audioServiceProvider).playHeavySlam();
                       if (widget.isOnline) {
-                        ref.read(onlineBluffActionProvider).callBluff(bottomPlayer.id);
+                        ref
+                            .read(onlineBluffActionProvider)
+                            .callBluff(bottomPlayer.id);
                       } else {
                         ref
                             .read(bluffProvider.notifier)
@@ -676,7 +721,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       ref.read(audioServiceProvider).playClick();
                       if (widget.isOnline) {
                         // Online decline means pass turn implicitly
-                        ref.read(onlineBluffActionProvider).passTurn(bottomPlayer.id);
+                        ref
+                            .read(onlineBluffActionProvider)
+                            .passTurn(bottomPlayer.id);
                       } else {
                         ref.read(bluffProvider.notifier).declineChallenge();
                       }
@@ -732,7 +779,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     color: AppTheme.accentSecondary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.gavel_rounded, size: 48, color: AppTheme.accentSecondary),
+                  child: const Icon(
+                    Icons.gavel_rounded,
+                    size: 48,
+                    color: AppTheme.accentSecondary,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -763,7 +814,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       HapticFeedback.lightImpact();
                       ref.read(audioServiceProvider).playClick();
                       if (widget.isOnline) {
-                        ref.read(onlineBluffActionProvider).acknowledgeResolvingMessage();
+                        ref
+                            .read(onlineBluffActionProvider)
+                            .acknowledgeResolvingMessage();
                       } else {
                         ref
                             .read(bluffProvider.notifier)

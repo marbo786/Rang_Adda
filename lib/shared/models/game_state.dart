@@ -31,15 +31,15 @@ abstract class GameState extends Equatable {
 
   @override
   List<Object?> get props => [
-        gameId,
-        gameType,
-        players,
-        status,
-        currentPlayerId,
-        chatMessages,
-        participantIds,
-        hostUid,
-      ];
+    gameId,
+    gameType,
+    players,
+    status,
+    currentPlayerId,
+    chatMessages,
+    participantIds,
+    hostUid,
+  ];
 
   Map<String, dynamic> toJson();
 

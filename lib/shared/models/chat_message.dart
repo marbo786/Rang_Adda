@@ -14,11 +14,11 @@ class ChatMessage extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'senderId': senderId,
-        'senderName': senderName,
-        'text': text,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'senderId': senderId,
+    'senderName': senderName,
+    'text': text,
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(

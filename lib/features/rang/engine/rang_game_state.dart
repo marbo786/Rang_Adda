@@ -163,8 +163,7 @@ class RangGameState extends GameState {
       passToPlayerId: clearPassToPlayerId
           ? null
           : (passToPlayerId ?? this.passToPlayerId),
-      winningTeam:
-          clearWinningTeam ? null : (winningTeam ?? this.winningTeam),
+      winningTeam: clearWinningTeam ? null : (winningTeam ?? this.winningTeam),
       kot: kot ?? this.kot,
       bavney: bavney ?? this.bavney,
       participantIds: participantIds ?? this.participantIds,
@@ -176,53 +175,53 @@ class RangGameState extends GameState {
 
   @override
   List<Object?> get props => [
-        ...super.props,
-        dealerId,
-        trumpCallerId,
-        trumpSuit,
-        phase,
-        leadSuit,
-        currentTrick,
-        heap,
-        lastTrickWinnerId,
-        consecutiveWinsByLastWinner,
-        teamASars,
-        teamBSars,
-        passToPlayerId,
-        winningTeam,
-        kot,
-        bavney,
-        hostUid,
-      ];
+    ...super.props,
+    dealerId,
+    trumpCallerId,
+    trumpSuit,
+    phase,
+    leadSuit,
+    currentTrick,
+    heap,
+    lastTrickWinnerId,
+    consecutiveWinsByLastWinner,
+    teamASars,
+    teamBSars,
+    passToPlayerId,
+    winningTeam,
+    kot,
+    bavney,
+    hostUid,
+  ];
 
   // ── Serialisation (Firestore-compatible) ─────────────────────────────────
 
   @override
   Map<String, dynamic> toJson() => {
-        'gameId': gameId,
-        'gameType': gameType,
-        'players': players.map((p) => p.toJson()).toList(),
-        'status': status.index,
-        'currentPlayerId': currentPlayerId,
-        'chatMessages': chatMessages.map((m) => m.toJson()).toList(),
-        'dealerId': dealerId,
-        'trumpCallerId': trumpCallerId,
-        'trumpSuit': trumpSuit?.index,
-        'phase': phase.index,
-        'leadSuit': leadSuit?.index,
-        'currentTrick': currentTrick.map((t) => t.toJson()).toList(),
-        'heap': heap.map((c) => c.toJson()).toList(),
-        'lastTrickWinnerId': lastTrickWinnerId,
-        'consecutiveWinsByLastWinner': consecutiveWinsByLastWinner,
-        'teamASars': teamASars,
-        'teamBSars': teamBSars,
-        'passToPlayerId': passToPlayerId,
-        'winningTeam': winningTeam,
-        'kot': kot,
-        'bavney': bavney,
-        'participantIds': participantIds,
-        'hostUid': hostUid,
-      };
+    'gameId': gameId,
+    'gameType': gameType,
+    'players': players.map((p) => p.toJson()).toList(),
+    'status': status.index,
+    'currentPlayerId': currentPlayerId,
+    'chatMessages': chatMessages.map((m) => m.toJson()).toList(),
+    'dealerId': dealerId,
+    'trumpCallerId': trumpCallerId,
+    'trumpSuit': trumpSuit?.index,
+    'phase': phase.index,
+    'leadSuit': leadSuit?.index,
+    'currentTrick': currentTrick.map((t) => t.toJson()).toList(),
+    'heap': heap.map((c) => c.toJson()).toList(),
+    'lastTrickWinnerId': lastTrickWinnerId,
+    'consecutiveWinsByLastWinner': consecutiveWinsByLastWinner,
+    'teamASars': teamASars,
+    'teamBSars': teamBSars,
+    'passToPlayerId': passToPlayerId,
+    'winningTeam': winningTeam,
+    'kot': kot,
+    'bavney': bavney,
+    'participantIds': participantIds,
+    'hostUid': hostUid,
+  };
 
   factory RangGameState.fromJson(Map<String, dynamic> json) {
     return RangGameState(
@@ -232,7 +231,8 @@ class RangGameState extends GameState {
           .toList(),
       status: GameStatus.values[json['status'] as int],
       currentPlayerId: json['currentPlayerId'] as String?,
-      chatMessages: (json['chatMessages'] as List?)
+      chatMessages:
+          (json['chatMessages'] as List?)
               ?.map((m) => ChatMessage.fromJson(m as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -260,7 +260,9 @@ class RangGameState extends GameState {
       winningTeam: json['winningTeam'] as String?,
       kot: json['kot'] as bool? ?? false,
       bavney: json['bavney'] as bool? ?? false,
-      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      participantIds:
+          (json['participantIds'] as List?)?.map((e) => e as String).toList() ??
+          const [],
       hostUid: json['hostUid'] as String?,
     );
   }

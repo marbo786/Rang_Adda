@@ -29,7 +29,7 @@ class RangNotifier extends Notifier<RangGameState?> {
 
   Future<String?> playCard(String playerId, PlayingCard card) async {
     if (state == null) return "Game not ready.";
-    
+
     // Note: RangEngine resolves the trick instantly upon the 4th card being played.
     String? error = RangEngine.getMoveError(state!, playerId, card);
     if (error != null) return error;

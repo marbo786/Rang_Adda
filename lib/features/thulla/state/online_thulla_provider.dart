@@ -56,9 +56,14 @@ class OnlineActionController {
   bool _isProcessing = false;
 
   OnlineActionController(this.ref) {
-    ref.listen<AsyncValue<ThullaGameState?>>(onlineThullaProvider, (previous, next) {
+    ref.listen<AsyncValue<ThullaGameState?>>(onlineThullaProvider, (
+      previous,
+      next,
+    ) {
       final state = next.value;
-      if (state != null && state.trickResolving && (previous?.value?.trickResolving != true)) {
+      if (state != null &&
+          state.trickResolving &&
+          (previous?.value?.trickResolving != true)) {
         _handleTrickResolution(state);
       }
     });
@@ -70,9 +75,10 @@ class OnlineActionController {
 
     final resolvedState = ThullaEngine.resolveTrick(state);
     final currentUser = FirebaseAuth.instance.currentUser;
-    
+
     // Only the player who gets the next turn (winner or loser who picks up) runs the transaction
-    if (currentUser != null && resolvedState.currentPlayerId == currentUser.uid) {
+    if (currentUser != null &&
+        resolvedState.currentPlayerId == currentUser.uid) {
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.runGameTransaction(state.gameId, (latestState) {
         final thullaState = latestState as ThullaGameState;
@@ -98,7 +104,11 @@ class OnlineActionController {
 
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.runGameTransaction(state.gameId, (latestState) {
-        return ThullaEngine.playCard(latestState as ThullaGameState, playerId, card);
+        return ThullaEngine.playCard(
+          latestState as ThullaGameState,
+          playerId,
+          card,
+        );
       });
 
       return null;

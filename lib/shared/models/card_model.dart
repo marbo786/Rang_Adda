@@ -37,7 +37,7 @@ class PlayingCard extends Equatable {
     int rankIndex = json['rank'] as int? ?? 0;
     if (suitIndex < 0 || suitIndex >= Suit.values.length) suitIndex = 0;
     if (rankIndex < 0 || rankIndex >= Rank.values.length) rankIndex = 0;
-    
+
     return PlayingCard(
       suit: Suit.values[suitIndex],
       rank: Rank.values[rankIndex],

@@ -66,8 +66,8 @@ class BluffGameState extends GameState {
       passToPlayerId: passToPlayerId ?? this.passToPlayerId,
       resolvingBluffMessage:
           resolvingBluffMessage ?? this.resolvingBluffMessage,
-      pendingBluffCallerId: clearPendingBluffCallerId 
-          ? null 
+      pendingBluffCallerId: clearPendingBluffCallerId
+          ? null
           : (pendingBluffCallerId ?? this.pendingBluffCallerId),
       isOnline: isOnline ?? this.isOnline,
       chatMessages: chatMessages ?? this.chatMessages,
@@ -153,24 +153,24 @@ class BluffGameState extends GameState {
 
   @override
   Map<String, dynamic> toJson() => {
-        'gameId': gameId,
-        'gameType': gameType,
-        'players': players.map((p) => p.toJson()).toList(),
-        'status': status.index,
-        'currentPlayerId': currentPlayerId,
-        'chatMessages': chatMessages.map((m) => m.toJson()).toList(),
-        'lastPlayerId': lastPlayerId,
-        'centerPile': centerPile.map((c) => c.toJson()).toList(),
-        'lastPlayedCards': lastPlayedCards.map((c) => c.toJson()).toList(),
-        'lastClaimedRank': lastClaimedRank?.index,
-        'consecutivePasses': consecutivePasses,
-        'passToPlayerId': passToPlayerId,
-        'resolvingBluffMessage': resolvingBluffMessage,
-        'pendingBluffCallerId': pendingBluffCallerId,
-        'isOnline': isOnline,
-        'participantIds': participantIds,
-        'hostUid': hostUid,
-      };
+    'gameId': gameId,
+    'gameType': gameType,
+    'players': players.map((p) => p.toJson()).toList(),
+    'status': status.index,
+    'currentPlayerId': currentPlayerId,
+    'chatMessages': chatMessages.map((m) => m.toJson()).toList(),
+    'lastPlayerId': lastPlayerId,
+    'centerPile': centerPile.map((c) => c.toJson()).toList(),
+    'lastPlayedCards': lastPlayedCards.map((c) => c.toJson()).toList(),
+    'lastClaimedRank': lastClaimedRank?.index,
+    'consecutivePasses': consecutivePasses,
+    'passToPlayerId': passToPlayerId,
+    'resolvingBluffMessage': resolvingBluffMessage,
+    'pendingBluffCallerId': pendingBluffCallerId,
+    'isOnline': isOnline,
+    'participantIds': participantIds,
+    'hostUid': hostUid,
+  };
 
   factory BluffGameState.fromJson(Map<String, dynamic> json) {
     return BluffGameState(
@@ -180,7 +180,8 @@ class BluffGameState extends GameState {
           .toList(),
       status: GameStatus.values[json['status'] as int],
       currentPlayerId: json['currentPlayerId'] as String,
-      chatMessages: (json['chatMessages'] as List?)
+      chatMessages:
+          (json['chatMessages'] as List?)
               ?.map((m) => ChatMessage.fromJson(m as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -191,15 +192,17 @@ class BluffGameState extends GameState {
       lastPlayedCards: (json['lastPlayedCards'] as List)
           .map((c) => PlayingCard.fromJson(c as Map<String, dynamic>))
           .toList(),
-      lastClaimedRank: json['lastClaimedRank'] != null 
-          ? Rank.values[json['lastClaimedRank'] as int] 
+      lastClaimedRank: json['lastClaimedRank'] != null
+          ? Rank.values[json['lastClaimedRank'] as int]
           : null,
       consecutivePasses: json['consecutivePasses'] as int? ?? 0,
       passToPlayerId: json['passToPlayerId'] as String?,
       resolvingBluffMessage: json['resolvingBluffMessage'] as String?,
       pendingBluffCallerId: json['pendingBluffCallerId'] as String?,
       isOnline: json['isOnline'] as bool? ?? false,
-      participantIds: (json['participantIds'] as List?)?.map((e) => e as String).toList() ?? const [],
+      participantIds:
+          (json['participantIds'] as List?)?.map((e) => e as String).toList() ??
+          const [],
       hostUid: json['hostUid'] as String?,
     );
   }

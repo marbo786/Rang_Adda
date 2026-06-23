@@ -156,8 +156,7 @@ class ThullaEngine {
     bool trickEnded = false;
     int activePlayersCount = players
         .where(
-          (p) =>
-              p.cardCount > 0 || currentTrick.any((t) => t.playerId == p.id),
+          (p) => p.cardCount > 0 || currentTrick.any((t) => t.playerId == p.id),
         )
         .length;
     bool roundCompletedNormal = currentTrick.length == activePlayersCount;
@@ -202,7 +201,10 @@ class ThullaEngine {
       final updatedPlayers = players.map((p) {
         if (p.id == highestPlayerId) {
           final newHand = [...p.hand, ...trickCards];
-          return p.copyWith(hand: newHand, cardCount: p.cardCount + trickCards.length);
+          return p.copyWith(
+            hand: newHand,
+            cardCount: p.cardCount + trickCards.length,
+          );
         }
         return p;
       }).toList();
@@ -238,7 +240,8 @@ class ThullaEngine {
           int drawIndex = random.nextInt(newWastePile.length);
           PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
           updatedPlayers = updatedPlayers.map((p) {
-            if (p.id == highestPlayerId) return p.copyWith(hand: [drawnCard], cardCount: 1);
+            if (p.id == highestPlayerId)
+              return p.copyWith(hand: [drawnCard], cardCount: 1);
             return p;
           }).toList();
         }

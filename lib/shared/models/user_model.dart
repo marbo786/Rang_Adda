@@ -38,13 +38,13 @@ class UserModel extends Equatable {
   }
 
   Map<String, dynamic> toJson() => {
-        'uid': uid,
-        'displayName': displayName,
-        'wins': wins,
-        'losses': losses,
-        'gamesPlayed': gamesPlayed,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'uid': uid,
+    'displayName': displayName,
+    'wins': wins,
+    'losses': losses,
+    'gamesPlayed': gamesPlayed,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -60,5 +60,12 @@ class UserModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [uid, displayName, wins, losses, gamesPlayed, createdAt];
+  List<Object?> get props => [
+    uid,
+    displayName,
+    wins,
+    losses,
+    gamesPlayed,
+    createdAt,
+  ];
 }
