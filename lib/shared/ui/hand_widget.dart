@@ -45,21 +45,27 @@ class HandWidget extends ConsumerWidget {
 
         return SizedBox(
           height: containerHeight,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 16.0,
-            ),
-            itemCount: hand.length,
-            itemBuilder: (context, index) {
+          width: constraints.maxWidth,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: List.generate(hand.length, (index) {
               final card = hand[index];
               bool valid = isCardValid == null || isCardValid!(card);
+              
+              // Calculate horizontal position
+              // Center the hand if it doesn't take up the full width
+              double totalRequiredWidth = cardW + (cardW * dynamicWidthFactor * (hand.length - 1));
+              double startOffset = (constraints.maxWidth - totalRequiredWidth) / 2;
+              if (startOffset < 24.0) startOffset = 24.0;
+              
+              double leftPosition = startOffset + (index * cardW * dynamicWidthFactor);
 
-              return Align(
-                alignment: Alignment.bottomCenter,
-                widthFactor: dynamicWidthFactor,
+              return AnimatedPositioned(
+                key: ValueKey(card),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                left: leftPosition,
+                bottom: 16.0,
                 child: GestureDetector(
                   onTap: valid
                       ? () {
@@ -75,7 +81,6 @@ class HandWidget extends ConsumerWidget {
                     duration: const Duration(milliseconds: 120),
                     curve: Curves.easeOutCubic,
                     transform: Matrix4.identity()
-                      // ignore: deprecated_member_use
                       ..scale(valid ? 1.0 : 0.92),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -103,7 +108,7 @@ class HandWidget extends ConsumerWidget {
                   ),
                 ),
               );
-            },
+            }),
           ),
         );
       },

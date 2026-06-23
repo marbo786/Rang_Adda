@@ -9,6 +9,7 @@ class RoundTableWidget extends StatefulWidget {
   final List<String> playerIds;
   final int activePlayerIndex;
   final List<int> cardCounts;
+  final List<String?>? latestEmojis;
   final String? trumpSuit;
   final double size;
   final Map<String, PlayingCard?> currentTrickPlays;
@@ -19,6 +20,7 @@ class RoundTableWidget extends StatefulWidget {
     required this.playerIds,
     required this.activePlayerIndex,
     required this.cardCounts,
+    this.latestEmojis,
     required this.currentTrickPlays,
     this.trumpSuit,
     this.size = 280,
@@ -151,21 +153,29 @@ class _RoundTableWidgetState extends State<RoundTableWidget>
                         offset: Offset(x, y),
                         child: Transform.rotate(
                           angle: -_rotation.value,
-                          child: AnimatedOpacity(
-                            opacity: playedCard != null ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 200),
-                            child: playedCard != null
-                                ? PlayingCardWidget(
+                          child: playedCard != null
+                              ? TweenAnimationBuilder<double>(
+                                  key: ValueKey(playedCard),
+                                  tween: Tween(begin: 1.5, end: 1.0),
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeIn,
+                                  builder: (context, scale, child) {
+                                    return Transform.scale(
+                                      scale: scale,
+                                      child: child,
+                                    );
+                                  },
+                                  child: PlayingCardWidget(
                                     card: playedCard,
                                     isFaceUp: true,
                                     width: widget.size * 0.1,
                                     height: widget.size * 0.14,
-                                  )
-                                : SizedBox(
-                                    width: widget.size * 0.1,
-                                    height: widget.size * 0.14,
                                   ),
-                          ),
+                                )
+                              : SizedBox(
+                                  width: widget.size * 0.1,
+                                  height: widget.size * 0.14,
+                                ),
                         ),
                       );
                     }),
@@ -230,14 +240,19 @@ class _RoundTableWidgetState extends State<RoundTableWidget>
                                       : null,
                                 ),
                                 alignment: Alignment.center,
-                                child: Text(
-                                  initials,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: isActive ? 16 : 12,
-                                    color: isActive
-                                        ? AppTheme.accentPrimary
-                                        : AppTheme.textSecondary,
+                                child: EmojiReactionWidget(
+                                  emoji: widget.latestEmojis != null && i < widget.latestEmojis!.length 
+                                      ? widget.latestEmojis![i] 
+                                      : null,
+                                  child: Text(
+                                    initials,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: isActive ? 16 : 12,
+                                      color: isActive
+                                          ? AppTheme.accentPrimary
+                                          : AppTheme.textSecondary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -410,4 +425,75 @@ class _TableSurfacePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class EmojiReactionWidget extends StatefulWidget {
+  final Widget child;
+  final String? emoji;
+
+  const EmojiReactionWidget({super.key, required this.child, this.emoji});
+
+  @override
+  State<EmojiReactionWidget> createState() => _EmojiReactionWidgetState();
+}
+
+class _EmojiReactionWidgetState extends State<EmojiReactionWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnim;
+  late Animation<double> _fadeAnim;
+  String? _currentEmoji;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
+    _slideAnim = Tween<double>(begin: 0, end: -40).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.5, 1.0)));
+    if (widget.emoji != null) {
+      _currentEmoji = widget.emoji;
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(EmojiReactionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.emoji != null && widget.emoji != oldWidget.emoji) {
+      _currentEmoji = widget.emoji;
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        widget.child,
+        if (_currentEmoji != null)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Positioned(
+                top: _slideAnim.value,
+                child: Opacity(
+                  opacity: _fadeAnim.value,
+                  child: Text(
+                    _currentEmoji!,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
 }

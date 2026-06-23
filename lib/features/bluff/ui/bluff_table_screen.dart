@@ -164,6 +164,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       cardCounts: state.players
                           .map((p) => p.hand.length)
                           .toList(),
+                      latestEmojis: state.players.map((p) => p.latestEmoji).toList(),
                       currentTrickPlays: const {},
                       size: math.min(
                         MediaQuery.of(context).size.width * 0.75,
@@ -542,6 +543,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 backgroundColor: AppTheme.statusError,
                               ),
                             );
+                          } else {
+                            HapticFeedback.mediumImpact();
+                            ref.read(audioServiceProvider).playHeavySlam();
                           }
                         },
                         child: Container(
@@ -681,7 +685,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     ),
                     onPressed: () {
                       HapticFeedback.heavyImpact();
-                      ref.read(audioServiceProvider).playHeavySlam();
+                      ref.read(audioServiceProvider).playBluffCall();
                       if (widget.isOnline) {
                         ref
                             .read(onlineBluffActionProvider)

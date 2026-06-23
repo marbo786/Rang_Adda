@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rang_adda/shared/services/audio_service.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:rang_adda/shared/ui/theme.dart';
 
-class GameOverOverlay extends StatefulWidget {
+class GameOverOverlay extends ConsumerStatefulWidget {
   final String winnerName;
   final String? score;
   final bool isKotOrBavney;
@@ -22,10 +25,10 @@ class GameOverOverlay extends StatefulWidget {
   });
 
   @override
-  State<GameOverOverlay> createState() => _GameOverOverlayState();
+  ConsumerState<GameOverOverlay> createState() => _GameOverOverlayState();
 }
 
-class _GameOverOverlayState extends State<GameOverOverlay>
+class _GameOverOverlayState extends ConsumerState<GameOverOverlay>
     with TickerProviderStateMixin {
   late AnimationController _confettiController;
   late AnimationController _titleController;
@@ -35,6 +38,11 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   @override
   void initState() {
     super.initState();
+    HapticFeedback.heavyImpact();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(audioServiceProvider).playGameOver();
+    });
+    
     _confettiController =
         AnimationController(duration: const Duration(seconds: 3), vsync: this)
           ..forward().then((_) {

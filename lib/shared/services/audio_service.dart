@@ -6,11 +6,27 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 });
 
 class AudioService {
-  final List<AudioPlayer> _pool = List.generate(5, (_) => AudioPlayer());
+  final List<AudioPlayer> _pool = List.generate(8, (_) => AudioPlayer());
   int _poolIndex = 0;
+  final AudioPlayer _bgmPlayer = AudioPlayer();
 
   AudioService() {
-    // Pool initialized
+    _initBgm();
+  }
+
+  Future<void> _initBgm() async {
+    try {
+      await _bgmPlayer.setAsset('assets/audio/lofi_bgm.wav');
+      await _bgmPlayer.setLoopMode(LoopMode.all);
+      await _bgmPlayer.setVolume(0.3);
+      _bgmPlayer.play();
+    } catch (e) {
+      // Ignore gracefully
+    }
+  }
+
+  void stopBgm() {
+    _bgmPlayer.stop();
   }
 
   Future<void> _playSound(String assetPath) async {
@@ -38,5 +54,17 @@ class AudioService {
 
   void playHeavySlam() {
     _playSound('assets/audio/heavy_slam.wav');
+  }
+
+  void playTrickWin() {
+    _playSound('assets/audio/trick_win.wav');
+  }
+
+  void playGameOver() {
+    _playSound('assets/audio/game_over.wav');
+  }
+
+  void playBluffCall() {
+    _playSound('assets/audio/bluff_call.wav');
   }
 }

@@ -13,6 +13,9 @@ class ChatMessage extends Equatable {
     required this.timestamp,
   });
 
+  bool get isEmoji => text.startsWith('EMOJI:');
+  String get emojiContent => text.replaceFirst('EMOJI:', '');
+
   Map<String, dynamic> toJson() => {
     'senderId': senderId,
     'senderName': senderName,

@@ -21,42 +21,91 @@ class PlayingCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isFaceUp) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F2335),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: const Color(0xFF00FF88).withValues(alpha: 0.30),
-            width: 1.5,
-          ),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeInBack,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        final rotateAnim = Tween(begin: math.pi, end: 0.0).animate(animation);
+        return AnimatedBuilder(
+          animation: rotateAnim,
+          child: child,
+          builder: (context, widget) {
+            final isUnder = (ValueKey(isFaceUp) != widget!.key);
+            final value = isUnder ? math.min(rotateAnim.value, math.pi / 2) : rotateAnim.value;
+            return Transform(
+              transform: Matrix4.rotationY(value)..setEntry(3, 0, 0.001),
+              alignment: Alignment.center,
+              child: widget,
+            );
+          },
+        );
+      },
+      child: isFaceUp ? _buildFaceUp() : _buildFaceDown(),
+    );
+  }
+
+  Widget _buildFaceDown() {
+    return Container(
+      key: const ValueKey(false),
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceElevated,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF3A5068),
+          width: 1.5,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12.5),
-          child: Stack(
-            children: [
-              CustomPaint(
-                size: Size(width, height),
-                painter: _CardBackPainter(),
-              ),
-              // Center emblem for card back identity
-              Center(
-                child: Text(
-                  '♠',
-                  style: TextStyle(
-                    color: const Color(0xFF00FF88).withValues(alpha: 0.20),
-                    fontSize: width * 0.45,
-                    fontWeight: FontWeight.w900,
-                  ),
+        boxShadow: hasShadow
+            ? [
+                BoxShadow(
+                  color: AppTheme.neonGlow,
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 2),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.8),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : [],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.5),
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.05),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.2),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Center(
+              child: Text(
+                '♠',
+                style: TextStyle(
+                  color: const Color(0xFF00FF88).withValues(alpha: 0.15),
+                  fontSize: width * 0.6,
+                ),
+              ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
+
+  Widget _buildFaceUp() {
 
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
     final color = isRed ? const Color(0xFFFF4D6A) : Colors.white;
@@ -101,6 +150,7 @@ class PlayingCardWidget extends StatelessWidget {
     }
 
     return Container(
+      key: const ValueKey(true),
       width: width,
       height: height,
       decoration: BoxDecoration(

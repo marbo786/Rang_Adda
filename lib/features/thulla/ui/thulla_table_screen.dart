@@ -220,6 +220,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       cardCounts: state.players
                           .map((p) => p.hand.length)
                           .toList(),
+                      latestEmojis: state.players.map((p) => p.latestEmoji).toList(),
                       currentTrickPlays: const {},
                       size: math.min(
                         MediaQuery.of(context).size.width * 0.75,
@@ -463,6 +464,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
 
                               if (error != null) {
                                 if (!context.mounted) return;
+                                HapticFeedback.vibrate();
+                                ref.read(audioServiceProvider).playError();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(error),
@@ -471,6 +474,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
+                              } else {
+                                HapticFeedback.mediumImpact();
+                                ref.read(audioServiceProvider).playHeavySlam();
                               }
                             },
                           ),
