@@ -32,7 +32,9 @@ class PlayingCardWidget extends StatelessWidget {
           child: child,
           builder: (context, widget) {
             final isUnder = (ValueKey(isFaceUp) != widget!.key);
-            final value = isUnder ? math.min(rotateAnim.value, math.pi / 2) : rotateAnim.value;
+            final value = isUnder
+                ? math.min(rotateAnim.value, math.pi / 2)
+                : rotateAnim.value;
             return Transform(
               transform: Matrix4.rotationY(value)..setEntry(3, 0, 0.001),
               alignment: Alignment.center,
@@ -53,10 +55,7 @@ class PlayingCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceElevated,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFF3A5068),
-          width: 1.5,
-        ),
+        border: Border.all(color: const Color(0xFF3A5068), width: 1.5),
         boxShadow: hasShadow
             ? [
                 BoxShadow(
@@ -69,7 +68,7 @@ class PlayingCardWidget extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.8),
                   blurRadius: 6,
                   offset: const Offset(0, 4),
-                )
+                ),
               ]
             : [],
       ),
@@ -106,7 +105,6 @@ class PlayingCardWidget extends StatelessWidget {
   }
 
   Widget _buildFaceUp() {
-
     final isRed = card.suit == Suit.hearts || card.suit == Suit.diamonds;
     final color = isRed ? const Color(0xFFFF4D6A) : Colors.white;
     final borderColor = const Color(0xFF3A5068);

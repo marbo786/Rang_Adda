@@ -42,7 +42,7 @@ class _GameOverOverlayState extends ConsumerState<GameOverOverlay>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(audioServiceProvider).playGameOver();
     });
-    
+
     _confettiController =
         AnimationController(duration: const Duration(seconds: 3), vsync: this)
           ..forward().then((_) {

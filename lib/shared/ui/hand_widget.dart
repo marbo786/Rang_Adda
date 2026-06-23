@@ -51,14 +51,17 @@ class HandWidget extends ConsumerWidget {
             children: List.generate(hand.length, (index) {
               final card = hand[index];
               bool valid = isCardValid == null || isCardValid!(card);
-              
+
               // Calculate horizontal position
               // Center the hand if it doesn't take up the full width
-              double totalRequiredWidth = cardW + (cardW * dynamicWidthFactor * (hand.length - 1));
-              double startOffset = (constraints.maxWidth - totalRequiredWidth) / 2;
+              double totalRequiredWidth =
+                  cardW + (cardW * dynamicWidthFactor * (hand.length - 1));
+              double startOffset =
+                  (constraints.maxWidth - totalRequiredWidth) / 2;
               if (startOffset < 24.0) startOffset = 24.0;
-              
-              double leftPosition = startOffset + (index * cardW * dynamicWidthFactor);
+
+              double leftPosition =
+                  startOffset + (index * cardW * dynamicWidthFactor);
 
               return AnimatedPositioned(
                 key: ValueKey(card),
@@ -80,8 +83,7 @@ class HandWidget extends ConsumerWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     curve: Curves.easeOutCubic,
-                    transform: Matrix4.identity()
-                      ..scale(valid ? 1.0 : 0.92),
+                    transform: Matrix4.identity()..scale(valid ? 1.0 : 0.92),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: valid

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -220,7 +221,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       cardCounts: state.players
                           .map((p) => p.hand.length)
                           .toList(),
-                      latestEmojis: state.players.map((p) => p.latestEmoji).toList(),
+                      latestEmojis: state.players
+                          .map((p) => p.latestEmoji)
+                          .toList(),
                       currentTrickPlays: const {},
                       size: math.min(
                         MediaQuery.of(context).size.width * 0.75,

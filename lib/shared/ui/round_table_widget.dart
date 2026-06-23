@@ -241,8 +241,10 @@ class _RoundTableWidgetState extends State<RoundTableWidget>
                                 ),
                                 alignment: Alignment.center,
                                 child: EmojiReactionWidget(
-                                  emoji: widget.latestEmojis != null && i < widget.latestEmojis!.length 
-                                      ? widget.latestEmojis![i] 
+                                  emoji:
+                                      widget.latestEmojis != null &&
+                                          i < widget.latestEmojis!.length
+                                      ? widget.latestEmojis![i]
                                       : null,
                                   child: Text(
                                     initials,
@@ -437,7 +439,8 @@ class EmojiReactionWidget extends StatefulWidget {
   State<EmojiReactionWidget> createState() => _EmojiReactionWidgetState();
 }
 
-class _EmojiReactionWidgetState extends State<EmojiReactionWidget> with SingleTickerProviderStateMixin {
+class _EmojiReactionWidgetState extends State<EmojiReactionWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _slideAnim;
   late Animation<double> _fadeAnim;
@@ -446,9 +449,17 @@ class _EmojiReactionWidgetState extends State<EmojiReactionWidget> with SingleTi
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
-    _slideAnim = Tween<double>(begin: 0, end: -40).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _fadeAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.5, 1.0)));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _slideAnim = Tween<double>(
+      begin: 0,
+      end: -40,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnim = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.5, 1.0)),
+    );
     if (widget.emoji != null) {
       _currentEmoji = widget.emoji;
       _controller.forward();

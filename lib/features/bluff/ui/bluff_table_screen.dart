@@ -164,7 +164,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       cardCounts: state.players
                           .map((p) => p.hand.length)
                           .toList(),
-                      latestEmojis: state.players.map((p) => p.latestEmoji).toList(),
+                      latestEmojis: state.players
+                          .map((p) => p.latestEmoji)
+                          .toList(),
                       currentTrickPlays: const {},
                       size: math.min(
                         MediaQuery.of(context).size.width * 0.75,
