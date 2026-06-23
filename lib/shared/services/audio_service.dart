@@ -16,7 +16,7 @@ class AudioService {
 
   Future<void> _initBgm() async {
     try {
-      await _bgmPlayer.setAsset('assets/audio/bgm.mp3');
+      await _bgmPlayer.setAsset('assets/audio/bgm.wav');
       await _bgmPlayer.setLoopMode(LoopMode.all);
       await _bgmPlayer.setVolume(0.3);
       _bgmPlayer.play();
