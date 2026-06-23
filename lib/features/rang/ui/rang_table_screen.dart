@@ -482,7 +482,8 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   if (state.phase != RangPhase.trickPlay) {
                                     return false;
                                   }
-                                  if (state.currentPlayerId != bottomPlayer.id) {
+                                  if (state.currentPlayerId !=
+                                      bottomPlayer.id) {
                                     return false;
                                   }
                                   if (state.passToPlayerId != null) {

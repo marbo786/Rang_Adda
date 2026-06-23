@@ -80,7 +80,11 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              ref.read(thullaProvider.notifier).startGame(widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana']);
+              ref
+                  .read(thullaProvider.notifier)
+                  .startGame(
+                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'],
+                  );
             } else {
               context.go('/');
             }
