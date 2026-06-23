@@ -464,8 +464,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
               ref
                   .read(currentGameIdProvider.notifier)
                   .setId(_codeController.text);
-              if (mounted)
+              if (mounted) {
                 context.push('/waiting_room/${_codeController.text}');
+              }
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(

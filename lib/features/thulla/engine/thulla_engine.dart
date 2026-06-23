@@ -240,8 +240,9 @@ class ThullaEngine {
           int drawIndex = random.nextInt(newWastePile.length);
           PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
           updatedPlayers = updatedPlayers.map((p) {
-            if (p.id == highestPlayerId)
+            if (p.id == highestPlayerId) {
               return p.copyWith(hand: [drawnCard], cardCount: 1);
+            }
             return p;
           }).toList();
         }

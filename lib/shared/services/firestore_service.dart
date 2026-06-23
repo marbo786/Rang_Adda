@@ -90,12 +90,12 @@ class FirestoreService {
     String gameType,
   ) async {
     if (_db == null) throw Exception("Firebase not initialized");
-    final _chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    final _rnd = DateTime.now().millisecondsSinceEpoch;
+    final chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    final rnd = DateTime.now().millisecondsSinceEpoch;
     String gameId = '';
-    int temp = _rnd;
+    int temp = rnd;
     for (int i = 0; i < 6; i++) {
-      gameId += _chars[temp % 36];
+      gameId += chars[temp % 36];
       temp ~/= 36;
     }
 

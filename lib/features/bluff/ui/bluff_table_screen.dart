@@ -13,7 +13,6 @@ import 'package:rang_adda/shared/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
-import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/shared/models/player.dart';
@@ -380,7 +379,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                     .read(bluffProvider.notifier)
                                     .passTurn(bottomPlayer.id);
                               }
-                              if (error != null && mounted) {
+                              if (error != null) {
+                                if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(error),
@@ -532,7 +532,8 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 .playCard(playerId, cards, rank);
                           }
 
-                          if (error != null && mounted) {
+                          if (error != null) {
+                            if (!context.mounted) return;
                             HapticFeedback.vibrate();
                             ref.read(audioServiceProvider).playError();
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -111,7 +111,7 @@ class OnlineBluffActionController {
         return newState.copyWith(passToPlayerId: null);
       });
     } catch (e) {
-      print("Error passing turn: $e");
+      // ignore
     } finally {
       _isProcessing = false;
     }
@@ -130,7 +130,7 @@ class OnlineBluffActionController {
         return BluffEngine.callBluff(latestState as BluffGameState, callerId);
       });
     } catch (e) {
-      print("Error calling bluff: $e");
+      // ignore
     } finally {
       _isProcessing = false;
     }
@@ -148,7 +148,7 @@ class OnlineBluffActionController {
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.updateGameState(newState);
     } catch (e) {
-      print("Error acknowledging message: $e");
+      // ignore
     } finally {
       _isProcessing = false;
     }

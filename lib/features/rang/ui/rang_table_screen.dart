@@ -12,9 +12,9 @@ import 'package:rang_adda/shared/services/audio_service.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/ui/hand_widget.dart';
 import 'package:rang_adda/shared/ui/playing_card_widget.dart';
-import 'package:rang_adda/shared/ui/deal_animation_overlay.dart';
+
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
-import 'package:rang_adda/shared/ui/game_over_overlay.dart'; // For ConfettiWidget
+import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/round_table_widget.dart';
 import 'dart:math' as math;
@@ -479,12 +479,15 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   }
                                 },
                                 isCardValid: (card) {
-                                  if (state.phase != RangPhase.trickPlay)
+                                  if (state.phase != RangPhase.trickPlay) {
                                     return false;
-                                  if (state.currentPlayerId != bottomPlayer.id)
+                                  }
+                                  if (state.currentPlayerId != bottomPlayer.id) {
                                     return false;
-                                  if (state.passToPlayerId != null)
+                                  }
+                                  if (state.passToPlayerId != null) {
                                     return false;
+                                  }
                                   return RangEngine.getMoveError(
                                         state,
                                         bottomPlayer.id,

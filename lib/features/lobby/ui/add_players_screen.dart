@@ -87,15 +87,6 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     _controllers.add(controller);
   }
 
-  void _removeLastSlot() {
-    if (_controllers.length <= _config.minPlayers) return;
-    _controllers.last.dispose();
-    _focusNodes.last.dispose();
-    _controllers.removeLast();
-    _focusNodes.removeLast();
-    setState(() {});
-  }
-
   void _removeSlotAt(int index) {
     if (_controllers.length <= _config.minPlayers) return;
     _controllers[index].dispose();

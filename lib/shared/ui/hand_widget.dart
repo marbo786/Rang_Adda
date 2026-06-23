@@ -37,8 +37,9 @@ class HandWidget extends ConsumerWidget {
           if (requiredWidth > availableWidth) {
             dynamicWidthFactor =
                 (availableWidth - cardW) / (cardW * (hand.length - 1));
-            if (dynamicWidthFactor < 0.2)
+            if (dynamicWidthFactor < 0.2) {
               dynamicWidthFactor = 0.2; // Don't let them overlap entirely
+            }
           }
         }
 
