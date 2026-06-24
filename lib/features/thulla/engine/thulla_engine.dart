@@ -6,11 +6,11 @@ import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
 
 class ThullaEngine {
-  static ThullaGameState initializeGame(List<String> playerNames) {
+  static ThullaGameState initializeGame(List<Player> playersInput) {
     final deck = Deck.standard().cards..shuffle(Random());
 
-    List<Player> players = playerNames
-        .map((name) => Player(id: name, name: name, hand: const []))
+    List<Player> players = playersInput
+        .map((p) => p.copyWith(hand: const []))
         .toList();
 
     // Deal all cards

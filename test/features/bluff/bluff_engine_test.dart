@@ -1,11 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/models/player.dart';
 
 void main() {
   group('BluffEngine Game Logic', () {
     test('calling bluff on yourself throws exception', () {
-      final state = BluffEngine.initializeGame(['p1', 'p2']);
+      final state = BluffEngine.initializeGame([
+        const Player(id: 'p1', name: 'p1'),
+        const Player(id: 'p2', name: 'p2'),
+      ]);
 
       // Simulate p1 played cards
       final stateAfterPlay = state.copyWith(
@@ -28,7 +32,10 @@ void main() {
     });
 
     test('calling bluff with empty pile throws exception', () {
-      final state = BluffEngine.initializeGame(['p1', 'p2']);
+      final state = BluffEngine.initializeGame([
+        const Player(id: 'p1', name: 'p1'),
+        const Player(id: 'p2', name: 'p2'),
+      ]);
 
       expect(
         () => BluffEngine.callBluff(state, 'p2'),
@@ -43,7 +50,11 @@ void main() {
     });
 
     test('passTurn skips players with 0 cards', () {
-      final state = BluffEngine.initializeGame(['p1', 'p2', 'p3']);
+      final state = BluffEngine.initializeGame([
+        const Player(id: 'p1', name: 'p1'),
+        const Player(id: 'p2', name: 'p2'),
+        const Player(id: 'p3', name: 'p3'),
+      ]);
 
       // Simulate p2 having 0 cards
       final players = state.players.toList();

@@ -28,19 +28,19 @@ class RangEngine {
   /// * [passToPlayerId]  = [trumpCallerId]  (pass-device overlay shown first,
   ///   so the other three players cannot see the trump caller's hand during
   ///   trump selection on a shared device)
-  static RangGameState initializeGame(List<String> playerNames) {
-    if (playerNames.length != 4) {
+  static RangGameState initializeGame(List<Player> playersInput) {
+    if (playersInput.length != 4) {
       throw ArgumentError(
         'Rang requires exactly 4 players, '
-        'but ${playerNames.length} were provided.',
+        'but ${playersInput.length} were provided.',
       );
     }
 
     final deck = Deck.standard().cards..shuffle(Random());
 
     // Build players with empty hands, then deal round-robin.
-    List<Player> players = playerNames
-        .map((name) => Player(id: name, name: name, hand: const []))
+    List<Player> players = playersInput
+        .map((p) => p.copyWith(hand: const []))
         .toList();
 
     int pIndex = 0;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,8 +22,8 @@ import 'dart:math' as math;
 
 class ThullaTableScreen extends ConsumerStatefulWidget {
   final bool isOnline;
-  final List<String>? playerNames;
-  const ThullaTableScreen({super.key, this.isOnline = false, this.playerNames});
+  final List<Player>? players;
+  const ThullaTableScreen({super.key, this.isOnline = false, this.players});
 
   @override
   ConsumerState<ThullaTableScreen> createState() => _ThullaTableScreenState();
@@ -45,8 +44,14 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     super.initState();
     if (!widget.isOnline) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie'];
-        ref.read(thullaProvider.notifier).startGame(names);
+        final ps =
+            widget.players ??
+            [
+              const Player(id: 'Alice', name: 'Alice'),
+              const Player(id: 'Bob', name: 'Bob'),
+              const Player(id: 'Charlie', name: 'Charlie'),
+            ];
+        ref.read(thullaProvider.notifier).startGame(ps);
       });
     }
   }
@@ -81,11 +86,15 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              ref
-                  .read(thullaProvider.notifier)
-                  .startGame(
-                    widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'],
-                  );
+              final ps =
+                  widget.players ??
+                  [
+                    const Player(id: 'Alice', name: 'Alice'),
+                    const Player(id: 'Bob', name: 'Bob'),
+                    const Player(id: 'Charlie', name: 'Charlie'),
+                    const Player(id: 'Diana', name: 'Diana'),
+                  ];
+              ref.read(thullaProvider.notifier).startGame(ps);
             } else {
               context.go('/');
             }
@@ -431,6 +440,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                           ),
                           HandWidget(
                             hand: bottomPlayer.hand,
+                            isFaceUp: !bottomPlayer.isBot,
+                            isInteractive: !bottomPlayer.isBot,
                             isCardValid: (card) =>
                                 ThullaEngine.getMoveError(
                                   state,
@@ -490,7 +501,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
               ),
               if (state.passToPlayerId != null && !widget.isOnline)
                 PassDeviceOverlay(
-                  playerName: state.passToPlayerId!,
+                  playerName: state.players
+                      .firstWhere((p) => p.id == state.passToPlayerId)
+                      .name,
                   onAcknowledge: () =>
                       ref.read(thullaProvider.notifier).acknowledgePass(),
                 ),

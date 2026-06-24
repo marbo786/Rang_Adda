@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 
 class PassDeviceOverlay extends StatelessWidget {

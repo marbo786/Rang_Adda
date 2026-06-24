@@ -71,7 +71,34 @@ class WaitingRoomScreen extends ConsumerWidget {
                         Icons.person,
                         color: isSelf ? Colors.greenAccent : Colors.tealAccent,
                       ),
-                      title: Text(player.name + (isSelf ? " (You)" : "")),
+                      title: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(player.name + (isSelf ? " (You)" : "")),
+                          if (player.isBot)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'BOT',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       trailing: (isHost && !isSelf)
                           ? IconButton(
                               icon: const Icon(

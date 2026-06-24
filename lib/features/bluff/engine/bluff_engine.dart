@@ -4,25 +4,13 @@ import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_game_state.dart';
 
 class BluffEngine {
-  static BluffGameState initializeGame(
-    List<String> playerIds, [
-    List<String>? playerNames,
-  ]) {
+  static BluffGameState initializeGame(List<Player> playersInput) {
     final deck = _createDeck();
     deck.shuffle();
 
-    List<Player> players = [];
-    for (int i = 0; i < playerIds.length; i++) {
-      players.add(
-        Player(
-          id: playerIds[i],
-          name: playerNames != null && playerNames.length > i
-              ? playerNames[i]
-              : 'Player ${i + 1}',
-          hand: [],
-        ),
-      );
-    }
+    List<Player> players = playersInput
+        .map((p) => p.copyWith(hand: []))
+        .toList();
 
     // Deal cards
     int pIdx = 0;

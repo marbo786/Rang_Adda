@@ -234,25 +234,3 @@ class PlayingCardWidget extends StatelessWidget {
   }
 }
 
-class _CardBackPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF00FF88).withValues(alpha: 0.12)
-      ..strokeWidth = 0.5
-      ..style = PaintingStyle.stroke;
-
-    final double width = size.width;
-    final double height = size.height;
-    final double step = 15.0;
-
-    // Draw diamond pattern lines
-    for (double i = -height; i < width + height; i += step) {
-      canvas.drawLine(Offset(i, 0), Offset(i + height, height), paint);
-      canvas.drawLine(Offset(i, height), Offset(i + height, 0), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

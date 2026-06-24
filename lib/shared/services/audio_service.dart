@@ -6,8 +6,6 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 });
 
 class AudioService {
-  final List<AudioPlayer> _pool = List.generate(8, (_) => AudioPlayer());
-  int _poolIndex = 0;
   final AudioPlayer _bgmPlayer = AudioPlayer();
 
   AudioService() {

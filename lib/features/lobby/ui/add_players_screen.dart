@@ -1,9 +1,12 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/features/rang/state/rang_provider.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
+import 'package:rang_adda/shared/ai/bot_difficulty.dart';
+import 'package:rang_adda/shared/models/player.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Game-type configuration
@@ -28,9 +31,29 @@ const _configs = <String, _GameConfig>{
   'rang': _GameConfig(displayName: 'Rang', minPlayers: 4, maxPlayers: 4),
 };
 
+const _thematicNames = ["Asad", "Marbo", "Jatt", "Gujjar", "Pinky", "Butt"];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Screen
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _PlayerSlot {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  bool isBot;
+  BotDifficulty botDifficulty;
+
+  _PlayerSlot()
+    : controller = TextEditingController(),
+      focusNode = FocusNode(),
+      isBot = false,
+      botDifficulty = BotDifficulty.medium;
+
+  void dispose() {
+    controller.dispose();
+    focusNode.dispose();
+  }
+}
 
 class AddPlayersScreen extends ConsumerStatefulWidget {
   /// One of `'thulla'`, `'bluff'`, or `'rang'`.
@@ -45,8 +68,8 @@ class AddPlayersScreen extends ConsumerStatefulWidget {
 class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
   late final _GameConfig _config;
 
-  final List<TextEditingController> _controllers = [];
-  final List<FocusNode> _focusNodes = [];
+  final List<_PlayerSlot> _slots = [];
+  final Random _rand = Random();
 
   @override
   void initState() {
@@ -58,56 +81,67 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
 
     // Start at the minimum player count.
     for (int i = 0; i < _config.minPlayers; i++) {
-      _addSlot();
+      _addSlot(isBot: i > 0); // Default first slot human, others bot
     }
   }
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
+    for (final slot in _slots) {
+      slot.dispose();
     }
     super.dispose();
   }
 
   // ── Slot management ────────────────────────────────────────────────────────
 
-  void _addSlot() {
-    final controller = TextEditingController();
-    final focusNode = FocusNode();
-    controller.addListener(() => setState(() {}));
-    _focusNodes.add(focusNode);
-    // Also trigger rebuild on focus change for the glow effect
-    focusNode.addListener(() {
+  void _addSlot({bool isBot = false}) {
+    final slot = _PlayerSlot();
+    slot.isBot = isBot;
+
+    if (isBot) {
+      slot.controller.text = _getUnusedBotName();
+    }
+
+    slot.controller.addListener(() => setState(() {}));
+    slot.focusNode.addListener(() {
       setState(() {});
     });
-    _controllers.add(controller);
+
+    _slots.add(slot);
+  }
+
+  String _getUnusedBotName() {
+    final usedNames = _trimmedNames.map((n) => n.toLowerCase()).toSet();
+    final available = _thematicNames
+        .where((n) => !usedNames.contains(n.toLowerCase()))
+        .toList();
+    if (available.isEmpty) {
+      return "${_thematicNames[_rand.nextInt(_thematicNames.length)]} ${_rand.nextInt(100)}";
+    }
+    return available[_rand.nextInt(available.length)];
   }
 
   void _removeSlotAt(int index) {
-    if (_controllers.length <= _config.minPlayers) return;
-    _controllers[index].dispose();
-    _focusNodes[index].dispose();
-    _controllers.removeAt(index);
-    _focusNodes.removeAt(index);
+    if (_slots.length <= _config.minPlayers) return;
+    _slots[index].dispose();
+    _slots.removeAt(index);
     setState(() {});
   }
 
   // ── Validation ─────────────────────────────────────────────────────────────
 
   List<String> get _trimmedNames =>
-      _controllers.map((c) => c.text.trim()).toList();
+      _slots.map((s) => s.controller.text.trim()).toList();
 
   String? _errorFor(int index) {
-    final name = _controllers[index].text.trim();
+    final name = _slots[index].controller.text.trim();
     if (name.isEmpty) return null;
 
-    for (int i = 0; i < _controllers.length; i++) {
+    for (int i = 0; i < _slots.length; i++) {
       if (i == index) continue;
-      if (_controllers[i].text.trim().toLowerCase() == name.toLowerCase()) {
+      if (_slots[i].controller.text.trim().toLowerCase() ==
+          name.toLowerCase()) {
         return 'Duplicate';
       }
     }
@@ -126,10 +160,14 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
   }
 
   bool get _canStart {
-    final count = _controllers.length;
+    final count = _slots.length;
     if (count < _config.minPlayers || count > _config.maxPlayers) return false;
     if (_trimmedNames.any((n) => n.isEmpty)) return false;
     if (_hasDuplicates) return false;
+
+    // At least one human player
+    if (!_slots.any((s) => !s.isBot)) return false;
+
     return true;
   }
 
@@ -137,16 +175,25 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
 
   void _onStartGame() {
     if (!_canStart) return;
-    final names = _trimmedNames;
+
+    final players = List.generate(_slots.length, (i) {
+      final slot = _slots[i];
+      return Player(
+        id: 'p${i + 1}',
+        name: slot.controller.text.trim(),
+        isBot: slot.isBot,
+        botDifficulty: slot.isBot ? slot.botDifficulty : null,
+      );
+    });
 
     switch (widget.gameType) {
       case 'thulla':
-        context.go('/thulla', extra: names);
+        context.go('/thulla', extra: players);
       case 'bluff':
-        context.go('/table/bluff', extra: names);
+        context.go('/table/bluff', extra: players);
       case 'rang':
-        ref.read(rangProvider.notifier).startGame(names);
-        context.go('/rang_table', extra: names);
+        ref.read(rangProvider.notifier).startGame(players);
+        context.go('/rang_table', extra: players);
       default:
         context.pop();
     }
@@ -156,7 +203,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final count = _controllers.length;
+    final count = _slots.length;
     final canAdd = count < _config.maxPlayers;
     final canRemove = count > _config.minPlayers;
 
@@ -164,8 +211,9 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         '${_config.displayName.toUpperCase()} — ${_config.maxPlayers == _config.minPlayers ? _config.maxPlayers : '${_config.minPlayers}-${_config.maxPlayers}'} PLAYERS';
 
     final playerFields = List.generate(count, (index) {
+      final slot = _slots[index];
       final errorText = _errorFor(index);
-      final hasFocus = _focusNodes[index].hasFocus;
+      final hasFocus = slot.focusNode.hasFocus;
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
@@ -185,6 +233,56 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                         : AppTheme.textDisabled,
                   ),
                 ),
+                const SizedBox(width: 12),
+                // Bot Toggle
+                ChoiceChip(
+                  label: Text(
+                    slot.isBot ? 'BOT' : 'HUMAN',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  selected: slot.isBot,
+                  selectedColor: AppTheme.accentSecondary,
+                  backgroundColor: AppTheme.surfaceElevated,
+                  onSelected: (val) {
+                    setState(() {
+                      slot.isBot = val;
+                      if (val) {
+                        if (slot.controller.text.isEmpty ||
+                            !_thematicNames.contains(slot.controller.text)) {
+                          slot.controller.text = _getUnusedBotName();
+                        }
+                      }
+                    });
+                  },
+                ),
+                if (slot.isBot) ...[
+                  const SizedBox(width: 8),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<BotDifficulty>(
+                      value: slot.botDifficulty,
+                      dropdownColor: AppTheme.surfaceElevated,
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      items: BotDifficulty.values
+                          .map(
+                            (d) => DropdownMenuItem(
+                              value: d,
+                              child: Text(d.name.toUpperCase()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (d) {
+                        if (d != null) setState(() => slot.botDifficulty = d);
+                      },
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 if (canRemove)
                   GestureDetector(
@@ -197,7 +295,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
                 boxShadow: hasFocus
@@ -213,15 +311,17 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
               ),
               child: TextField(
                 key: ValueKey('player_name_field_$index'),
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
+                controller: slot.controller,
+                focusNode: slot.focusNode,
                 textCapitalization: TextCapitalization.words,
                 textInputAction: (index < count - 1)
                     ? TextInputAction.next
                     : TextInputAction.done,
                 onSubmitted: (_) {
                   if (index < count - 1) {
-                    FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
+                    FocusScope.of(
+                      context,
+                    ).requestFocus(_slots[index + 1].focusNode);
                   } else {
                     _onStartGame();
                   }
@@ -296,34 +396,73 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
 
     final addRemoveButtons = [
       if (canAdd)
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: OutlinedButton(
-            onPressed: () {
-              setState(() => _addSlot());
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (_focusNodes.isNotEmpty) {
-                  FocusScope.of(context).requestFocus(_focusNodes.last);
-                }
-              });
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppTheme.accentPrimary, width: 1.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() => _addSlot(isBot: false));
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (_slots.isNotEmpty) {
+                        FocusScope.of(
+                          context,
+                        ).requestFocus(_slots.last.focusNode);
+                      }
+                    });
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                      color: AppTheme.accentPrimary,
+                      width: 1.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '+ HUMAN',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.accentPrimary,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
               ),
             ),
-            child: const Text(
-              'ADD PLAYER',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.accentPrimary,
-                letterSpacing: 2.0,
+            const SizedBox(width: 16),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() => _addSlot(isBot: true));
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                      color: AppTheme.accentSecondary,
+                      width: 1.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '+ BOT',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.accentSecondary,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
     ];
 

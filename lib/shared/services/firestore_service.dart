@@ -159,9 +159,7 @@ class FirestoreService {
     GameState playingState;
 
     if (state.gameType == 'bluff') {
-      final playerIds = state.players.map((p) => p.id).toList();
-      final playerNames = state.players.map((p) => p.name).toList();
-      final initialized = BluffEngine.initializeGame(playerIds, playerNames);
+      final initialized = BluffEngine.initializeGame(state.players);
       playingState = initialized.copyWith(
         gameId: state.gameId,
         status: GameStatus.playing,

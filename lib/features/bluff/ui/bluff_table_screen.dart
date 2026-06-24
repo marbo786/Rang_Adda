@@ -6,7 +6,6 @@ import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_game_state.dart';
 import 'package:rang_adda/features/bluff/state/bluff_provider.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
-import 'package:flutter/services.dart';
 import 'package:rang_adda/features/bluff/ui/bluff_hand_widget.dart';
 import 'package:rang_adda/features/bluff/state/online_bluff_provider.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
@@ -22,9 +21,9 @@ import 'package:rang_adda/shared/ui/round_table_widget.dart';
 import 'dart:math' as math;
 
 class BluffTableScreen extends ConsumerStatefulWidget {
-  final List<String>? playerNames;
+  final List<Player>? players;
   final bool isOnline;
-  const BluffTableScreen({super.key, this.playerNames, this.isOnline = false});
+  const BluffTableScreen({super.key, this.players, this.isOnline = false});
 
   @override
   ConsumerState<BluffTableScreen> createState() => _BluffTableScreenState();
@@ -45,10 +44,15 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!widget.isOnline) {
-        final names =
-            widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
-        final ids = List.generate(names.length, (i) => 'p${i + 1}');
-        ref.read(bluffProvider.notifier).startGame(ids, names);
+        final ps =
+            widget.players ??
+            [
+              const Player(id: 'p1', name: 'Alice'),
+              const Player(id: 'p2', name: 'Bob'),
+              const Player(id: 'p3', name: 'Charlie'),
+              const Player(id: 'p4', name: 'Diana'),
+            ];
+        ref.read(bluffProvider.notifier).startGame(ps);
       }
     });
   }
@@ -83,12 +87,15 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              ref.read(bluffProvider.notifier).startGame([
-                'p1',
-                'p2',
-                'p3',
-                'p4',
-              ], widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana']);
+              final ps =
+                  widget.players ??
+                  [
+                    const Player(id: 'p1', name: 'Alice'),
+                    const Player(id: 'p2', name: 'Bob'),
+                    const Player(id: 'p3', name: 'Charlie'),
+                    const Player(id: 'p4', name: 'Diana'),
+                  ];
+              ref.read(bluffProvider.notifier).startGame(ps);
             } else {
               context.go('/');
             }
@@ -354,8 +361,14 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           ),
                           BluffHandWidget(
                             hand: bottomPlayer.hand,
-                            isFirstTurn: state.centerPile.isEmpty,
-                            canPass: true,
+                            isFaceUp: !bottomPlayer.isBot,
+                            isInteractive: !bottomPlayer.isBot,
+                            canPass:
+                                state.lastPlayerId != bottomPlayer.id &&
+                                state.lastPlayedCards.isNotEmpty,
+                            isFirstTurn:
+                                state.lastPlayerId == null &&
+                                state.centerPile.isEmpty,
                             onPass: () async {
                               if (widget.isOnline) {
                                 final user = ref.read(userProvider).value;
@@ -672,78 +685,93 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.statusError,
-                      foregroundColor: AppTheme.textPrimary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      // HapticFeedback.heavyImpact();
-                      ref.read(audioServiceProvider).playBluffCall();
-                      if (widget.isOnline) {
-                        ref
-                            .read(onlineBluffActionProvider)
-                            .callBluff(bottomPlayer.id);
-                      } else {
-                        ref
-                            .read(bluffProvider.notifier)
-                            .callBluff(state.currentPlayerId!);
-                      }
-                    },
-                    child: const Text(
-                      'CALL BLUFF!',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                if (bottomPlayer.isBot)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      '${bottomPlayer.name.toUpperCase()} IS THINKING...',
+                      style: const TextStyle(
+                        color: AppTheme.accentPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                         letterSpacing: 2.0,
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.accentPrimary,
-                      side: const BorderSide(
-                        color: AppTheme.accentPrimary,
-                        width: 1.5,
+                  )
+                else ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.statusError,
+                        foregroundColor: AppTheme.textPrimary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      onPressed: () {
+                        // HapticFeedback.heavyImpact();
+                        ref.read(audioServiceProvider).playBluffCall();
+                        if (widget.isOnline) {
+                          ref
+                              .read(onlineBluffActionProvider)
+                              .callBluff(bottomPlayer.id);
+                        } else {
+                          ref
+                              .read(bluffProvider.notifier)
+                              .callBluff(state.currentPlayerId!);
+                        }
+                      },
+                      child: const Text(
+                        'CALL BLUFF!',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                        ),
                       ),
                     ),
-                    onPressed: () {
-                      // HapticFeedback.mediumImpact();
-                      ref.read(audioServiceProvider).playClick();
-                      if (widget.isOnline) {
-                        // Online decline means pass turn implicitly
-                        ref
-                            .read(onlineBluffActionProvider)
-                            .passTurn(bottomPlayer.id);
-                      } else {
-                        ref.read(bluffProvider.notifier).declineChallenge();
-                      }
-                    },
-                    child: const Text(
-                      'ACCEPT & PLAY',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accentPrimary,
+                        side: const BorderSide(
+                          color: AppTheme.accentPrimary,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        // HapticFeedback.mediumImpact();
+                        ref.read(audioServiceProvider).playClick();
+                        if (widget.isOnline) {
+                          // Online decline means pass turn implicitly
+                          ref
+                              .read(onlineBluffActionProvider)
+                              .passTurn(bottomPlayer.id);
+                        } else {
+                          ref.read(bluffProvider.notifier).declineChallenge();
+                        }
+                      },
+                      child: const Text(
+                        'ACCEPT & PLAY',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

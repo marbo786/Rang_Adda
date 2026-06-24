@@ -8,6 +8,7 @@ import 'package:rang_adda/features/lobby/ui/add_players_screen.dart';
 import 'package:rang_adda/features/rang/ui/rang_table_screen.dart';
 import 'package:rang_adda/features/profile/ui/profile_screen.dart';
 import 'package:rang_adda/features/profile/ui/leaderboard_screen.dart';
+import 'package:rang_adda/shared/models/player.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -25,8 +26,8 @@ final appRouter = GoRouter(
       path: '/thulla',
       builder: (context, state) {
         final extra = state.extra;
-        final names = extra is List ? List<String>.from(extra) : null;
-        return ThullaTableScreen(playerNames: names);
+        final players = extra is List ? List<Player>.from(extra) : null;
+        return ThullaTableScreen(players: players);
       },
     ),
     GoRoute(
@@ -48,8 +49,8 @@ final appRouter = GoRouter(
       path: '/table/bluff',
       builder: (context, state) {
         final extra = state.extra;
-        final names = extra is List ? List<String>.from(extra) : null;
-        return BluffTableScreen(playerNames: names);
+        final players = extra is List ? List<Player>.from(extra) : null;
+        return BluffTableScreen(players: players);
       },
     ),
     GoRoute(
@@ -87,8 +88,8 @@ final appRouter = GoRouter(
       path: '/rang_table',
       builder: (context, state) {
         final extra = state.extra;
-        final names = extra is List ? List<String>.from(extra) : null;
-        return RangTableScreen(playerNames: names);
+        final players = extra is List ? List<Player>.from(extra) : null;
+        return RangTableScreen(players: players);
       },
     ),
   ],

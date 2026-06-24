@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
@@ -12,6 +11,8 @@ class BluffHandWidget extends ConsumerStatefulWidget {
   final VoidCallback onPass;
   final bool canPass;
   final bool isFirstTurn;
+  final bool isFaceUp;
+  final bool isInteractive;
 
   const BluffHandWidget({
     super.key,
@@ -20,6 +21,8 @@ class BluffHandWidget extends ConsumerStatefulWidget {
     required this.onPass,
     required this.canPass,
     required this.isFirstTurn,
+    this.isFaceUp = true,
+    this.isInteractive = true,
   });
 
   @override
@@ -62,74 +65,79 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Action Bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (widget.canPass)
+        if (widget.isInteractive)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (widget.canPass)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Theme.of(context).primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: AppTheme.accentPrimary.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      // HapticFeedback.mediumImpact();
+                      ref.read(audioServiceProvider).playClick();
+                      _selectedCards.clear();
+                      widget.onPass();
+                    },
+                    child: const Text(
+                      'PASS',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).primaryColor,
+                    backgroundColor:
+                        _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
+                        ? AppTheme.accentPrimary
+                        : AppTheme.surfaceElevated,
+                    foregroundColor:
+                        _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
+                        ? Colors.white
+                        : Colors.white54,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: AppTheme.accentPrimary.withValues(alpha: 0.5),
-                      ),
                     ),
-                    elevation: 0,
+                    elevation:
+                        _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
+                        ? 2
+                        : 0,
                   ),
-                  onPressed: () {
-                    // HapticFeedback.mediumImpact();
-                    ref.read(audioServiceProvider).playClick();
-                    _selectedCards.clear();
-                    widget.onPass();
-                  },
-                  child: const Text(
-                    'PASS',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  onPressed:
+                      _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
+                      ? () {
+                          // HapticFeedback.mediumImpact();
+                          ref.read(audioServiceProvider).playClick();
+                          widget.onPlayCards(_selectedCards.toList());
+                          setState(() {
+                            _selectedCards.clear();
+                          });
+                        }
+                      : null,
+                  child: Text(
+                    'PLAY ${_selectedCards.length}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                )
-              else
-                const SizedBox.shrink(),
-
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
-                      ? AppTheme.accentPrimary
-                      : AppTheme.surfaceElevated,
-                  foregroundColor:
-                      _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
-                      ? Colors.white
-                      : Colors.white54,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation:
-                      _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
-                      ? 2
-                      : 0,
                 ),
-                onPressed: _selectedCards.length >= (widget.isFirstTurn ? 2 : 1)
-                    ? () {
-                        // HapticFeedback.mediumImpact();
-                        ref.read(audioServiceProvider).playClick();
-                        widget.onPlayCards(_selectedCards.toList());
-                        setState(() {
-                          _selectedCards.clear();
-                        });
-                      }
-                    : null,
-                child: Text(
-                  'PLAY ${_selectedCards.length}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
 
         // Hand
         LayoutBuilder(
@@ -157,7 +165,9 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                     alignment: Alignment.bottomCenter,
                     widthFactor: 0.6,
                     child: GestureDetector(
-                      onTap: () => _toggleCard(card),
+                      onTap: widget.isInteractive
+                          ? () => _toggleCard(card)
+                          : null,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 120),
                         curve: Curves.easeOutCubic,
@@ -185,6 +195,7 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
                           width: cardW,
                           height: cardH,
                           hasShadow: false,
+                          isFaceUp: widget.isFaceUp,
                         ),
                       ),
                     ),

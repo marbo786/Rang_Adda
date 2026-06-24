@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
@@ -9,12 +8,16 @@ class HandWidget extends ConsumerWidget {
   final List<PlayingCard> hand;
   final Function(PlayingCard) onCardTap;
   final bool Function(PlayingCard)? isCardValid;
+  final bool isFaceUp;
+  final bool isInteractive;
 
   const HandWidget({
     super.key,
     required this.hand,
     required this.onCardTap,
     this.isCardValid,
+    this.isFaceUp = true,
+    this.isInteractive = true,
   });
 
   @override
@@ -70,7 +73,9 @@ class HandWidget extends ConsumerWidget {
                 left: leftPosition,
                 bottom: 16.0,
                 child: GestureDetector(
-                  onTap: valid
+                  onTap: (!isInteractive)
+                      ? null
+                      : valid
                       ? () {
                           // HapticFeedback.lightImpact();
                           ref.read(audioServiceProvider).playCardFlip();
@@ -83,7 +88,9 @@ class HandWidget extends ConsumerWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     curve: Curves.easeOutCubic,
-                    transform: Matrix4.identity()..scale(valid ? 1.0 : 0.92),
+                    transform: Matrix4.identity()
+                      // ignore: deprecated_member_use
+                      ..scale(valid ? 1.0 : 0.92),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: valid
@@ -105,6 +112,7 @@ class HandWidget extends ConsumerWidget {
                         width: cardW,
                         height: cardH,
                         hasShadow: false,
+                        isFaceUp: isFaceUp,
                       ),
                     ),
                   ),

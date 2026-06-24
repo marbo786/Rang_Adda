@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
@@ -20,8 +19,8 @@ import 'package:rang_adda/shared/ui/round_table_widget.dart';
 import 'dart:math' as math;
 
 class RangTableScreen extends ConsumerStatefulWidget {
-  final List<String>? playerNames;
-  const RangTableScreen({super.key, this.playerNames});
+  final List<Player>? players;
+  const RangTableScreen({super.key, this.players});
 
   @override
   ConsumerState<RangTableScreen> createState() => _RangTableScreenState();
@@ -32,8 +31,15 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final names = widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
-      ref.read(rangProvider.notifier).startGame(names);
+      final ps =
+          widget.players ??
+          [
+            const Player(id: 'p1', name: 'Alice'),
+            const Player(id: 'p2', name: 'Bob'),
+            const Player(id: 'p3', name: 'Charlie'),
+            const Player(id: 'p4', name: 'Diana'),
+          ];
+      ref.read(rangProvider.notifier).startGame(ps);
     });
   }
 
@@ -62,9 +68,15 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
           players: state.players,
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
-            final names =
-                widget.playerNames ?? ['Alice', 'Bob', 'Charlie', 'Diana'];
-            ref.read(rangProvider.notifier).startGame(names);
+            final ps =
+                widget.players ??
+                [
+                  const Player(id: 'p1', name: 'Alice'),
+                  const Player(id: 'p2', name: 'Bob'),
+                  const Player(id: 'p3', name: 'Charlie'),
+                  const Player(id: 'p4', name: 'Diana'),
+                ];
+            ref.read(rangProvider.notifier).startGame(ps);
           },
           onBackToLobby: () {
             ref.read(audioServiceProvider).playClick();
@@ -459,10 +471,25 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                               ),
                             ),
                             if (isTrumpSelection && isTrumpCaller)
-                              _buildSuitPicker(context, bottomPlayer.id)
+                              bottomPlayer.isBot
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: Text(
+                                        '${bottomPlayer.name.toUpperCase()} IS CHOOSING TRUMP...',
+                                        style: const TextStyle(
+                                          color: AppTheme.accentPrimary,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 2.0,
+                                        ),
+                                      ),
+                                    )
+                                  : _buildSuitPicker(context, bottomPlayer.id)
                             else
                               HandWidget(
                                 hand: bottomPlayer.hand,
+                                isFaceUp: !bottomPlayer.isBot,
+                                isInteractive: !bottomPlayer.isBot,
                                 onCardTap: (card) async {
                                   final error = await ref
                                       .read(rangProvider.notifier)
