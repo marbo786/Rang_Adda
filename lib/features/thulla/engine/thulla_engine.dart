@@ -184,82 +184,95 @@ class ThullaEngine {
   static ThullaGameState resolveTrick(ThullaGameState state) {
     if (!state.trickResolving || state.currentTrick.isEmpty) return state;
 
-    final players = List<Player>.from(state.players);
     final currentTrick = state.currentTrick;
     Suit leadSuit = currentTrick.first.card.suit;
-
     bool isTochoo =
         !state.isFirstTrick && currentTrick.last.card.suit != leadSuit;
 
     if (isTochoo) {
-      String highestPlayerId = _getHighestLeadSuitPlayer(
-        currentTrick,
-        leadSuit,
-      );
-      List<PlayingCard> trickCards = currentTrick.map((t) => t.card).toList();
-
-      final updatedPlayers = players.map((p) {
-        if (p.id == highestPlayerId) {
-          final newHand = [...p.hand, ...trickCards];
-          return p.copyWith(
-            hand: newHand,
-            cardCount: p.cardCount + trickCards.length,
-          );
-        }
-        return p;
-      }).toList();
-
-      return _checkWinCondition(
-        state.copyWith(
-          players: updatedPlayers,
-          currentTrick: const [],
-          powerPlayerId: highestPlayerId,
-          currentPlayerId: highestPlayerId,
-          passToPlayerId: state.isOnline ? null : highestPlayerId,
-          trickResolving: false,
-        ),
-      );
+      return _resolveTochoo(state, leadSuit);
     } else {
-      String highestPlayerId = _getHighestLeadSuitPlayer(
-        currentTrick,
-        leadSuit,
-      );
-      List<PlayingCard> newWastePile = [
-        ...state.wastePile,
-        ...currentTrick.map((t) => t.card),
-      ];
-
-      var updatedPlayers = List<Player>.from(players);
-      final highestPlayer = updatedPlayers.firstWhere(
-        (p) => p.id == highestPlayerId,
-      );
-
-      if (highestPlayer.cardCount == 0) {
-        final random = Random();
-        if (newWastePile.isNotEmpty) {
-          int drawIndex = random.nextInt(newWastePile.length);
-          PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
-          updatedPlayers = updatedPlayers.map((p) {
-            if (p.id == highestPlayerId) {
-              return p.copyWith(hand: [drawnCard], cardCount: 1);
-            }
-            return p;
-          }).toList();
-        }
-      }
-
-      return _checkWinCondition(
-        state.copyWith(
-          players: updatedPlayers,
-          currentTrick: const [],
-          wastePile: newWastePile,
-          powerPlayerId: highestPlayerId,
-          currentPlayerId: highestPlayerId,
-          passToPlayerId: state.isOnline ? null : highestPlayerId,
-          trickResolving: false,
-        ),
-      );
+      return _resolveStandardTrick(state, leadSuit);
     }
+  }
+
+  static ThullaGameState _resolveTochoo(ThullaGameState state, Suit leadSuit) {
+    final players = List<Player>.from(state.players);
+    String highestPlayerId = _getHighestLeadSuitPlayer(
+      state.currentTrick,
+      leadSuit,
+    );
+    List<PlayingCard> trickCards = state.currentTrick
+        .map((t) => t.card)
+        .toList();
+
+    final updatedPlayers = players.map((p) {
+      if (p.id == highestPlayerId) {
+        final newHand = [...p.hand, ...trickCards];
+        return p.copyWith(
+          hand: newHand,
+          cardCount: p.cardCount + trickCards.length,
+        );
+      }
+      return p;
+    }).toList();
+
+    return _checkWinCondition(
+      state.copyWith(
+        players: updatedPlayers,
+        currentTrick: const [],
+        powerPlayerId: highestPlayerId,
+        currentPlayerId: highestPlayerId,
+        passToPlayerId: state.isOnline ? null : highestPlayerId,
+        trickResolving: false,
+      ),
+    );
+  }
+
+  static ThullaGameState _resolveStandardTrick(
+    ThullaGameState state,
+    Suit leadSuit,
+  ) {
+    final players = List<Player>.from(state.players);
+    String highestPlayerId = _getHighestLeadSuitPlayer(
+      state.currentTrick,
+      leadSuit,
+    );
+    List<PlayingCard> newWastePile = [
+      ...state.wastePile,
+      ...state.currentTrick.map((t) => t.card),
+    ];
+
+    var updatedPlayers = List<Player>.from(players);
+    final highestPlayer = updatedPlayers.firstWhere(
+      (p) => p.id == highestPlayerId,
+    );
+
+    if (highestPlayer.cardCount == 0) {
+      final random = Random();
+      if (newWastePile.isNotEmpty) {
+        int drawIndex = random.nextInt(newWastePile.length);
+        PlayingCard drawnCard = newWastePile.removeAt(drawIndex);
+        updatedPlayers = updatedPlayers.map((p) {
+          if (p.id == highestPlayerId) {
+            return p.copyWith(hand: [drawnCard], cardCount: 1);
+          }
+          return p;
+        }).toList();
+      }
+    }
+
+    return _checkWinCondition(
+      state.copyWith(
+        players: updatedPlayers,
+        currentTrick: const [],
+        wastePile: newWastePile,
+        powerPlayerId: highestPlayerId,
+        currentPlayerId: highestPlayerId,
+        passToPlayerId: state.isOnline ? null : highestPlayerId,
+        trickResolving: false,
+      ),
+    );
   }
 
   static ThullaGameState _checkWinCondition(ThullaGameState state) {

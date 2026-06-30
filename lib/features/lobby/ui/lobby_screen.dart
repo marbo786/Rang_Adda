@@ -546,7 +546,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                     1.0,
                     curve: Curves.easeOutCubic,
                   ),
-                  isComingSoon: true,
                 ),
               ],
             ),
@@ -580,7 +579,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
       },
       child: GestureDetector(
         onTap: () {
-          // HapticFeedback.lightImpact();
           ref.read(audioServiceProvider).playClick();
           onTap();
         },

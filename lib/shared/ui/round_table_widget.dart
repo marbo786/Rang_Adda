@@ -123,10 +123,12 @@ class _RoundTableWidgetState extends State<RoundTableWidget>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Layer 1 - Table surface
-          CustomPaint(
-            size: Size(widget.size, widget.size),
-            painter: _TableSurfacePainter(),
+          // Layer 1 - Table surface (Cached)
+          RepaintBoundary(
+            child: CustomPaint(
+              size: Size(widget.size, widget.size),
+              painter: _TableSurfacePainter(),
+            ),
           ),
 
           // Layer 2 & 3 - Rotating player ring

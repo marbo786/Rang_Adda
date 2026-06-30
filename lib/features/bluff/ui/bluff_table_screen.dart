@@ -533,7 +533,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     children: Rank.values.map((rank) {
                       return InkWell(
                         onTap: () async {
-                          // HapticFeedback.mediumImpact();
                           ref.read(audioServiceProvider).playClick();
                           Navigator.of(dialogContext).pop();
 
@@ -550,7 +549,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
 
                           if (error != null) {
                             if (!context.mounted) return;
-                            // HapticFeedback.vibrate();
                             ref.read(audioServiceProvider).playError();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -559,7 +557,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               ),
                             );
                           } else {
-                            // HapticFeedback.mediumImpact();
                           }
                         },
                         child: Container(
@@ -712,7 +709,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // HapticFeedback.heavyImpact();
                         ref.read(audioServiceProvider).playBluffCall();
                         if (widget.isOnline) {
                           ref
@@ -750,7 +746,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // HapticFeedback.mediumImpact();
                         ref.read(audioServiceProvider).playClick();
                         if (widget.isOnline) {
                           // Online decline means pass turn implicitly
@@ -845,7 +840,6 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       ),
                     ),
                     onPressed: () {
-                      // HapticFeedback.lightImpact();
                       ref.read(audioServiceProvider).playClick();
                       if (widget.isOnline) {
                         ref

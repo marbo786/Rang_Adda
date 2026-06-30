@@ -77,12 +77,10 @@ class HandWidget extends ConsumerWidget {
                       ? null
                       : valid
                       ? () {
-                          // HapticFeedback.lightImpact();
                           ref.read(audioServiceProvider).playCardFlip();
                           onCardTap(card);
                         }
                       : () {
-                          // HapticFeedback.vibrate();
                           ref.read(audioServiceProvider).playError();
                         },
                   child: AnimatedContainer(

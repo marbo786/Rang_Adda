@@ -30,10 +30,10 @@ A fast-paced trick-taking game with strict suit-following rules. The engine auto
 ### 🎭 Bluff / BS / Cheat
 The classic game of deception. Players claim ranks on cards they may or may not actually hold, and opponents decide whether to call the bluff. Round-starters must play 2–4 cards; everyone else has the same range. The "Interrogator" is a frosted-glass call-bluff-or-accept dialog that keeps the tension readable at a glance.
 
-### 🂠 Rang
-A traditional South Asian 4-player team trick-taking game. Dynamic trump-caller assignment, full team-based scoring to 7 "Sars" (tricks), and automatic detection of a **Kot** (a clean sweep win). *(Currently WIP.)*
+### 🂠 Rang (Court Piece)
+A traditional South Asian 4-player team trick-taking game (2v2). Features dynamic trump-caller assignment (Sir), strict suit-following logic, full team-based scoring to 7 "Sars" (tricks), and automatic detection of a **Kot** or **Bavney** (clean sweep wins). The engine seamlessly handles pass-and-play device-hiding during the sensitive Trump Selection phase.
 
-All three modes support both **online multiplayer** and **local pass & play**.
+All three modes support both **online multiplayer** and **local pass & play** (with full Bot support).
 
 ---
 
@@ -57,13 +57,13 @@ lib/
 ├── features/
 │   ├── bluff/      # Bluff game mode: rules, UI, state
 │   ├── thulla/     # Thulla game mode: rules, UI, state
-│   ├── rang/        # Rang game mode (WIP): team logic, trump calling, Kot detection
-│   ├── lobby/        # Matchmaking, waiting rooms, room creation
-│   └── profile/      # Player stats, profiles, leaderboards
+│   ├── rang/       # Rang (Court Piece) mode: 2v2 team logic, trump calling, Kot detection
+│   ├── lobby/      # Matchmaking, waiting rooms, room creation
+│   └── profile/    # Player stats, profiles, leaderboards
 └── shared/
-    ├── models/        # Core game/player/room models
-    ├── services/      # Auth + Firestore service layer
-    └── widgets/        # Global UI components
+    ├── models/     # Core game/player/room models
+    ├── services/   # Auth + Firestore service layer
+    └── widgets/    # Global UI components
 ```
 
 ---

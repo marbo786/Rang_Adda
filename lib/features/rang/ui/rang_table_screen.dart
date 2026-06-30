@@ -190,25 +190,13 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceElevated,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.textDisabled, width: 1.5),
-                ),
-                child: Text(
-                  'A: ${state.teamASars}  B: ${state.teamBSars}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                    fontSize: 12,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTeamScoreBadge('A', state.teamASars, AppTheme.accentPrimary),
+                  const SizedBox(width: 8),
+                  _buildTeamScoreBadge('B', state.teamBSars, AppTheme.accentSecondary),
+                ],
               ),
             ),
           ),
@@ -574,7 +562,6 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               final color = isRed ? Colors.redAccent : Colors.white;
               return GestureDetector(
                 onTap: () {
-                  // HapticFeedback.mediumImpact();
                   ref.read(audioServiceProvider).playClick();
                   ref.read(rangProvider.notifier).declareTrump(callerId, suit);
                 },
@@ -655,6 +642,55 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
     if (playerId == players[(bottomIndex + 2) % 4].id) return _TableSlot.top;
     if (playerId == players[(bottomIndex + 3) % 4].id) return _TableSlot.right;
     return _TableSlot.bottom;
+  }
+
+  Widget _buildTeamScoreBadge(String teamName, int score, Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.2),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'TEAM $teamName',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            score.toString(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: accentColor,
+              shadows: [
+                Shadow(
+                  color: accentColor.withValues(alpha: 0.5),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String _getBannerText(RangGameState state, Player bottomPlayer) {

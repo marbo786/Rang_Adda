@@ -90,7 +90,6 @@ class PassDeviceOverlay extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // HapticFeedback.mediumImpact();
                       onAcknowledge();
                     },
                     child: const Text(
