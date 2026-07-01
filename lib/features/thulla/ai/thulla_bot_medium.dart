@@ -7,7 +7,10 @@ class ThullaBotMedium extends ThullaBot {
 
   @override
   PlayingCard chooseCard(ThullaBotObservation obs) {
-    final validCards = _getValidCards(obs);
+    // Wrap in List.from() so we always have a mutable copy — obs.myHand is
+    // an unmodifiable list and calling .sort() on it directly throws
+    // "Unsupported operation: sort" on the web/JS runtime.
+    final validCards = List<PlayingCard>.from(_getValidCards(obs));
 
     // Sort cards ascending by rank.
     validCards.sort((a, b) => _rankValue(a.rank).compareTo(_rankValue(b.rank)));
@@ -15,9 +18,9 @@ class ThullaBotMedium extends ThullaBot {
     if (obs.currentTrick.isEmpty) {
       // We are leading.
       // Avoid leading the Ace of Spades if we have other valid cards.
-      final safeValidCards = validCards
-          .where((c) => !(c.suit == Suit.spades && c.rank == Rank.ace))
-          .toList();
+      final safeValidCards = List<PlayingCard>.from(
+        validCards.where((c) => !(c.suit == Suit.spades && c.rank == Rank.ace)),
+      );
 
       if (safeValidCards.isNotEmpty) {
         // Lead the lowest card of our shortest suit to shed it early.

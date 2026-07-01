@@ -18,7 +18,7 @@ import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
 import 'package:rang_adda/shared/ui/round_table_widget.dart';
-import 'dart:math' as math;
+import 'package:rang_adda/utils/player_session_storage.dart';
 
 class BluffTableScreen extends ConsumerStatefulWidget {
   final List<Player>? players;
@@ -44,14 +44,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!widget.isOnline) {
-        final ps =
-            widget.players ??
-            [
-              const Player(id: 'p1', name: 'Alice'),
-              const Player(id: 'p2', name: 'Bob'),
-              const Player(id: 'p3', name: 'Charlie'),
-              const Player(id: 'p4', name: 'Diana'),
-            ];
+        final ps = resolvePlayers(widget.players, 'bluff');
         ref.read(bluffProvider.notifier).startGame(ps);
       }
     });
@@ -87,14 +80,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              final ps =
-                  widget.players ??
-                  [
-                    const Player(id: 'p1', name: 'Alice'),
-                    const Player(id: 'p2', name: 'Bob'),
-                    const Player(id: 'p3', name: 'Charlie'),
-                    const Player(id: 'p4', name: 'Diana'),
-                  ];
+              final ps = resolvePlayers(widget.players, 'bluff');
               ref.read(bluffProvider.notifier).startGame(ps);
             } else {
               context.go('/');
@@ -155,41 +141,41 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
       ),
       body: GameTableBackground(
         child: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  // Round Table
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
-                    child: RoundTableWidget(
-                      playerNames: state.players.map((p) => p.name).toList(),
-                      playerIds: state.players.map((p) => p.id).toList(),
-                      activePlayerIndex: state.players.indexWhere(
-                        (p) => p.id == state.currentPlayerId,
-                      ),
-                      cardCounts: state.players
-                          .map((p) => p.hand.length)
-                          .toList(),
-                      latestEmojis: state.players
-                          .map((p) => p.latestEmoji)
-                          .toList(),
-                      currentTrickPlays: const {},
-                      size: math.min(
-                        MediaQuery.of(context).size.width * 0.75,
-                        300,
-                      ),
-                    ),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableHeight = constraints.maxHeight;
+              final tableSize = (availableHeight * 0.40).clamp(180.0, 300.0);
 
-                  // Arena Center
-                  Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
+              return Stack(
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: tableSize,
+                        child: Center(
+                          child: RoundTableWidget(
+                            playerNames:
+                                state.players.map((p) => p.name).toList(),
+                            playerIds:
+                                state.players.map((p) => p.id).toList(),
+                            activePlayerIndex: state.players.indexWhere(
+                              (p) => p.id == state.currentPlayerId,
+                            ),
+                            cardCounts: state.players
+                                .map((p) => p.hand.length)
+                                .toList(),
+                            latestEmojis: state.players
+                                .map((p) => p.latestEmoji)
+                                .toList(),
+                            currentTrickPlays: const {},
+                            size: tableSize * 0.90,
+                          ),
+                        ),
+                      ),
+                      Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Status Banner
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               padding: const EdgeInsets.symmetric(
@@ -234,9 +220,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 40),
-
-                            // Center Pile visualization
+                            const SizedBox(height: 24),
                             if (state.centerPile.isNotEmpty)
                               AnimatedOpacity(
                                 opacity: state.resolvingBluffMessage != null
@@ -306,147 +290,162 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                           ],
                         ),
                       ),
-                    ),
-                  ),
-
-                  // Bottom Player Hand
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceElevated,
-                      border: Border(
-                        top: BorderSide(
-                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonGlow,
-                          blurRadius: 24,
-                          offset: const Offset(0, -8),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 16.0,
-                              bottom: 4.0,
-                            ),
-                            child: Text(
-                              isYourTurn
-                                  ? 'YOUR TURN'
-                                  : bottomPlayer.name.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 3.0,
-                                color: isYourTurn
-                                    ? AppTheme.accentPrimary
-                                    : AppTheme.textSecondary,
-                                shadows: isYourTurn
-                                    ? [
-                                        Shadow(
-                                          color: AppTheme.neonGlow,
-                                          blurRadius: 8,
-                                        ),
-                                      ]
-                                    : [],
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceElevated,
+                            border: Border(
+                              top: BorderSide(
+                                color: AppTheme.accentPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                width: 1.5,
                               ),
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.neonGlow,
+                                blurRadius: 24,
+                                offset: const Offset(0, -8),
+                              ),
+                            ],
                           ),
-                          BluffHandWidget(
-                            hand: bottomPlayer.hand,
-                            isFaceUp: !bottomPlayer.isBot,
-                            isInteractive: !bottomPlayer.isBot,
-                            canPass:
-                                state.lastPlayerId != bottomPlayer.id &&
-                                state.lastPlayedCards.isNotEmpty,
-                            isFirstTurn:
-                                state.lastPlayerId == null &&
-                                state.centerPile.isEmpty,
-                            onPass: () async {
-                              if (widget.isOnline) {
-                                final user = ref.read(userProvider).value;
-                                if (user == null ||
-                                    user.uid != bottomPlayer.id) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "You can only play your own hand!",
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-                              }
-
-                              String? error;
-                              if (widget.isOnline) {
-                                await ref
-                                    .read(onlineBluffActionProvider)
-                                    .passTurn(bottomPlayer.id);
-                              } else {
-                                error = await ref
-                                    .read(bluffProvider.notifier)
-                                    .passTurn(bottomPlayer.id);
-                              }
-                              if (error != null) {
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error),
-                                    backgroundColor: AppTheme.statusError,
+                          child: SafeArea(
+                            top: false,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 12.0,
+                                    bottom: 4.0,
                                   ),
-                                );
-                              }
-                            },
-                            onPlayCards: (cards) {
-                              if (widget.isOnline) {
-                                final user = ref.read(userProvider).value;
-                                if (user == null ||
-                                    user.uid != bottomPlayer.id) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "You can only play your own hand!",
-                                      ),
+                                  child: Text(
+                                    isYourTurn
+                                        ? 'YOUR TURN'
+                                        : bottomPlayer.name.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 3.0,
+                                      color: isYourTurn
+                                          ? AppTheme.accentPrimary
+                                          : AppTheme.textSecondary,
+                                      shadows: isYourTurn
+                                          ? [
+                                              Shadow(
+                                                color: AppTheme.neonGlow,
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : [],
                                     ),
-                                  );
-                                  return;
-                                }
-                              }
-                              _showRankSelectorDialog(
-                                context,
-                                cards,
-                                bottomPlayer.id,
-                              );
-                            },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: BluffHandWidget(
+                                      hand: bottomPlayer.hand,
+                                      isFaceUp: !bottomPlayer.isBot,
+                                      isInteractive: !bottomPlayer.isBot,
+                                      canPass:
+                                          state.lastPlayerId !=
+                                              bottomPlayer.id &&
+                                          state.lastPlayedCards.isNotEmpty,
+                                      isFirstTurn:
+                                          state.lastPlayerId == null &&
+                                          state.centerPile.isEmpty,
+                                      onPass: () async {
+                                        if (widget.isOnline) {
+                                          final user =
+                                              ref.read(userProvider).value;
+                                          if (user == null ||
+                                              user.uid != bottomPlayer.id) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "You can only play your own hand!",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                        }
+
+                                        String? error;
+                                        if (widget.isOnline) {
+                                          await ref
+                                              .read(onlineBluffActionProvider)
+                                              .passTurn(bottomPlayer.id);
+                                        } else {
+                                          error = await ref
+                                              .read(bluffProvider.notifier)
+                                              .passTurn(bottomPlayer.id);
+                                        }
+                                        if (error != null) {
+                                          if (!context.mounted) return;
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(error),
+                                              backgroundColor:
+                                                  AppTheme.statusError,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      onPlayCards: (cards) {
+                                        if (widget.isOnline) {
+                                          final user =
+                                              ref.read(userProvider).value;
+                                          if (user == null ||
+                                              user.uid != bottomPlayer.id) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "You can only play your own hand!",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                        }
+                                        _showRankSelectorDialog(
+                                          context,
+                                          cards,
+                                          bottomPlayer.id,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
 
-              // Pass Device Overlay
-              if (state.passToPlayerId != null && !widget.isOnline)
-                PassDeviceOverlay(
-                  playerName: state.players
-                      .firstWhere((p) => p.id == state.passToPlayerId)
-                      .name,
-                  onAcknowledge: () =>
-                      ref.read(bluffProvider.notifier).acknowledgePass(),
-                ),
+                  // Pass Device Overlay
+                  if (state.passToPlayerId != null && !widget.isOnline)
+                    PassDeviceOverlay(
+                      playerName: state.players
+                          .firstWhere((p) => p.id == state.passToPlayerId)
+                          .name,
+                      onAcknowledge: () => ref
+                          .read(bluffProvider.notifier)
+                          .acknowledgePass(),
+                    ),
 
-              // Challenge Bluff Overlay
-              if (state.passToPlayerId == null &&
-                  state.lastPlayerId != null &&
+                  // Challenge Bluff Overlay
+                  if (state.passToPlayerId == null &&
+                      state.lastPlayerId != null &&
                   state.lastPlayedCards.isNotEmpty &&
                   state.status == GameStatus.playing)
                 _buildChallengeOverlay(context, state, bottomPlayer),
@@ -456,7 +455,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                 _buildResultOverlay(context, state.resolvingBluffMessage!),
 
               if (widget.isOnline) ChatOverlay(messages: state.chatMessages),
-            ],
+                ],
+              );
+            },
           ),
         ),
       ),

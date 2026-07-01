@@ -13,7 +13,10 @@ class ThullaBotHard extends ThullaBot {
   PlayingCard chooseCard(ThullaBotObservation obs) {
     _updateTracker(obs);
 
-    final validCards = _getValidCards(obs);
+    final validCards = List<PlayingCard>.from(_getValidCards(obs));
+    // Wrap in List.from() so we always have a mutable copy — obs.myHand is
+    // an unmodifiable list and calling .sort() on it directly throws
+    // "Unsupported operation: sort" on the web/JS runtime.
     validCards.sort((a, b) => _rankValue(a.rank).compareTo(_rankValue(b.rank)));
 
     if (obs.currentTrick.isEmpty) {

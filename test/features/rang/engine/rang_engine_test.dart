@@ -3,7 +3,6 @@ import 'package:rang_adda/features/rang/engine/rang_engine.dart';
 import 'package:rang_adda/features/rang/engine/rang_game_state.dart';
 import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
-import 'package:rang_adda/shared/models/game_state.dart';
 
 void main() {
   group('RangEngine', () {

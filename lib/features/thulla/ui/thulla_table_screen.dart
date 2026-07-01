@@ -18,6 +18,7 @@ import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
 import 'package:rang_adda/shared/ui/round_table_widget.dart';
+import 'package:rang_adda/utils/player_session_storage.dart';
 import 'dart:math' as math;
 
 class ThullaTableScreen extends ConsumerStatefulWidget {
@@ -44,13 +45,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     super.initState();
     if (!widget.isOnline) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final ps =
-            widget.players ??
-            [
-              const Player(id: 'Alice', name: 'Alice'),
-              const Player(id: 'Bob', name: 'Bob'),
-              const Player(id: 'Charlie', name: 'Charlie'),
-            ];
+        final ps = resolvePlayers(widget.players, 'thulla');
         ref.read(thullaProvider.notifier).startGame(ps);
       });
     }
@@ -86,14 +81,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
             if (!widget.isOnline) {
-              final ps =
-                  widget.players ??
-                  [
-                    const Player(id: 'Alice', name: 'Alice'),
-                    const Player(id: 'Bob', name: 'Bob'),
-                    const Player(id: 'Charlie', name: 'Charlie'),
-                    const Player(id: 'Diana', name: 'Diana'),
-                  ];
+              final ps = resolvePlayers(widget.players, 'thulla');
               ref.read(thullaProvider.notifier).startGame(ps);
             } else {
               context.go('/');
@@ -214,41 +202,44 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
       ),
       body: GameTableBackground(
         child: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  // Round Table
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
-                    child: RoundTableWidget(
-                      playerNames: state.players.map((p) => p.name).toList(),
-                      playerIds: state.players.map((p) => p.id).toList(),
-                      activePlayerIndex: state.players.indexWhere(
-                        (p) => p.id == state.currentPlayerId,
-                      ),
-                      cardCounts: state.players
-                          .map((p) => p.hand.length)
-                          .toList(),
-                      latestEmojis: state.players
-                          .map((p) => p.latestEmoji)
-                          .toList(),
-                      currentTrickPlays: const {},
-                      size: math.min(
-                        MediaQuery.of(context).size.width * 0.75,
-                        300,
-                      ),
-                    ),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableHeight = constraints.maxHeight;
+              final tableSize = (availableHeight * 0.40).clamp(180.0, 300.0);
+              final screenWidth = MediaQuery.of(context).size.width;
+              final cardW = screenWidth < 600 ? 55.0 : 70.0;
+              final cardH = screenWidth < 600 ? 82.5 : 105.0;
 
-                  // Arena Center
-                  Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
+              return Stack(
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: tableSize,
+                        child: Center(
+                          child: RoundTableWidget(
+                            playerNames:
+                                state.players.map((p) => p.name).toList(),
+                            playerIds:
+                                state.players.map((p) => p.id).toList(),
+                            activePlayerIndex: state.players.indexWhere(
+                              (p) => p.id == state.currentPlayerId,
+                            ),
+                            cardCounts: state.players
+                                .map((p) => p.hand.length)
+                                .toList(),
+                            latestEmojis: state.players
+                                .map((p) => p.latestEmoji)
+                                .toList(),
+                            currentTrickPlays: const {},
+                            size: tableSize * 0.90,
+                          ),
+                        ),
+                      ),
+                      Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Status Banner
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               padding: const EdgeInsets.symmetric(
@@ -291,223 +282,222 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 40),
-
-                            // Trick Area (Stack for clean positioning)
+                            const SizedBox(height: 16),
                             SizedBox(
-                              height: 180,
+                              height: math.min(availableHeight * 0.22, 160),
                               width: 300,
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final screenWidth = MediaQuery.of(
-                                    context,
-                                  ).size.width;
-                                  final cardW = screenWidth < 600 ? 55.0 : 70.0;
-                                  final cardH = screenWidth < 600
-                                      ? 82.5
-                                      : 105.0;
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: List.generate(
+                                  state.currentTrick.length,
+                                  (index) {
+                                    final t = state.currentTrick[index];
+                                    final offset =
+                                        (index -
+                                            (state.currentTrick.length - 1) /
+                                                2) *
+                                        35.0;
+                                    final rotation =
+                                        (index -
+                                            (state.currentTrick.length - 1) /
+                                                2) *
+                                        0.1;
 
-                                  return Stack(
-                                    alignment: Alignment.center,
-                                    children: List.generate(
-                                      state.currentTrick.length,
-                                      (index) {
-                                        final t = state.currentTrick[index];
-                                        final offset =
-                                            (index -
-                                                (state.currentTrick.length -
-                                                        1) /
-                                                    2) *
-                                            35.0;
-                                        final rotation =
-                                            (index -
-                                                (state.currentTrick.length -
-                                                        1) /
-                                                    2) *
-                                            0.1;
-
-                                        return AnimatedPositioned(
+                                    return AnimatedPositioned(
+                                      duration: const Duration(
+                                        milliseconds: 350,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                      left: 115 + offset,
+                                      top: state.trickResolving ? -50 : 20,
+                                      child: Transform.rotate(
+                                        angle: rotation,
+                                        child: AnimatedScale(
                                           duration: const Duration(
                                             milliseconds: 350,
                                           ),
-                                          curve: Curves.easeOutCubic,
-                                          left: 115 + offset,
-                                          top: state.trickResolving ? -50 : 20,
-                                          child: Transform.rotate(
-                                            angle: rotation,
-                                            child: AnimatedScale(
-                                              duration: const Duration(
-                                                milliseconds: 350,
-                                              ),
-                                              scale: state.trickResolving
-                                                  ? 0.8
-                                                  : 1.0,
-                                              child: AnimatedOpacity(
-                                                opacity: state.trickResolving
-                                                    ? 0.0
-                                                    : 1.0,
-                                                duration: const Duration(
-                                                  milliseconds: 300,
+                                          scale: state.trickResolving
+                                              ? 0.8
+                                              : 1.0,
+                                          child: AnimatedOpacity(
+                                            opacity: state.trickResolving
+                                                ? 0.0
+                                                : 1.0,
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            curve: Curves.easeInCubic,
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  t.playerId,
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color:
+                                                        AppTheme.textSecondary,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
-                                                curve: Curves.easeInCubic,
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      t.playerId,
-                                                      style: const TextStyle(
-                                                        fontSize: 10,
-                                                        color: AppTheme
-                                                            .textSecondary,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 6),
-                                                    PlayingCardWidget(
-                                                      card: t.card,
-                                                      width: cardW,
-                                                      height: cardH,
-                                                    ),
-                                                  ],
+                                                const SizedBox(height: 6),
+                                                PlayingCardWidget(
+                                                  card: t.card,
+                                                  width: cardW,
+                                                  height: cardH,
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ),
-
-                  // Bottom Player Hand
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceElevated,
-                      border: Border(
-                        top: BorderSide(
-                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonGlow,
-                          blurRadius: 24,
-                          offset: const Offset(0, -8),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 16.0,
-                              bottom: 4.0,
-                            ),
-                            child: Text(
-                              isYourTurn
-                                  ? 'YOUR TURN'
-                                  : bottomPlayer.name.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 3.0,
-                                color: isYourTurn
-                                    ? AppTheme.accentPrimary
-                                    : AppTheme.textSecondary,
-                                shadows: isYourTurn
-                                    ? [
-                                        Shadow(
-                                          color: AppTheme.neonGlow,
-                                          blurRadius: 8,
-                                        ),
-                                      ]
-                                    : [],
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceElevated,
+                            border: Border(
+                              top: BorderSide(
+                                color: AppTheme.accentPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                width: 1.5,
                               ),
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.neonGlow,
+                                blurRadius: 24,
+                                offset: const Offset(0, -8),
+                              ),
+                            ],
                           ),
-                          HandWidget(
-                            hand: bottomPlayer.hand,
-                            isFaceUp: !bottomPlayer.isBot,
-                            isInteractive: !bottomPlayer.isBot,
-                            isCardValid: (card) =>
-                                ThullaEngine.getMoveError(
-                                  state,
-                                  bottomPlayer.id,
-                                  card,
-                                ) ==
-                                null,
-                            onCardTap: (card) async {
-                              if (widget.isOnline) {
-                                final user = ref.read(userProvider).value;
-                                if (user == null ||
-                                    user.uid != bottomPlayer.id) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "You can only play your own cards!",
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-                              }
-
-                              String? error;
-                              if (widget.isOnline) {
-                                error = await ref
-                                    .read(onlineActionProvider)
-                                    .playCard(bottomPlayer.id, card);
-                              } else {
-                                error = await ref
-                                    .read(thullaProvider.notifier)
-                                    .playCard(bottomPlayer.id, card);
-                              }
-
-                              if (error != null) {
-                                if (!context.mounted) return;
-                                ref.read(audioServiceProvider).playError();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: AppTheme.statusError,
-                                    behavior: SnackBarBehavior.floating,
+                          child: SafeArea(
+                            top: false,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 12.0,
+                                    bottom: 4.0,
                                   ),
-                                );
-                              } else {
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (state.passToPlayerId != null && !widget.isOnline)
-                PassDeviceOverlay(
-                  playerName: state.players
-                      .firstWhere((p) => p.id == state.passToPlayerId)
-                      .name,
-                  onAcknowledge: () =>
-                      ref.read(thullaProvider.notifier).acknowledgePass(),
-                ),
+                                  child: Text(
+                                    isYourTurn
+                                        ? 'YOUR TURN'
+                                        : bottomPlayer.name.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 3.0,
+                                      color: isYourTurn
+                                          ? AppTheme.accentPrimary
+                                          : AppTheme.textSecondary,
+                                      shadows: isYourTurn
+                                          ? [
+                                              Shadow(
+                                                color: AppTheme.neonGlow,
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: HandWidget(
+                                      hand: bottomPlayer.hand,
+                                      isFaceUp: !bottomPlayer.isBot,
+                                      isInteractive: !bottomPlayer.isBot,
+                                      isCardValid: (card) =>
+                                          ThullaEngine.getMoveError(
+                                            state,
+                                            bottomPlayer.id,
+                                            card,
+                                          ) ==
+                                          null,
+                                      onCardTap: (card) async {
+                                        if (widget.isOnline) {
+                                          final user =
+                                              ref.read(userProvider).value;
+                                          if (user == null ||
+                                              user.uid != bottomPlayer.id) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "You can only play your own cards!",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                        }
 
-              if (widget.isOnline) ChatOverlay(messages: state.chatMessages),
-            ],
+                                        String? error;
+                                        if (widget.isOnline) {
+                                          error = await ref
+                                              .read(onlineActionProvider)
+                                              .playCard(bottomPlayer.id, card);
+                                        } else {
+                                          error = await ref
+                                              .read(thullaProvider.notifier)
+                                              .playCard(bottomPlayer.id, card);
+                                        }
+
+                                        if (error != null) {
+                                          if (!context.mounted) return;
+                                          ref
+                                              .read(audioServiceProvider)
+                                              .playError();
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(error),
+                                              duration: const Duration(
+                                                seconds: 2,
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.statusError,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (state.passToPlayerId != null && !widget.isOnline)
+                    PassDeviceOverlay(
+                      playerName: state.players
+                          .firstWhere((p) => p.id == state.passToPlayerId)
+                          .name,
+                      onAcknowledge: () => ref
+                          .read(thullaProvider.notifier)
+                          .acknowledgePass(),
+                    ),
+                  if (widget.isOnline)
+                    ChatOverlay(messages: state.chatMessages),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rang_adda/shared/models/card_model.dart';
+import 'package:rang_adda/shared/models/game_state.dart';
 import 'package:rang_adda/shared/models/player.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
@@ -13,6 +14,8 @@ final thullaProvider = NotifierProvider<ThullaNotifier, ThullaGameState?>(() {
 
 class ThullaNotifier extends Notifier<ThullaGameState?> {
   final Map<String, ThullaBot> _bots = {};
+  bool _botMovePending = false;
+  bool _botPassAckPending = false;
 
   @override
   ThullaGameState? build() {
@@ -27,7 +30,7 @@ class ThullaNotifier extends Notifier<ThullaGameState?> {
       }
     }
     state = ThullaEngine.initializeGame(players);
-    _triggerBotTurnIfNeeded();
+    _checkAndScheduleBotMove();
   }
 
   Future<String?> playCard(String playerId, PlayingCard card) async {
@@ -43,10 +46,10 @@ class ThullaNotifier extends Notifier<ThullaGameState?> {
       await Future.delayed(const Duration(milliseconds: 1500));
       if (state != null) {
         state = ThullaEngine.resolveTrick(state!);
-        _triggerBotTurnIfNeeded();
+        _checkAndScheduleBotMove();
       }
     } else {
-      _triggerBotTurnIfNeeded();
+      _checkAndScheduleBotMove();
     }
     return null;
   }
@@ -54,43 +57,88 @@ class ThullaNotifier extends Notifier<ThullaGameState?> {
   void acknowledgePass() {
     if (state == null) return;
     state = state!.copyWith(clearPassToPlayerId: true);
-    _triggerBotTurnIfNeeded();
+    _checkAndScheduleBotMove();
   }
 
-  void _triggerBotTurnIfNeeded() async {
-    if (state == null) return;
+  bool _isBotPlayer(String? playerId) {
+    if (playerId == null || state == null) return false;
+    return state!.players.any((p) => p.id == playerId && p.isBot);
+  }
 
-    // If waiting for someone to acknowledge pass screen, but it's a bot, auto-acknowledge
-    if (state!.passToPlayerId != null) {
-      final passingToPlayer = state!.players.firstWhere(
-        (p) => p.id == state!.passToPlayerId,
-      );
-      if (passingToPlayer.isBot) {
-        // Bots don't need a pass screen delay
-        acknowledgePass();
-        return;
+  void _checkAndScheduleBotMove() {
+    final currentState = state;
+    if (currentState == null) return;
+    if (currentState.status != GameStatus.playing) return;
+    if (currentState.trickResolving) return;
+
+    final currentPlayerId = currentState.currentPlayerId;
+    if (_isBotPlayer(currentPlayerId) &&
+        currentState.passToPlayerId == currentPlayerId) {
+      _autoAcknowledgeBotPass();
+      return;
+    }
+
+    if (currentState.passToPlayerId != null) return;
+    if (!_isBotPlayer(currentPlayerId)) return;
+
+    _scheduleBotMove();
+  }
+
+  Future<void> _autoAcknowledgeBotPass() async {
+    if (_botPassAckPending) return;
+    _botPassAckPending = true;
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final currentState = state;
+    if (currentState != null &&
+        _isBotPlayer(currentState.currentPlayerId) &&
+        currentState.passToPlayerId == currentState.currentPlayerId) {
+      acknowledgePass();
+    }
+
+    _botPassAckPending = false;
+  }
+
+  void _scheduleBotMove() {
+    if (_botMovePending) return;
+    _botMovePending = true;
+
+    Future.delayed(const Duration(milliseconds: 800), () async {
+      try {
+        final currentState = state;
+        if (currentState != null &&
+            currentState.status == GameStatus.playing &&
+            currentState.passToPlayerId == null &&
+            !currentState.trickResolving &&
+            _isBotPlayer(currentState.currentPlayerId)) {
+          await _executeBotMove();
+        }
+      } finally {
+        _botMovePending = false;
       }
-      return; // Waiting for human
-    }
+    });
+  }
 
-    if (state!.currentPlayerId == null) return;
+  Future<void> _executeBotMove() async {
+    final currentState = state;
+    if (currentState == null) return;
 
-    final currentPlayer = state!.players.firstWhere(
-      (p) => p.id == state!.currentPlayerId,
+    final currentPlayerId = currentState.currentPlayerId;
+    if (currentPlayerId == null || !_bots.containsKey(currentPlayerId)) return;
+
+    final currentPlayer = currentState.players.firstWhere(
+      (p) => p.id == currentPlayerId,
     );
-    if (currentPlayer.isBot && _bots.containsKey(currentPlayer.id)) {
-      final bot = _bots[currentPlayer.id]!;
+    final bot = _bots[currentPlayer.id]!;
 
-      // Artificial delay so humans can follow
-      await BotDelay.simulateThinking(currentPlayer.botDifficulty!);
+    await BotDelay.simulateThinking(currentPlayer.botDifficulty!);
 
-      // Make sure state hasn't changed/ended while thinking
-      if (state == null || state!.currentPlayerId != currentPlayer.id) return;
+    if (state == null || state!.currentPlayerId != currentPlayer.id) return;
 
-      final obs = ThullaBotObservation.fromState(state!, currentPlayer.id);
-      final cardToPlay = bot.chooseCard(obs);
+    final obs = ThullaBotObservation.fromState(state!, currentPlayer.id);
+    final cardToPlay = bot.chooseCard(obs);
 
-      await playCard(currentPlayer.id, cardToPlay);
-    }
+    await playCard(currentPlayer.id, cardToPlay);
   }
 }

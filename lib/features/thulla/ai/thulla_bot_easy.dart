@@ -10,7 +10,10 @@ class ThullaBotEasy extends ThullaBot {
 
   @override
   PlayingCard chooseCard(ThullaBotObservation obs) {
-    final validCards = _getValidCards(obs);
+    // Wrap in List.from() so we always have a mutable copy — obs.myHand is
+    // an unmodifiable list and calling .sort() on it directly throws
+    // "Unsupported operation: sort" on the web/JS runtime.
+    final validCards = List<PlayingCard>.from(_getValidCards(obs));
 
     // Easy bot just picks a random valid card.
     // Occasionally (30% of the time) it will deliberately pick the highest valid card,

@@ -251,17 +251,25 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
               slivers: [
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0,
-                      vertical: 32.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                  child: SingleChildScrollView(
+                    // ClampingScrollPhysics prevents rubber-band bounce on web;
+                    // allows content to scroll on viewports that are too short.
+                    physics: const ClampingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 32.0,
+                      ),
+                      child: Column(
+                        // mainAxisSize.min lets the Column size to its children
+                        // instead of expanding to fill remaining space, which was
+                        // causing a 2px overflow at certain viewport heights.
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                         // Top: Logo Area
                         _buildLogoBlock(),
-                        const Spacer(flex: 1),
+                        const SizedBox(height: 24),
 
                         if (ref.watch(currentGameIdProvider) != null) ...[
                           _buildButton('RECONNECT TO GAME', () {
@@ -281,7 +289,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
 
                         // Center: Online Play Panel
                         _buildOnlinePlayPanel(isOnlineFocused),
-                        const Spacer(flex: 2),
+                        const SizedBox(height: 48),
 
                         // Bottom: Local Games
                         _buildLocalGamesSection(),
@@ -289,6 +297,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                     ),
                   ),
                 ),
+              ),
               ],
             ),
           ),
