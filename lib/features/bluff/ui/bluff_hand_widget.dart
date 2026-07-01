@@ -142,12 +142,17 @@ class _BluffHandWidgetState extends ConsumerState<BluffHandWidget> {
             final isSmallScreen = screenWidth < 600;
             final cardW = isSmallScreen ? 55.0 : 70.0;
             final cardH = isSmallScreen ? 82.5 : 105.0;
-            final containerHeight = isSmallScreen ? 110.0 : 140.0;
+            final fallbackHeight = isSmallScreen ? 110.0 : 140.0;
+            final containerHeight =
+                constraints.maxHeight.isFinite && constraints.maxHeight > 0
+                ? constraints.maxHeight
+                : fallbackHeight;
 
             return SizedBox(
-              height: containerHeight, // Height for lift and shadow
+              height: containerHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24.0,
                   vertical: 16.0,

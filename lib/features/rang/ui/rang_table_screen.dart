@@ -16,6 +16,7 @@ import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/round_table_widget.dart';
+import 'package:rang_adda/utils/player_session_storage.dart';
 import 'dart:math' as math;
 
 class RangTableScreen extends ConsumerStatefulWidget {
@@ -31,14 +32,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ps =
-          widget.players ??
-          [
-            const Player(id: 'p1', name: 'Alice'),
-            const Player(id: 'p2', name: 'Bob'),
-            const Player(id: 'p3', name: 'Charlie'),
-            const Player(id: 'p4', name: 'Diana'),
-          ];
+      final ps = resolvePlayers(widget.players, 'rang');
       ref.read(rangProvider.notifier).startGame(ps);
     });
   }
@@ -68,14 +62,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
           players: state.players,
           onPlayAgain: () {
             ref.read(audioServiceProvider).playClick();
-            final ps =
-                widget.players ??
-                [
-                  const Player(id: 'p1', name: 'Alice'),
-                  const Player(id: 'p2', name: 'Bob'),
-                  const Player(id: 'p3', name: 'Charlie'),
-                  const Player(id: 'p4', name: 'Diana'),
-                ];
+            final ps = resolvePlayers(widget.players, 'rang');
             ref.read(rangProvider.notifier).startGame(ps);
           },
           onBackToLobby: () {
@@ -204,335 +191,343 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
       ),
       body: GameTableBackground(
         child: SafeArea(
-          child: Stack(
-            children: [
-              // Round Table
-              Positioned(
-                top: 40,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: RoundTableWidget(
-                    playerNames: state.players.map((p) => p.name).toList(),
-                    playerIds: state.players.map((p) => p.id).toList(),
-                    activePlayerIndex: state.players.indexWhere(
-                      (p) => p.id == state.currentPlayerId,
-                    ),
-                    cardCounts: state.players
-                        .map((p) => p.hand.length)
-                        .toList(),
-                    trumpSuit: state.trumpSuit != null
-                        ? _getSuitSymbol(state.trumpSuit!)
-                        : null,
-                    currentTrickPlays: Map.fromEntries(
-                      state.currentTrick.map(
-                        (play) => MapEntry(play.playerId, play.card),
-                      ),
-                    ),
-                    size: math.min(
-                      MediaQuery.of(context).size.width * 0.75,
-                      300,
-                    ),
-                  ),
-                ),
-              ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableHeight = constraints.maxHeight;
+              final tableSize = (availableHeight * 0.40).clamp(180.0, 300.0);
 
-              // 4. Center Trick Cards & Heap
-              Positioned(
-                top: 180,
-                bottom: 180,
-                left: 80,
-                right: 80,
-                child: Center(
-                  child: SizedBox(
-                    width: 220,
-                    height: 220,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Heap counter in center
-                        if (hasHeap)
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.surfaceElevated,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.statusError.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.statusError.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    blurRadius: 16,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                'HEAP: ${state.heap.length}',
-                                style: const TextStyle(
-                                  color: AppTheme.statusError,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 1.5,
-                                ),
+              return Stack(
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: tableSize,
+                        child: Center(
+                          child: RoundTableWidget(
+                            playerNames:
+                                state.players.map((p) => p.name).toList(),
+                            playerIds:
+                                state.players.map((p) => p.id).toList(),
+                            activePlayerIndex: state.players.indexWhere(
+                              (p) => p.id == state.currentPlayerId,
+                            ),
+                            cardCounts: state.players
+                                .map((p) => p.hand.length)
+                                .toList(),
+                            trumpSuit: state.trumpSuit != null
+                                ? _getSuitSymbol(state.trumpSuit!)
+                                : null,
+                            currentTrickPlays: Map.fromEntries(
+                              state.currentTrick.map(
+                                (play) => MapEntry(play.playerId, play.card),
                               ),
                             ),
+                            size: tableSize * 0.90,
                           ),
-
-                        // Played cards
-                        ...state.currentTrick.map((trickPlay) {
-                          final slot = _getPlayerSlot(
-                            trickPlay.playerId,
-                            bottomIndex,
-                            state.players,
-                          );
-                          double? topVal;
-                          double? bottomVal;
-                          double? leftVal;
-                          double? rightVal;
-
-                          switch (slot) {
-                            case _TableSlot.bottom:
-                              bottomVal = 25;
-                              leftVal = 80;
-                              rightVal = 80;
-                              break;
-                            case _TableSlot.top:
-                              topVal = 25;
-                              leftVal = 80;
-                              rightVal = 80;
-                              break;
-                            case _TableSlot.left:
-                              leftVal = 25;
-                              topVal = 65;
-                              bottomVal = 65;
-                              break;
-                            case _TableSlot.right:
-                              rightVal = 25;
-                              topVal = 65;
-                              bottomVal = 65;
-                              break;
-                          }
-
-                          return Positioned(
-                            top: topVal,
-                            bottom: bottomVal,
-                            left: leftVal,
-                            right: rightVal,
-                            child: Center(
-                              child: PlayingCardWidget(
-                                card: trickPlay.card,
-                                width: 60,
-                                height: 90,
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // 5 & 6. Turn Banner and Bottom Area
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Turn / Phase Status Banner
-                    Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              isYourTurn || (isTrumpSelection && isTrumpCaller)
-                              ? AppTheme.accentPrimary.withValues(alpha: 0.15)
-                              : AppTheme.surfaceElevated,
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color:
-                                isYourTurn ||
-                                    (isTrumpSelection && isTrumpCaller)
-                                ? AppTheme.accentPrimary
-                                : AppTheme.accentPrimary.withValues(alpha: 0.1),
-                            width: 1.5,
-                          ),
-                          boxShadow:
-                              isYourTurn || (isTrumpSelection && isTrumpCaller)
-                              ? [
-                                  BoxShadow(
-                                    color: AppTheme.neonGlow,
-                                    blurRadius: 16,
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        child: Text(
-                          _getBannerText(state, bottomPlayer).toUpperCase(),
-                          style: TextStyle(
-                            color:
-                                isYourTurn ||
-                                    (isTrumpSelection && isTrumpCaller)
-                                ? AppTheme.accentPrimary
-                                : AppTheme.textSecondary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 14,
-                            letterSpacing: 2.0,
-                          ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Bottom Area: Suit Picker (Trump Selection) or HandWidget
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceElevated,
-                        border: Border(
-                          top: BorderSide(
-                            color: AppTheme.accentPrimary.withValues(
-                              alpha: 0.3,
-                            ),
-                            width: 1.5,
-                          ),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.neonGlow,
-                            blurRadius: 24,
-                            offset: const Offset(0, -8),
-                          ),
-                        ],
-                      ),
-                      child: SafeArea(
-                        top: false,
+                      Expanded(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 16.0,
-                                bottom: 4.0,
-                              ),
-                              child: Text(
-                                (isYourTurn ||
-                                        (isTrumpSelection && isTrumpCaller))
-                                    ? 'YOUR TURN'
-                                    : bottomPlayer.name.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 3.0,
+                            Center(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
                                   color:
-                                      (isYourTurn ||
-                                          (isTrumpSelection && isTrumpCaller))
-                                      ? AppTheme.accentPrimary
-                                      : AppTheme.textSecondary,
-                                  shadows:
-                                      (isYourTurn ||
-                                          (isTrumpSelection && isTrumpCaller))
+                                      isYourTurn ||
+                                          (isTrumpSelection && isTrumpCaller)
+                                      ? AppTheme.accentPrimary.withValues(
+                                          alpha: 0.15,
+                                        )
+                                      : AppTheme.surfaceElevated,
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                    color:
+                                        isYourTurn ||
+                                            (isTrumpSelection &&
+                                                isTrumpCaller)
+                                        ? AppTheme.accentPrimary
+                                        : AppTheme.accentPrimary.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow:
+                                      isYourTurn ||
+                                          (isTrumpSelection && isTrumpCaller)
                                       ? [
-                                          Shadow(
+                                          BoxShadow(
                                             color: AppTheme.neonGlow,
-                                            blurRadius: 8,
+                                            blurRadius: 16,
                                           ),
                                         ]
                                       : [],
                                 ),
+                                child: Text(
+                                  _getBannerText(
+                                    state,
+                                    bottomPlayer,
+                                  ).toUpperCase(),
+                                  style: TextStyle(
+                                    color:
+                                        isYourTurn ||
+                                            (isTrumpSelection &&
+                                                isTrumpCaller)
+                                        ? AppTheme.accentPrimary
+                                        : AppTheme.textSecondary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    letterSpacing: 2.0,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
-                            if (isTrumpSelection && isTrumpCaller)
-                              bottomPlayer.isBot
-                                  ? Padding(
-                                      padding: const EdgeInsets.all(32.0),
-                                      child: Text(
-                                        '${bottomPlayer.name.toUpperCase()} IS CHOOSING TRUMP...',
-                                        style: const TextStyle(
-                                          color: AppTheme.accentPrimary,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 2.0,
+                            const SizedBox(height: 16),
+                            if (hasHeap)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surfaceElevated,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppTheme.statusError.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  'HEAP: ${state.heap.length}',
+                                  style: const TextStyle(
+                                    color: AppTheme.statusError,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                            if (state.currentTrick.isNotEmpty)
+                              SizedBox(
+                                height: math.min(availableHeight * 0.18, 120),
+                                width: 220,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  alignment: Alignment.center,
+                                  children: state.currentTrick.map((trickPlay) {
+                                    final slot = _getPlayerSlot(
+                                      trickPlay.playerId,
+                                      bottomIndex,
+                                      state.players,
+                                    );
+                                    double? topVal;
+                                    double? bottomVal;
+                                    double? leftVal;
+                                    double? rightVal;
+
+                                    switch (slot) {
+                                      case _TableSlot.bottom:
+                                        bottomVal = 0;
+                                        leftVal = 70;
+                                        rightVal = 70;
+                                        break;
+                                      case _TableSlot.top:
+                                        topVal = 0;
+                                        leftVal = 70;
+                                        rightVal = 70;
+                                        break;
+                                      case _TableSlot.left:
+                                        leftVal = 0;
+                                        topVal = 20;
+                                        bottomVal = 20;
+                                        break;
+                                      case _TableSlot.right:
+                                        rightVal = 0;
+                                        topVal = 20;
+                                        bottomVal = 20;
+                                        break;
+                                    }
+
+                                    return Positioned(
+                                      top: topVal,
+                                      bottom: bottomVal,
+                                      left: leftVal,
+                                      right: rightVal,
+                                      child: Center(
+                                        child: PlayingCardWidget(
+                                          card: trickPlay.card,
+                                          width: 55,
+                                          height: 82.5,
                                         ),
                                       ),
-                                    )
-                                  : _buildSuitPicker(context, bottomPlayer.id)
-                            else
-                              HandWidget(
-                                hand: bottomPlayer.hand,
-                                isFaceUp: !bottomPlayer.isBot,
-                                isInteractive: !bottomPlayer.isBot,
-                                onCardTap: (card) async {
-                                  final error = await ref
-                                      .read(rangProvider.notifier)
-                                      .playCard(bottomPlayer.id, card);
-                                  if (error != null && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error),
-                                        duration: const Duration(seconds: 2),
-                                        backgroundColor: AppTheme.statusError,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
                                     );
-                                  }
-                                },
-                                isCardValid: (card) {
-                                  if (state.phase != RangPhase.trickPlay) {
-                                    return false;
-                                  }
-                                  if (state.currentPlayerId !=
-                                      bottomPlayer.id) {
-                                    return false;
-                                  }
-                                  if (state.passToPlayerId != null) {
-                                    return false;
-                                  }
-                                  return RangEngine.getMoveError(
-                                        state,
-                                        bottomPlayer.id,
-                                        card,
-                                      ) ==
-                                      null;
-                                },
+                                  }).toList(),
+                                ),
                               ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 7. Pass Device Overlay
-              if (state.passToPlayerId != null)
-                Positioned.fill(
-                  child: PassDeviceOverlay(
-                    playerName: state.players
-                        .firstWhere((p) => p.id == state.passToPlayerId)
-                        .name,
-                    onAcknowledge: () {
-                      ref.read(rangProvider.notifier).acknowledgePass();
-                    },
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceElevated,
+                            border: Border(
+                              top: BorderSide(
+                                color: AppTheme.accentPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                width: 1.5,
+                              ),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.neonGlow,
+                                blurRadius: 24,
+                                offset: const Offset(0, -8),
+                              ),
+                            ],
+                          ),
+                          child: SafeArea(
+                            top: false,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 12.0,
+                                    bottom: 4.0,
+                                  ),
+                                  child: Text(
+                                    (isYourTurn ||
+                                            (isTrumpSelection && isTrumpCaller))
+                                        ? 'YOUR TURN'
+                                        : bottomPlayer.name.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 3.0,
+                                      color:
+                                          (isYourTurn ||
+                                              (isTrumpSelection &&
+                                                  isTrumpCaller))
+                                          ? AppTheme.accentPrimary
+                                          : AppTheme.textSecondary,
+                                      shadows:
+                                          (isYourTurn ||
+                                              (isTrumpSelection &&
+                                                  isTrumpCaller))
+                                          ? [
+                                              Shadow(
+                                                color: AppTheme.neonGlow,
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: isTrumpSelection && isTrumpCaller
+                                        ? bottomPlayer.isBot
+                                              ? Center(
+                                                  child: Text(
+                                                    '${bottomPlayer.name.toUpperCase()} IS CHOOSING TRUMP...',
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppTheme.accentPrimary,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      letterSpacing: 2.0,
+                                                    ),
+                                                  ),
+                                                )
+                                              : _buildSuitPicker(
+                                                  context,
+                                                  bottomPlayer.id,
+                                                )
+                                        : HandWidget(
+                                            hand: bottomPlayer.hand,
+                                            isFaceUp: !bottomPlayer.isBot,
+                                            isInteractive: !bottomPlayer.isBot,
+                                            onCardTap: (card) async {
+                                              final error = await ref
+                                                  .read(rangProvider.notifier)
+                                                  .playCard(
+                                                    bottomPlayer.id,
+                                                    card,
+                                                  );
+                                              if (error != null &&
+                                                  context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(error),
+                                                    duration: const Duration(
+                                                      seconds: 2,
+                                                    ),
+                                                    backgroundColor:
+                                                        AppTheme.statusError,
+                                                    behavior: SnackBarBehavior
+                                                        .floating,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            isCardValid: (card) {
+                                              if (state.phase !=
+                                                  RangPhase.trickPlay) {
+                                                return false;
+                                              }
+                                              if (state.currentPlayerId !=
+                                                  bottomPlayer.id) {
+                                                return false;
+                                              }
+                                              if (state.passToPlayerId !=
+                                                  null) {
+                                                return false;
+                                              }
+                                              return RangEngine.getMoveError(
+                                                    state,
+                                                    bottomPlayer.id,
+                                                    card,
+                                                  ) ==
+                                                  null;
+                                            },
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-            ],
+
+                  // Pass Device Overlay
+                  if (state.passToPlayerId != null)
+                    PassDeviceOverlay(
+                      playerName: state.players
+                          .firstWhere((p) => p.id == state.passToPlayerId)
+                          .name,
+                      onAcknowledge: () {
+                        ref.read(rangProvider.notifier).acknowledgePass();
+                      },
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ),

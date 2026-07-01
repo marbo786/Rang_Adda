@@ -7,6 +7,7 @@ import 'package:rang_adda/features/rang/state/rang_provider.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/ai/bot_difficulty.dart';
 import 'package:rang_adda/shared/models/player.dart';
+import 'package:rang_adda/utils/player_session_storage.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Game-type configuration
@@ -185,6 +186,8 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         botDifficulty: slot.isBot ? slot.botDifficulty : null,
       );
     });
+
+    saveGameSession(widget.gameType, players);
 
     switch (widget.gameType) {
       case 'thulla':

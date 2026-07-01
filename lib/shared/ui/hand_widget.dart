@@ -26,10 +26,13 @@ class HandWidget extends ConsumerWidget {
     final isSmallScreen = screenWidth < 600;
     final cardW = isSmallScreen ? 55.0 : 70.0;
     final cardH = isSmallScreen ? 82.5 : 105.0;
-    final containerHeight = isSmallScreen ? 110.0 : 140.0;
-
     return LayoutBuilder(
       builder: (context, constraints) {
+        final fallbackHeight = isSmallScreen ? 110.0 : 140.0;
+        final containerHeight =
+            constraints.maxHeight.isFinite && constraints.maxHeight > 0
+            ? constraints.maxHeight
+            : fallbackHeight;
         final availableWidth =
             constraints.maxWidth - 48.0; // 24.0 padding on each side
 
