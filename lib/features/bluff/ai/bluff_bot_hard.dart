@@ -3,7 +3,6 @@ import 'package:rang_adda/shared/ai/bot_observation.dart';
 import 'bluff_bot.dart';
 
 class BluffBotHard extends BluffBot {
-
   // Tracks ranks that this bot KNOWS are in the pile because it put them there.
   // (Simplified tracking for this session)
   final Map<Rank, int> _myCardsInPile = {};

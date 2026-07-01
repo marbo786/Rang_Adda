@@ -154,10 +154,10 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                         height: tableSize,
                         child: Center(
                           child: RoundTableWidget(
-                            playerNames:
-                                state.players.map((p) => p.name).toList(),
-                            playerIds:
-                                state.players.map((p) => p.id).toList(),
+                            playerNames: state.players
+                                .map((p) => p.name)
+                                .toList(),
+                            playerIds: state.players.map((p) => p.id).toList(),
                             activePlayerIndex: state.players.indexWhere(
                               (p) => p.id == state.currentPlayerId,
                             ),
@@ -357,8 +357,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                           state.centerPile.isEmpty,
                                       onPass: () async {
                                         if (widget.isOnline) {
-                                          final user =
-                                              ref.read(userProvider).value;
+                                          final user = ref
+                                              .read(userProvider)
+                                              .value;
                                           if (user == null ||
                                               user.uid != bottomPlayer.id) {
                                             ScaffoldMessenger.of(
@@ -399,8 +400,9 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                       },
                                       onPlayCards: (cards) {
                                         if (widget.isOnline) {
-                                          final user =
-                                              ref.read(userProvider).value;
+                                          final user = ref
+                                              .read(userProvider)
+                                              .value;
                                           if (user == null ||
                                               user.uid != bottomPlayer.id) {
                                             ScaffoldMessenger.of(
@@ -438,23 +440,23 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                       playerName: state.players
                           .firstWhere((p) => p.id == state.passToPlayerId)
                           .name,
-                      onAcknowledge: () => ref
-                          .read(bluffProvider.notifier)
-                          .acknowledgePass(),
+                      onAcknowledge: () =>
+                          ref.read(bluffProvider.notifier).acknowledgePass(),
                     ),
 
                   // Challenge Bluff Overlay
                   if (state.passToPlayerId == null &&
                       state.lastPlayerId != null &&
-                  state.lastPlayedCards.isNotEmpty &&
-                  state.status == GameStatus.playing)
-                _buildChallengeOverlay(context, state, bottomPlayer),
+                      state.lastPlayedCards.isNotEmpty &&
+                      state.status == GameStatus.playing)
+                    _buildChallengeOverlay(context, state, bottomPlayer),
 
-              // Resolving Result Overlay
-              if (state.resolvingBluffMessage != null)
-                _buildResultOverlay(context, state.resolvingBluffMessage!),
+                  // Resolving Result Overlay
+                  if (state.resolvingBluffMessage != null)
+                    _buildResultOverlay(context, state.resolvingBluffMessage!),
 
-              if (widget.isOnline) ChatOverlay(messages: state.chatMessages),
+                  if (widget.isOnline)
+                    ChatOverlay(messages: state.chatMessages),
                 ],
               );
             },
@@ -557,8 +559,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 backgroundColor: AppTheme.statusError,
                               ),
                             );
-                          } else {
-                          }
+                          } else {}
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(

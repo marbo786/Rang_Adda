@@ -180,9 +180,17 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildTeamScoreBadge('A', state.teamASars, AppTheme.accentPrimary),
+                  _buildTeamScoreBadge(
+                    'A',
+                    state.teamASars,
+                    AppTheme.accentPrimary,
+                  ),
                   const SizedBox(width: 8),
-                  _buildTeamScoreBadge('B', state.teamBSars, AppTheme.accentSecondary),
+                  _buildTeamScoreBadge(
+                    'B',
+                    state.teamBSars,
+                    AppTheme.accentSecondary,
+                  ),
                 ],
               ),
             ),
@@ -204,10 +212,10 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                         height: tableSize,
                         child: Center(
                           child: RoundTableWidget(
-                            playerNames:
-                                state.players.map((p) => p.name).toList(),
-                            playerIds:
-                                state.players.map((p) => p.id).toList(),
+                            playerNames: state.players
+                                .map((p) => p.name)
+                                .toList(),
+                            playerIds: state.players.map((p) => p.id).toList(),
                             activePlayerIndex: state.players.indexWhere(
                               (p) => p.id == state.currentPlayerId,
                             ),
@@ -249,8 +257,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   border: Border.all(
                                     color:
                                         isYourTurn ||
-                                            (isTrumpSelection &&
-                                                isTrumpCaller)
+                                            (isTrumpSelection && isTrumpCaller)
                                         ? AppTheme.accentPrimary
                                         : AppTheme.accentPrimary.withValues(
                                             alpha: 0.1,
@@ -276,8 +283,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   style: TextStyle(
                                     color:
                                         isYourTurn ||
-                                            (isTrumpSelection &&
-                                                isTrumpCaller)
+                                            (isTrumpSelection && isTrumpCaller)
                                         ? AppTheme.accentPrimary
                                         : AppTheme.textSecondary,
                                     fontWeight: FontWeight.w800,
@@ -442,8 +448,8 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                                   child: Text(
                                                     '${bottomPlayer.name.toUpperCase()} IS CHOOSING TRUMP...',
                                                     style: const TextStyle(
-                                                      color:
-                                                          AppTheme.accentPrimary,
+                                                      color: AppTheme
+                                                          .accentPrimary,
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.w800,
@@ -650,10 +656,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
           width: 1.5,
         ),
         boxShadow: [
-          BoxShadow(
-            color: accentColor.withValues(alpha: 0.2),
-            blurRadius: 12,
-          ),
+          BoxShadow(color: accentColor.withValues(alpha: 0.2), blurRadius: 12),
         ],
       ),
       child: Row(

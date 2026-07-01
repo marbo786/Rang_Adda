@@ -267,37 +267,37 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                        // Top: Logo Area
-                        _buildLogoBlock(),
-                        const SizedBox(height: 24),
+                          // Top: Logo Area
+                          _buildLogoBlock(),
+                          const SizedBox(height: 24),
 
-                        if (ref.watch(currentGameIdProvider) != null) ...[
-                          _buildButton('RECONNECT TO GAME', () {
-                            final gameId = ref.read(currentGameIdProvider);
-                            if (gameId != null) {
-                              context.push('/waiting_room/$gameId');
-                            }
-                          }, type: ButtonType.primary),
-                          const SizedBox(height: 12),
-                          _buildButton('LEAVE CURRENT GAME', () {
-                            ref
-                                .read(currentGameIdProvider.notifier)
-                                .setId(null);
-                          }),
-                          const SizedBox(height: 32),
+                          if (ref.watch(currentGameIdProvider) != null) ...[
+                            _buildButton('RECONNECT TO GAME', () {
+                              final gameId = ref.read(currentGameIdProvider);
+                              if (gameId != null) {
+                                context.push('/waiting_room/$gameId');
+                              }
+                            }, type: ButtonType.primary),
+                            const SizedBox(height: 12),
+                            _buildButton('LEAVE CURRENT GAME', () {
+                              ref
+                                  .read(currentGameIdProvider.notifier)
+                                  .setId(null);
+                            }),
+                            const SizedBox(height: 32),
+                          ],
+
+                          // Center: Online Play Panel
+                          _buildOnlinePlayPanel(isOnlineFocused),
+                          const SizedBox(height: 48),
+
+                          // Bottom: Local Games
+                          _buildLocalGamesSection(),
                         ],
-
-                        // Center: Online Play Panel
-                        _buildOnlinePlayPanel(isOnlineFocused),
-                        const SizedBox(height: 48),
-
-                        // Bottom: Local Games
-                        _buildLocalGamesSection(),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               ],
             ),
           ),

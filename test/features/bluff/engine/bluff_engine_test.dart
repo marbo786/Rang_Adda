@@ -15,7 +15,7 @@ void main() {
       ];
 
       final state = BluffEngine.initializeGame(players);
-      
+
       expect(state.players.length, 4);
       for (var player in state.players) {
         expect(player.hand.length, 13);
@@ -31,15 +31,28 @@ void main() {
       ];
       final state = BluffEngine.initializeGame(players);
       final startPlayerId = state.currentPlayerId!;
-      final startPlayer = state.players.firstWhere((p) => p.id == startPlayerId);
-      
+      final startPlayer = state.players.firstWhere(
+        (p) => p.id == startPlayerId,
+      );
+
       final emptyCards = <PlayingCard>[];
-      final errorEmpty = BluffEngine.getMoveError(state, startPlayerId, emptyCards);
+      final errorEmpty = BluffEngine.getMoveError(
+        state,
+        startPlayerId,
+        emptyCards,
+      );
       expect(errorEmpty, "You must select between 1 and 4 cards.");
 
       final oneCard = [startPlayer.hand.first];
-      final errorOneFirst = BluffEngine.getMoveError(state, startPlayerId, oneCard);
-      expect(errorOneFirst, "You must play at least 2 cards to start a new pile.");
+      final errorOneFirst = BluffEngine.getMoveError(
+        state,
+        startPlayerId,
+        oneCard,
+      );
+      expect(
+        errorOneFirst,
+        "You must play at least 2 cards to start a new pile.",
+      );
     });
   });
 }

@@ -10,10 +10,7 @@ const _keyPlayersJson = 'last_players_json';
 /// Persists lobby player configuration before navigating to a table screen.
 void saveGameSession(String gameType, List<Player> players) {
   saveToStorage(_keyGameType, gameType);
-  saveToStorage(
-    _keyPlayerNames,
-    players.map((p) => p.name).join(','),
-  );
+  saveToStorage(_keyPlayerNames, players.map((p) => p.name).join(','));
   saveToStorage(
     _keyPlayersJson,
     jsonEncode(
@@ -55,8 +52,10 @@ List<Player> resolvePlayers(List<Player>? passedPlayers, String gameType) {
 
     final storedNames = readFromStorage(_keyPlayerNames);
     if (storedNames != null && storedNames.isNotEmpty) {
-      final names =
-          storedNames.split(',').where((name) => name.isNotEmpty).toList();
+      final names = storedNames
+          .split(',')
+          .where((name) => name.isNotEmpty)
+          .toList();
       if (names.isNotEmpty) {
         return List.generate(
           names.length,

@@ -218,10 +218,10 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                         height: tableSize,
                         child: Center(
                           child: RoundTableWidget(
-                            playerNames:
-                                state.players.map((p) => p.name).toList(),
-                            playerIds:
-                                state.players.map((p) => p.id).toList(),
+                            playerNames: state.players
+                                .map((p) => p.name)
+                                .toList(),
+                            playerIds: state.players.map((p) => p.id).toList(),
                             activePlayerIndex: state.players.indexWhere(
                               (p) => p.id == state.currentPlayerId,
                             ),
@@ -425,8 +425,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                           null,
                                       onCardTap: (card) async {
                                         if (widget.isOnline) {
-                                          final user =
-                                              ref.read(userProvider).value;
+                                          final user = ref
+                                              .read(userProvider)
+                                              .value;
                                           if (user == null ||
                                               user.uid != bottomPlayer.id) {
                                             ScaffoldMessenger.of(
@@ -489,9 +490,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       playerName: state.players
                           .firstWhere((p) => p.id == state.passToPlayerId)
                           .name,
-                      onAcknowledge: () => ref
-                          .read(thullaProvider.notifier)
-                          .acknowledgePass(),
+                      onAcknowledge: () =>
+                          ref.read(thullaProvider.notifier).acknowledgePass(),
                     ),
                   if (widget.isOnline)
                     ChatOverlay(messages: state.chatMessages),
