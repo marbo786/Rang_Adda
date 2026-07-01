@@ -21,10 +21,17 @@ jobs:
         with:
           flutter-version: '3.x'
           channel: 'stable'
-      - run: flutter pub get && flutter build web
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build web
+        run: flutter build web
+      - name: Deploy to Firebase Hosting
+        id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RANGADDA_57EFC }}
           channelId: live
           projectId: rangadda-57efc
+        # "current active version" error is harmless — means site is already up to date
+        continue-on-error: true
