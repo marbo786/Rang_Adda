@@ -90,13 +90,13 @@ class FirestoreService {
     String gameType,
   ) async {
     if (_db == null) throw Exception("Firebase not initialized");
-    final chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    // Generate a 6-digit numeric room code
     final rnd = DateTime.now().millisecondsSinceEpoch;
     String gameId = '';
     int temp = rnd;
     for (int i = 0; i < 6; i++) {
-      gameId += chars[temp % 36];
-      temp ~/= 36;
+      gameId += (temp % 10).toString();
+      temp ~/= 10;
     }
 
     GameState state;
@@ -129,25 +129,31 @@ class FirestoreService {
     String playerName,
   ) async {
     if (_db == null) throw Exception("Firebase not initialized");
-    final doc = await _db!.collection('games').doc(gameId).get();
-    if (!doc.exists) throw Exception("Game not found");
 
-    final state = GameState.fromJson(doc.data()!);
-    if (state.status != GameStatus.waiting) {
-      throw Exception("Game already started");
-    }
+    // Use a transaction so the read+write is atomic and the player is added
+    // to participantIds in the same write (needed for Firestore rules).
+    await _db!.runTransaction((transaction) async {
+      final docRef = _db!.collection('games').doc(gameId);
+      final doc = await transaction.get(docRef);
+      if (!doc.exists) throw Exception("Game not found");
 
-    if (!state.players.any((p) => p.id == playerId)) {
-      final newPlayers = [
-        ...state.players,
-        Player(id: playerId, name: playerName),
-      ];
-      final newParticipantIds = [...state.participantIds, playerId];
-      await _db!.collection('games').doc(gameId).update({
-        'players': newPlayers.map((p) => p.toJson()).toList(),
-        'participantIds': newParticipantIds,
-      });
-    }
+      final state = GameState.fromJson(doc.data()!);
+      if (state.status != GameStatus.waiting) {
+        throw Exception("Game already started");
+      }
+
+      if (!state.players.any((p) => p.id == playerId)) {
+        final newPlayers = [
+          ...state.players,
+          Player(id: playerId, name: playerName),
+        ];
+        final newParticipantIds = [...state.participantIds, playerId];
+        transaction.update(docRef, {
+          'players': newPlayers.map((p) => p.toJson()).toList(),
+          'participantIds': newParticipantIds,
+        });
+      }
+    });
   }
 
   Future<void> startGame(String gameId) async {
@@ -290,9 +296,13 @@ class FirestoreService {
     final newPlayers = state.players
         .where((p) => p.id != playerIdToKick)
         .toList();
+    final newParticipantIds = state.participantIds
+        .where((id) => id != playerIdToKick)
+        .toList();
 
     await _db!.collection('games').doc(gameId).update({
       'players': newPlayers.map((p) => p.toJson()).toList(),
+      'participantIds': newParticipantIds,
     });
   }
 
