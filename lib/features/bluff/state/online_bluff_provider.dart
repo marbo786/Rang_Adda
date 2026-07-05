@@ -251,9 +251,12 @@ class OnlineBluffActionController {
       final state = ref.read(onlineBluffProvider).value;
       if (state == null) return;
 
-      var newState = state.copyWith(resolvingBluffMessage: null);
       final firestore = ref.read(firestoreServiceProvider);
-      await firestore.updateGameState(newState);
+      await firestore.runGameTransaction(state.gameId, (latestState) {
+        return (latestState as BluffGameState).copyWith(
+          resolvingBluffMessage: null,
+        );
+      });
     } catch (e) {
       // ignore
     } finally {

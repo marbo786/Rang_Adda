@@ -4,9 +4,93 @@ import 'package:go_router/go_router.dart';
 import 'package:rang_adda/features/profile/state/user_profile_provider.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
+import 'package:rang_adda/shared/services/auth_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  void _showEditNameDialog(BuildContext context, WidgetRef ref, String currentName) {
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppTheme.surfaceElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: AppTheme.accentPrimary.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
+          ),
+          title: const Text(
+            'CHANGE NAME',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2.0,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            cursorColor: AppTheme.accentPrimary,
+            maxLength: 20,
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter new name',
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              counterStyle: const TextStyle(color: AppTheme.textSecondary),
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppTheme.textDisabled),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppTheme.accentPrimary, width: 2),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
+                'CANCEL',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentPrimary,
+                foregroundColor: AppTheme.backgroundPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty && newName != currentName) {
+                  await ref.read(authProvider).updateDisplayName(newName);
+                }
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              child: const Text(
+                'SAVE',
+                style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,21 +170,38 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Text(
-                    profile.displayName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.0,
-                      shadows: [
-                        Shadow(
-                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                          blurRadius: 8,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          profile.displayName,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.0,
+                            shadows: [
+                              Shadow(
+                                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit_rounded,
+                          color: AppTheme.accentSecondary,
+                          size: 22,
+                        ),
+                        tooltip: 'Edit Name',
+                        onPressed: () => _showEditNameDialog(context, ref, profile.displayName),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(

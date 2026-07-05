@@ -47,4 +47,17 @@ class AuthService {
   Future<void> signOut() async {
     if (_auth != null) await _auth!.signOut();
   }
+
+  Future<void> updateDisplayName(String newName) async {
+    if (_auth == null || _db == null) return;
+    final user = _auth!.currentUser;
+    if (user == null) return;
+
+    await user.updateDisplayName(newName);
+    await user.reload();
+
+    // Update Firestore user doc
+    final userRef = _db!.collection('users').doc(user.uid);
+    await userRef.update({'displayName': newName});
+  }
 }
