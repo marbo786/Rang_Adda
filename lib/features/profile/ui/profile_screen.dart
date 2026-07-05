@@ -9,7 +9,11 @@ import 'package:rang_adda/shared/services/auth_service.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  void _showEditNameDialog(BuildContext context, WidgetRef ref, String currentName) {
+  void _showEditNameDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentName,
+  ) {
     final controller = TextEditingController(text: currentName);
     showDialog(
       context: context,
@@ -44,9 +48,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             decoration: InputDecoration(
               hintText: 'Enter new name',
-              hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
+              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
               counterStyle: const TextStyle(color: AppTheme.textSecondary),
               enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppTheme.textDisabled),
@@ -83,7 +85,10 @@ class ProfileScreen extends ConsumerWidget {
               },
               child: const Text(
                 'SAVE',
-                style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
           ],
@@ -184,7 +189,9 @@ class ProfileScreen extends ConsumerWidget {
                             letterSpacing: 2.0,
                             shadows: [
                               Shadow(
-                                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                                color: AppTheme.accentPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 8,
                               ),
                             ],
@@ -199,7 +206,11 @@ class ProfileScreen extends ConsumerWidget {
                           size: 22,
                         ),
                         tooltip: 'Edit Name',
-                        onPressed: () => _showEditNameDialog(context, ref, profile.displayName),
+                        onPressed: () => _showEditNameDialog(
+                          context,
+                          ref,
+                          profile.displayName,
+                        ),
                       ),
                     ],
                   ),

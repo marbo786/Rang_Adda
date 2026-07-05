@@ -221,15 +221,16 @@ class BluffEngine {
 
     // centerPile already contains lastPlayedCards (added in playCards()),
     // so only add centerPile to avoid duplicating cards.
-    List<PlayingCard> newHand = List.from(loser.hand)
-      ..addAll(state.centerPile);
+    List<PlayingCard> newHand = List.from(loser.hand)..addAll(state.centerPile);
     newHand.sort((a, b) => a.rank.index.compareTo(b.rank.index));
     updatedPlayers[loserIdx] = loser.copyWith(
       hand: newHand,
       cardCount: loser.cardCount + state.centerPile.length,
     );
 
-    final blufferName = updatedPlayers.firstWhere((p) => p.id == state.lastPlayerId!).name;
+    final blufferName = updatedPlayers
+        .firstWhere((p) => p.id == state.lastPlayerId!)
+        .name;
     final callerName = updatedPlayers.firstWhere((p) => p.id == callerId).name;
     String message = isBluff
         ? "$blufferName WAS BLUFFING! They pick up the pile."

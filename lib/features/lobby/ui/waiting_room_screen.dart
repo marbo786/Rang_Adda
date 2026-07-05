@@ -54,11 +54,18 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.search_off, color: AppTheme.textDisabled, size: 48),
+                        const Icon(
+                          Icons.search_off,
+                          color: AppTheme.textDisabled,
+                          size: 48,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           "Room not found",
-                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 18),
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 18,
+                          ),
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(
@@ -67,7 +74,9 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                             foregroundColor: AppTheme.backgroundPrimary,
                           ),
                           onPressed: () {
-                            ref.read(currentGameIdProvider.notifier).setId(null);
+                            ref
+                                .read(currentGameIdProvider.notifier)
+                                .setId(null);
                             context.go('/');
                           },
                           child: const Text('BACK TO LOBBY'),
@@ -78,7 +87,8 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                 }
 
                 // If the user has been kicked (is no longer in the players list)
-                if (user != null && !state.players.any((p) => p.id == user.uid)) {
+                if (user != null &&
+                    !state.players.any((p) => p.id == user.uid)) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ref.read(currentGameIdProvider.notifier).setId(null);
                     context.go('/');
@@ -103,7 +113,9 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(color: AppTheme.accentPrimary),
+                        CircularProgressIndicator(
+                          color: AppTheme.accentPrimary,
+                        ),
                         SizedBox(height: 16),
                         Text(
                           "Starting game...",
@@ -125,9 +137,14 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                           Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.accentPrimary),
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  color: AppTheme.accentPrimary,
+                                ),
                                 onPressed: () {
-                                  ref.read(currentGameIdProvider.notifier).setId(null);
+                                  ref
+                                      .read(currentGameIdProvider.notifier)
+                                      .setId(null);
                                   context.go('/');
                                 },
                               ),
@@ -147,12 +164,17 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                           ),
                           const SizedBox(height: 16),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.surfaceElevated,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                                color: AppTheme.accentPrimary.withValues(
+                                  alpha: 0.2,
+                                ),
                               ),
                             ),
                             child: Column(
@@ -169,7 +191,9 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                 const SizedBox(height: 8),
                                 GestureDetector(
                                   onTap: () {
-                                    Clipboard.setData(ClipboardData(text: widget.gameId));
+                                    Clipboard.setData(
+                                      ClipboardData(text: widget.gameId),
+                                    );
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Room code copied!'),
@@ -190,7 +214,11 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.copy, color: AppTheme.textDisabled, size: 18),
+                                      const Icon(
+                                        Icons.copy,
+                                        color: AppTheme.textDisabled,
+                                        size: 18,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -246,15 +274,22 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                           final isPlayerHost = player.id == state.hostUid;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: isSelf
-                                  ? AppTheme.accentPrimary.withValues(alpha: 0.08)
+                                  ? AppTheme.accentPrimary.withValues(
+                                      alpha: 0.08,
+                                    )
                                   : AppTheme.surfaceElevated,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelf
-                                    ? AppTheme.accentPrimary.withValues(alpha: 0.3)
+                                    ? AppTheme.accentPrimary.withValues(
+                                        alpha: 0.3,
+                                      )
                                     : Colors.transparent,
                               ),
                             ),
@@ -265,8 +300,8 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                   color: isSelf
                                       ? AppTheme.accentPrimary
                                       : isPlayerHost
-                                          ? AppTheme.accentSecondary
-                                          : AppTheme.textDisabled,
+                                      ? AppTheme.accentSecondary
+                                      : AppTheme.textDisabled,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
@@ -276,7 +311,9 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                       Text(
                                         player.name,
                                         style: TextStyle(
-                                          color: isSelf ? AppTheme.accentPrimary : AppTheme.textPrimary,
+                                          color: isSelf
+                                              ? AppTheme.accentPrimary
+                                              : AppTheme.textPrimary,
                                           fontWeight: FontWeight.w700,
                                           fontSize: 15,
                                         ),
@@ -294,12 +331,19 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                         ),
                                       if (isPlayerHost)
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 8),
+                                          padding: const EdgeInsets.only(
+                                            left: 8,
+                                          ),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: AppTheme.accentSecondary.withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(4),
+                                              color: AppTheme.accentSecondary
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
                                             child: const Text(
                                               'HOST',
@@ -314,12 +358,20 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                                         ),
                                       if (player.isBot)
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 8),
+                                          padding: const EdgeInsets.only(
+                                            left: 8,
+                                          ),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: Colors.blueGrey.withValues(alpha: 0.3),
-                                              borderRadius: BorderRadius.circular(4),
+                                              color: Colors.blueGrey.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
                                             child: const Text(
                                               'BOT',
@@ -373,11 +425,15 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                             ),
                             onPressed: () async {
                               try {
-                                await ref.read(firestoreServiceProvider).startGame(widget.gameId);
+                                await ref
+                                    .read(firestoreServiceProvider)
+                                    .startGame(widget.gameId);
                               } catch (e) {
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Error starting game: $e")),
+                                    SnackBar(
+                                      content: Text("Error starting game: $e"),
+                                    ),
                                   );
                                 }
                               }
@@ -409,7 +465,9 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                             color: AppTheme.surfaceElevated,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppTheme.textDisabled.withValues(alpha: 0.3),
+                              color: AppTheme.textDisabled.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                           child: const Center(
