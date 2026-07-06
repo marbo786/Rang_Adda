@@ -237,6 +237,16 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.accentPrimary,
+          ),
+          onPressed: () {
+            ref.read(audioServiceProvider).playClick();
+            context.go('/');
+          },
+        ),
         actions: [
           Center(
             child: Padding(
@@ -391,18 +401,16 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                     duration: const Duration(milliseconds: 350),
                                     curve: Curves.easeOutCubic,
                                     left: 115 + offset,
-                                    top: state.trickResolving ? -50 : 20,
+                                    top: 20,
                                     child: Transform.rotate(
                                       angle: rotation,
                                       child: AnimatedScale(
                                         duration: const Duration(
                                           milliseconds: 350,
                                         ),
-                                        scale: state.trickResolving ? 0.8 : 1.0,
+                                        scale: 1.0,
                                         child: AnimatedOpacity(
-                                          opacity: state.trickResolving
-                                              ? 0.0
-                                              : 1.0,
+                                          opacity: 1.0,
                                           duration: const Duration(
                                             milliseconds: 300,
                                           ),

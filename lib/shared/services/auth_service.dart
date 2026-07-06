@@ -10,7 +10,7 @@ final authProvider = Provider<AuthService>((ref) {
 
 final userProvider = StreamProvider<User?>((ref) {
   if (Firebase.apps.isEmpty) return Stream.value(null);
-  return FirebaseAuth.instance.authStateChanges();
+  return FirebaseAuth.instance.userChanges();
 });
 
 class AuthService {
