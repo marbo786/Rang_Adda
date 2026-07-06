@@ -9,6 +9,7 @@ import 'package:rang_adda/shared/ui/hand_widget.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
 import 'package:rang_adda/shared/ui/trick_winner_banner.dart';
+import 'package:rang_adda/shared/ui/tuing_rabbit_overlay.dart';
 
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
@@ -38,6 +39,7 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
   String _bannerWinnerName = '';
   bool _isTochooBanner = false;
   bool _bannerSequenceRunning = false;
+  bool _showTuingRabbit = false;
 
   void _showChatModal(String gameId) {
     showModalBottomSheet(
@@ -62,6 +64,11 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
   /// Called (from local playCard path OR online ref.listen) when the state
   /// has just flipped to trickResolving == true.
   /// Shows the banner for 2 s, fades it out, then (local only) resolves trick.
+  void _triggerTuing() {
+    ref.read(audioServiceProvider).playTuing();
+    setState(() => _showTuingRabbit = true);
+  }
+
   Future<void> _runBannerSequence(
     ThullaGameState trickState, {
     required bool resolveLocally,
@@ -84,6 +91,9 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
           _isTochooBanner = peek.isTochoo;
           _showBanner = true;
         });
+        if (peek.isTochoo) {
+          _triggerTuing();
+        }
       }
 
       // 3. Keep banner visible for 2 s.
@@ -645,6 +655,16 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       visible: _showBanner,
                     ),
                   ),
+                  if (_showTuingRabbit)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        child: TuingRabbitOverlay(
+                          onComplete: () {
+                            if (mounted) setState(() => _showTuingRabbit = false);
+                          },
+                        ),
+                      ),
+                    ),
                 ],
               );
             },

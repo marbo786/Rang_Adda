@@ -58,4 +58,8 @@ class AudioService {
   void playBluffCall() {
     _playSound('assets/audio/bluff_call.wav');
   }
+
+  void playTuing() {
+    _playSound('assets/audio/tuing.wav');
+  }
 }
