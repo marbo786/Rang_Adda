@@ -39,72 +39,103 @@ class _TuingRabbitOverlayState extends State<TuingRabbitOverlay>
     final screenHeight = MediaQuery.of(context).size.height;
 
     // Rabbit travels from right to left
-    xAnimation = Tween<double>(begin: screenWidth + 50, end: -150).animate(
-      CurvedAnimation(parent: controller, curve: Curves.linear),
-    );
+    xAnimation = Tween<double>(
+      begin: screenWidth + 50,
+      end: -150,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.linear));
 
     final groundY = screenHeight * 0.4;
     final jumpHeight = 120.0;
-    
+
     // Create 3 bounces over 1.1s
     final ySequence = <TweenSequenceItem<double>>[];
     final shadowSequence = <TweenSequenceItem<double>>[];
     final scaleSequence = <TweenSequenceItem<double>>[];
-    
+
     int numBounces = 3;
     double weightPerBounce = 100.0 / numBounces;
 
     for (int i = 0; i < numBounces; i++) {
       // Jump up
-      ySequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: groundY, end: groundY - jumpHeight)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-        weight: weightPerBounce * 0.4,
-      ));
-      shadowSequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: 0.6, end: 0.1)
-            .chain(CurveTween(curve: Curves.easeOut)),
-        weight: weightPerBounce * 0.4,
-      ));
-      scaleSequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.0),
-        weight: weightPerBounce * 0.4,
-      ));
+      ySequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: groundY,
+            end: groundY - jumpHeight,
+          ).chain(CurveTween(curve: Curves.easeOutCubic)),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
+      shadowSequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: 0.6,
+            end: 0.1,
+          ).chain(CurveTween(curve: Curves.easeOut)),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
+      scaleSequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.0),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
 
       // Fall down
-      ySequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: groundY - jumpHeight, end: groundY)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
-        weight: weightPerBounce * 0.4,
-      ));
-      shadowSequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: 0.1, end: 0.6)
-            .chain(CurveTween(curve: Curves.easeIn)),
-        weight: weightPerBounce * 0.4,
-      ));
-      scaleSequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.0),
-        weight: weightPerBounce * 0.4,
-      ));
+      ySequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: groundY - jumpHeight,
+            end: groundY,
+          ).chain(CurveTween(curve: Curves.easeInCubic)),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
+      shadowSequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: 0.1,
+            end: 0.6,
+          ).chain(CurveTween(curve: Curves.easeIn)),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
+      scaleSequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.0),
+          weight: weightPerBounce * 0.4,
+        ),
+      );
 
       // Squish
-      ySequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: groundY, end: groundY),
-        weight: weightPerBounce * 0.2,
-      ));
-      shadowSequence.add(TweenSequenceItem(
-        tween: Tween<double>(begin: 0.6, end: 0.6),
-        weight: weightPerBounce * 0.2,
-      ));
-      scaleSequence.add(TweenSequenceItem(
-        tween: TweenSequence<double>([
-          TweenSequenceItem(
-              tween: Tween<double>(begin: 1.0, end: 0.7), weight: 50),
-          TweenSequenceItem(
-              tween: Tween<double>(begin: 0.7, end: 1.0), weight: 50),
-        ]),
-        weight: weightPerBounce * 0.2,
-      ));
+      ySequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(begin: groundY, end: groundY),
+          weight: weightPerBounce * 0.2,
+        ),
+      );
+      shadowSequence.add(
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 0.6, end: 0.6),
+          weight: weightPerBounce * 0.2,
+        ),
+      );
+      scaleSequence.add(
+        TweenSequenceItem(
+          tween: TweenSequence<double>([
+            TweenSequenceItem(
+              tween: Tween<double>(begin: 1.0, end: 0.7),
+              weight: 50,
+            ),
+            TweenSequenceItem(
+              tween: Tween<double>(begin: 0.7, end: 1.0),
+              weight: 50,
+            ),
+          ]),
+          weight: weightPerBounce * 0.2,
+        ),
+      );
     }
 
     yAnimation = TweenSequence<double>(ySequence).animate(controller);
@@ -129,8 +160,10 @@ class _TuingRabbitOverlayState extends State<TuingRabbitOverlay>
           children: [
             // Shadow (rendered slightly below rabbit)
             Positioned(
-              left: xAnimation.value + 10,   // slight offset so shadow is under rabbit
-              top: yAnimation.value + 72,    // below the rabbit image
+              left:
+                  xAnimation.value +
+                  10, // slight offset so shadow is under rabbit
+              top: yAnimation.value + 72, // below the rabbit image
               child: Opacity(
                 opacity: shadowOpacity.value,
                 child: Container(
@@ -149,7 +182,11 @@ class _TuingRabbitOverlayState extends State<TuingRabbitOverlay>
               top: yAnimation.value,
               child: Transform(
                 alignment: Alignment.center,
-                transform: Matrix4.diagonal3Values(1.0, scaleYAnimation.value, 1.0),
+                transform: Matrix4.diagonal3Values(
+                  1.0,
+                  scaleYAnimation.value,
+                  1.0,
+                ),
                 child: Image.asset(
                   'assets/images/rabbit_tuing.png',
                   width: 100,

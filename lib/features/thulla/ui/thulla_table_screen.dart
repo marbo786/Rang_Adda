@@ -660,7 +660,8 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                       child: RepaintBoundary(
                         child: TuingRabbitOverlay(
                           onComplete: () {
-                            if (mounted) setState(() => _showTuingRabbit = false);
+                            if (mounted)
+                              setState(() => _showTuingRabbit = false);
                           },
                         ),
                       ),
