@@ -78,11 +78,6 @@ class _TrickWinnerBannerState extends State<TrickWinnerBanner>
 
   @override
   Widget build(BuildContext context) {
-    final prefix = widget.isTochoo ? '🃏  ' : '👑  ';
-    final suffix = widget.isTochoo
-        ? ' plays a trick with "Thulla"'
-        : ' is Senior';
-
     return SlideTransition(
       position: _slide,
       child: FadeTransition(
@@ -107,19 +102,31 @@ class _TrickWinnerBannerState extends State<TrickWinnerBanner>
                 fontSize: 18,
                 letterSpacing: 1.0,
               ),
-              children: [
-                TextSpan(text: prefix),
-                TextSpan(
-                  text: widget.winnerName,
-                  style: const TextStyle(
-                    color: AppTheme.accentPrimary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-                TextSpan(text: suffix),
-              ],
+              children: widget.isTochoo
+                  ? [
+                      const TextSpan(
+                        text: '🃏  THULLA!',
+                        style: TextStyle(
+                          color: AppTheme.accentPrimary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ]
+                  : [
+                      const TextSpan(text: '👑  '),
+                      TextSpan(
+                        text: widget.winnerName,
+                        style: const TextStyle(
+                          color: AppTheme.accentPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const TextSpan(text: ' is Senior'),
+                    ],
             ),
           ),
         ),
