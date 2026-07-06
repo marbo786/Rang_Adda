@@ -424,13 +424,15 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                               ),
                             ),
                             onPressed: () async {
+                              final messenger =
+                                  ScaffoldMessenger.of(context);
                               try {
                                 await ref
                                     .read(firestoreServiceProvider)
                                     .startGame(widget.gameId);
                               } catch (e) {
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  messenger.showSnackBar(
                                     SnackBar(
                                       content: Text("Error starting game: $e"),
                                     ),

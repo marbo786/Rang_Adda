@@ -181,6 +181,20 @@ class ThullaEngine {
     );
   }
 
+  /// Read-only peek: returns `(winnerId, isTochoo)` for the current trick
+  /// without mutating any state. Safe to call from the UI layer.
+  static ({String winnerId, bool isTochoo}) peekTrickWinner(
+    ThullaGameState state,
+  ) {
+    assert(state.trickResolving && state.currentTrick.isNotEmpty);
+    final trick = state.currentTrick;
+    final leadSuit = trick.first.card.suit;
+    final isTochoo =
+        !state.isFirstTrick && trick.last.card.suit != leadSuit;
+    final winnerId = _getHighestLeadSuitPlayer(trick, leadSuit);
+    return (winnerId: winnerId, isTochoo: isTochoo);
+  }
+
   static ThullaGameState resolveTrick(ThullaGameState state) {
     if (!state.trickResolving || state.currentTrick.isEmpty) return state;
 

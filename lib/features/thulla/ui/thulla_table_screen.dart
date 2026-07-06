@@ -8,12 +8,14 @@ import 'package:rang_adda/shared/ui/playing_card_widget.dart';
 import 'package:rang_adda/shared/ui/hand_widget.dart';
 import 'package:rang_adda/shared/ui/pass_device_overlay.dart';
 import 'package:rang_adda/shared/ui/game_table_background.dart';
+import 'package:rang_adda/shared/ui/trick_winner_banner.dart';
 
 import 'package:rang_adda/shared/ui/game_over_overlay.dart';
 import 'package:rang_adda/shared/services/auth_service.dart';
 import 'package:rang_adda/shared/services/audio_service.dart';
 import 'package:rang_adda/features/thulla/state/online_thulla_provider.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
+import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rang_adda/shared/ui/chat_overlay.dart';
@@ -31,6 +33,12 @@ class ThullaTableScreen extends ConsumerStatefulWidget {
 }
 
 class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
+  // ── Trick-winner banner state ────────────────────────────────────────────
+  bool _showBanner = false;
+  String _bannerWinnerName = '';
+  bool _isTochooBanner = false;
+  bool _bannerSequenceRunning = false;
+
   void _showChatModal(String gameId) {
     showModalBottomSheet(
       context: context,
@@ -51,11 +59,83 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     }
   }
 
+  /// Called (from local playCard path OR online ref.listen) when the state
+  /// has just flipped to trickResolving == true.
+  /// Shows the banner for 2 s, fades it out, then (local only) resolves trick.
+  Future<void> _runBannerSequence(
+    ThullaGameState trickState, {
+    required bool resolveLocally,
+  }) async {
+    if (_bannerSequenceRunning) return;
+    _bannerSequenceRunning = true;
+
+    try {
+      // 1. Peek at who wins without touching the engine.
+      final peek = ThullaEngine.peekTrickWinner(trickState);
+      final winnerPlayer = trickState.players.firstWhere(
+        (p) => p.id == peek.winnerId,
+        orElse: () => trickState.players.first,
+      );
+
+      // 2. Show banner.
+      if (mounted) {
+        setState(() {
+          _bannerWinnerName = winnerPlayer.name;
+          _isTochooBanner = peek.isTochoo;
+          _showBanner = true;
+        });
+      }
+
+      // 3. Keep banner visible for 2 s.
+      await Future.delayed(const Duration(milliseconds: 2000));
+
+      // 4. Trigger exit animation (200 ms fade-out).
+      if (mounted) setState(() => _showBanner = false);
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      // 5. Resolve trick (local only — online provider handles its own resolve).
+      if (resolveLocally && mounted) {
+        ref.read(thullaProvider.notifier).resolveTrick();
+      }
+    } finally {
+      _bannerSequenceRunning = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.isOnline
         ? ref.watch(onlineThullaProvider).value
         : ref.watch(thullaProvider);
+
+    // ── Local: watch for trickResolving transition (bot plays or human) ──────
+    if (!widget.isOnline) {
+      ref.listen<ThullaGameState?>(thullaProvider, (previous, next) {
+        if (next != null &&
+            next.trickResolving &&
+            previous?.trickResolving != true &&
+            next.currentTrick.isNotEmpty) {
+          _runBannerSequence(next, resolveLocally: true);
+        }
+      });
+    }
+
+    // ── Online: watch for trickResolving transition and show banner ──────────
+    if (widget.isOnline) {
+      ref.listen<AsyncValue<ThullaGameState?>>(onlineThullaProvider, (
+        previous,
+        next,
+      ) {
+        final prev = previous?.value;
+        final curr = next.value;
+        if (curr != null &&
+            curr.trickResolving &&
+            prev?.trickResolving != true &&
+            curr.currentTrick.isNotEmpty) {
+          _runBannerSequence(curr, resolveLocally: false);
+        }
+      });
+    }
 
     if (state == null || state.players.isEmpty) {
       return const Scaffold(
@@ -303,6 +383,12 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                                 2) *
                                         0.1;
 
+                                    // Detect Tochoo card (off-suit, not first trick)
+                                    final isTochooCard =
+                                        state.leadSuit != null &&
+                                        !state.isFirstTrick &&
+                                        t.card.suit != state.leadSuit;
+
                                     return AnimatedPositioned(
                                       duration: const Duration(
                                         milliseconds: 350,
@@ -331,7 +417,14 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  t.playerId,
+                                                  state.players
+                                                      .firstWhere(
+                                                        (p) =>
+                                                            p.id == t.playerId,
+                                                        orElse: () =>
+                                                            state.players.first,
+                                                      )
+                                                      .name,
                                                   style: const TextStyle(
                                                     fontSize: 10,
                                                     color:
@@ -340,10 +433,63 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
-                                                PlayingCardWidget(
-                                                  card: t.card,
-                                                  width: cardW,
-                                                  height: cardH,
+                                                // Wrap tochoo cards with a
+                                                // THULLA badge overlay
+                                                Stack(
+                                                  clipBehavior: Clip.none,
+                                                  children: [
+                                                    PlayingCardWidget(
+                                                      card: t.card,
+                                                      width: cardW,
+                                                      height: cardH,
+                                                    ),
+                                                    if (isTochooCard)
+                                                      Positioned(
+                                                        top: -8,
+                                                        right: -8,
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: AppTheme
+                                                                .statusError,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                              8,
+                                                            ),
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: AppTheme
+                                                                    .statusError
+                                                                    .withValues(
+                                                                  alpha: 0.5,
+                                                                ),
+                                                                blurRadius: 6,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          child: const Text(
+                                                            'THULLA',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 8,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              letterSpacing:
+                                                                  0.5,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
@@ -495,6 +641,17 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                     ),
                   if (widget.isOnline)
                     ChatOverlay(messages: state.chatMessages),
+                  // ── Trick-winner banner ──────────────────────────────────
+                  Positioned(
+                    top: 8,
+                    left: 16,
+                    right: 16,
+                    child: TrickWinnerBanner(
+                      winnerName: _bannerWinnerName,
+                      isTochoo: _isTochooBanner,
+                      visible: _showBanner,
+                    ),
+                  ),
                 ],
               );
             },

@@ -42,16 +42,19 @@ class ThullaNotifier extends Notifier<ThullaGameState?> {
 
     state = ThullaEngine.playCard(state!, playerId, card);
 
-    if (state != null && state!.trickResolving) {
-      await Future.delayed(const Duration(milliseconds: 1500));
-      if (state != null) {
-        state = ThullaEngine.resolveTrick(state!);
-        _checkAndScheduleBotMove();
-      }
-    } else {
+    // If the trick is NOT resolving, trigger bot for next player immediately.
+    // If it IS resolving, the UI will call resolveTrick() after the banner.
+    if (state != null && !state!.trickResolving) {
       _checkAndScheduleBotMove();
     }
     return null;
+  }
+
+  /// Called by the UI after the trick-winner banner has been shown.
+  void resolveTrick() {
+    if (state == null || !state!.trickResolving) return;
+    state = ThullaEngine.resolveTrick(state!);
+    _checkAndScheduleBotMove();
   }
 
   void acknowledgePass() {
