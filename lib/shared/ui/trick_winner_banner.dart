@@ -79,7 +79,7 @@ class _TrickWinnerBannerState extends State<TrickWinnerBanner>
   @override
   Widget build(BuildContext context) {
     final prefix = widget.isTochoo ? '🃏  ' : '👑  ';
-    final suffix = widget.isTochoo ? ' picks up the trick' : ' is Senior';
+    final suffix = widget.isTochoo ? ' plays a trick with "Thulla"' : ' is Senior';
 
     return SlideTransition(
       position: _slide,

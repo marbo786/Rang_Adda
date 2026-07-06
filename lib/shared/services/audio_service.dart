@@ -28,7 +28,18 @@ class AudioService {
   }
 
   Future<void> _playSound(String assetPath) async {
-    // SFX Disabled
+    try {
+      final player = AudioPlayer();
+      await player.setAsset(assetPath);
+      player.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          player.dispose();
+        }
+      });
+      await player.play();
+    } catch (e) {
+      // Ignore gracefully
+    }
   }
 
   void playCardFlip() {
