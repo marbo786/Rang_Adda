@@ -368,137 +368,122 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
                               width: 300,
                               child: Stack(
                                 alignment: Alignment.center,
-                                children: List.generate(
-                                  state.currentTrick.length,
-                                  (index) {
-                                    final t = state.currentTrick[index];
-                                    final offset =
-                                        (index -
-                                            (state.currentTrick.length - 1) /
-                                                2) *
-                                        35.0;
-                                    final rotation =
-                                        (index -
-                                            (state.currentTrick.length - 1) /
-                                                2) *
-                                        0.1;
+                                children: List.generate(state.currentTrick.length, (
+                                  index,
+                                ) {
+                                  final t = state.currentTrick[index];
+                                  final offset =
+                                      (index -
+                                          (state.currentTrick.length - 1) / 2) *
+                                      35.0;
+                                  final rotation =
+                                      (index -
+                                          (state.currentTrick.length - 1) / 2) *
+                                      0.1;
 
-                                    // Detect Tochoo card (off-suit, not first trick)
-                                    final isTochooCard =
-                                        state.leadSuit != null &&
-                                        !state.isFirstTrick &&
-                                        t.card.suit != state.leadSuit;
+                                  // Detect Tochoo card (off-suit, not first trick)
+                                  final isTochooCard =
+                                      state.leadSuit != null &&
+                                      !state.isFirstTrick &&
+                                      t.card.suit != state.leadSuit;
 
-                                    return AnimatedPositioned(
-                                      duration: const Duration(
-                                        milliseconds: 350,
-                                      ),
-                                      curve: Curves.easeOutCubic,
-                                      left: 115 + offset,
-                                      top: state.trickResolving ? -50 : 20,
-                                      child: Transform.rotate(
-                                        angle: rotation,
-                                        child: AnimatedScale(
-                                          duration: const Duration(
-                                            milliseconds: 350,
-                                          ),
-                                          scale: state.trickResolving
-                                              ? 0.8
+                                  return AnimatedPositioned(
+                                    duration: const Duration(milliseconds: 350),
+                                    curve: Curves.easeOutCubic,
+                                    left: 115 + offset,
+                                    top: state.trickResolving ? -50 : 20,
+                                    child: Transform.rotate(
+                                      angle: rotation,
+                                      child: AnimatedScale(
+                                        duration: const Duration(
+                                          milliseconds: 350,
+                                        ),
+                                        scale: state.trickResolving ? 0.8 : 1.0,
+                                        child: AnimatedOpacity(
+                                          opacity: state.trickResolving
+                                              ? 0.0
                                               : 1.0,
-                                          child: AnimatedOpacity(
-                                            opacity: state.trickResolving
-                                                ? 0.0
-                                                : 1.0,
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            curve: Curves.easeInCubic,
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  state.players
-                                                      .firstWhere(
-                                                        (p) =>
-                                                            p.id == t.playerId,
-                                                        orElse: () =>
-                                                            state.players.first,
-                                                      )
-                                                      .name,
-                                                  style: const TextStyle(
-                                                    fontSize: 10,
-                                                    color:
-                                                        AppTheme.textSecondary,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          curve: Curves.easeInCubic,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                state.players
+                                                    .firstWhere(
+                                                      (p) => p.id == t.playerId,
+                                                      orElse: () =>
+                                                          state.players.first,
+                                                    )
+                                                    .name,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  color: AppTheme.textSecondary,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                                const SizedBox(height: 6),
-                                                // Wrap tochoo cards with a
-                                                // THULLA badge overlay
-                                                Stack(
-                                                  clipBehavior: Clip.none,
-                                                  children: [
-                                                    PlayingCardWidget(
-                                                      card: t.card,
-                                                      width: cardW,
-                                                      height: cardH,
-                                                    ),
-                                                    if (isTochooCard)
-                                                      Positioned(
-                                                        top: -8,
-                                                        right: -8,
-                                                        child: Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                            horizontal: 6,
-                                                            vertical: 2,
-                                                          ),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: AppTheme
-                                                                .statusError,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                              8,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              // Wrap tochoo cards with a
+                                              // THULLA badge overlay
+                                              Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  PlayingCardWidget(
+                                                    card: t.card,
+                                                    width: cardW,
+                                                    height: cardH,
+                                                  ),
+                                                  if (isTochooCard)
+                                                    Positioned(
+                                                      top: -8,
+                                                      right: -8,
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
                                                             ),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: AppTheme
-                                                                    .statusError
-                                                                    .withValues(
-                                                                  alpha: 0.5,
-                                                                ),
-                                                                blurRadius: 6,
+                                                        decoration: BoxDecoration(
+                                                          color: AppTheme
+                                                              .statusError,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
                                                               ),
-                                                            ],
-                                                          ),
-                                                          child: const Text(
-                                                            'THULLA',
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontSize: 8,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w900,
-                                                              letterSpacing:
-                                                                  0.5,
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: AppTheme
+                                                                  .statusError
+                                                                  .withValues(
+                                                                    alpha: 0.5,
+                                                                  ),
+                                                              blurRadius: 6,
                                                             ),
+                                                          ],
+                                                        ),
+                                                        child: const Text(
+                                                          'THULLA',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 8,
+                                                            fontWeight:
+                                                                FontWeight.w900,
+                                                            letterSpacing: 0.5,
                                                           ),
                                                         ),
                                                       ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
                           ],

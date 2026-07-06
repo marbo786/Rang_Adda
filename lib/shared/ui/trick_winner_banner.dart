@@ -44,16 +44,17 @@ class _TrickWinnerBannerState extends State<TrickWinnerBanner>
       reverseCurve: Curves.easeIn,
     );
 
-    _slide = Tween<Offset>(
-      begin: const Offset(0, -1.0), // starts fully above
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeIn,
-      ),
-    );
+    _slide =
+        Tween<Offset>(
+          begin: const Offset(0, -1.0), // starts fully above
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeIn,
+          ),
+        );
 
     if (widget.visible) _controller.forward();
   }
@@ -93,12 +94,7 @@ class _TrickWinnerBannerState extends State<TrickWinnerBanner>
               color: AppTheme.accentPrimary.withValues(alpha: 0.4),
               width: 1.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.neonGlow,
-                blurRadius: 16,
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppTheme.neonGlow, blurRadius: 16)],
           ),
           child: RichText(
             textAlign: TextAlign.center,

@@ -424,8 +424,7 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                               ),
                             ),
                             onPressed: () async {
-                              final messenger =
-                                  ScaffoldMessenger.of(context);
+                              final messenger = ScaffoldMessenger.of(context);
                               try {
                                 await ref
                                     .read(firestoreServiceProvider)

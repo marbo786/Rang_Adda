@@ -189,8 +189,7 @@ class ThullaEngine {
     assert(state.trickResolving && state.currentTrick.isNotEmpty);
     final trick = state.currentTrick;
     final leadSuit = trick.first.card.suit;
-    final isTochoo =
-        !state.isFirstTrick && trick.last.card.suit != leadSuit;
+    final isTochoo = !state.isFirstTrick && trick.last.card.suit != leadSuit;
     final winnerId = _getHighestLeadSuitPlayer(trick, leadSuit);
     return (winnerId: winnerId, isTochoo: isTochoo);
   }
