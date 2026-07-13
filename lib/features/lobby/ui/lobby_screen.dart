@@ -270,9 +270,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                       }, type: ButtonType.primary),
                       const SizedBox(height: 12),
                       _buildButton('LEAVE CURRENT GAME', () {
-                        ref
-                            .read(currentGameIdProvider.notifier)
-                            .setId(null);
+                        ref.read(currentGameIdProvider.notifier).setId(null);
                       }),
                       const SizedBox(height: 32),
                     ],
@@ -291,7 +289,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
               ),
             ),
           ),
-
         ],
       ),
     );

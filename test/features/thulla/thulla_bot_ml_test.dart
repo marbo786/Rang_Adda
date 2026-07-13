@@ -28,7 +28,8 @@ void main() {
       expect(
         ThullaEngine.getMoveError(state, botId, card),
         isNull,
-        reason: 'ThullaBotML must return a card that is legal in the current state',
+        reason:
+            'ThullaBotML must return a card that is legal in the current state',
       );
     });
   });

@@ -72,7 +72,9 @@ class ThullaBotML extends ThullaBot {
 
     final leadSuit = obs.leadSuit;
     if (leadSuit != null) {
-      final matchingSuitCards = obs.myHand.where((c) => c.suit == leadSuit).toList();
+      final matchingSuitCards = obs.myHand
+          .where((c) => c.suit == leadSuit)
+          .toList();
       if (matchingSuitCards.isNotEmpty) {
         return matchingSuitCards;
       }
