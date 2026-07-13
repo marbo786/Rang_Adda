@@ -25,7 +25,9 @@ class ThullaBotML extends ThullaBot {
   @override
   PlayingCard chooseCard(ThullaBotObservation obs) {
     if (_interpreter == null) {
-      debugPrint('[ThullaBotML] Model not loaded — falling back to Medium bot.');
+      debugPrint(
+        '[ThullaBotML] Model not loaded — falling back to Medium bot.',
+      );
       return ThullaBotMedium(personality).chooseCard(obs);
     }
 
@@ -35,7 +37,9 @@ class ThullaBotML extends ThullaBot {
     try {
       _interpreter!.run([inputFeatures], outputTensor);
     } catch (e) {
-      debugPrint('[ThullaBotML] Inference failed — falling back to Medium bot: $e');
+      debugPrint(
+        '[ThullaBotML] Inference failed — falling back to Medium bot: $e',
+      );
       return ThullaBotMedium(personality).chooseCard(obs);
     }
 
