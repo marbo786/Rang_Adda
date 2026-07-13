@@ -48,7 +48,7 @@ class _PlayerSlot {
     : controller = TextEditingController(),
       focusNode = FocusNode(),
       isBot = false,
-      botDifficulty = BotDifficulty.medium;
+      botDifficulty = BotDifficulty.ml;
 
   void dispose() {
     controller.dispose();
