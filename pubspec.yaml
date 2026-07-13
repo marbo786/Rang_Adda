@@ -71,6 +71,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/images/
+    - assets/ml/thulla_bot.tflite
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
