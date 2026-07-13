@@ -247,60 +247,51 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
           const GameTableBackground(child: SizedBox.expand()),
           const LobbyBackground(),
           SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: SingleChildScrollView(
-                    // ClampingScrollPhysics prevents rubber-band bounce on web;
-                    // allows content to scroll on viewports that are too short.
-                    physics: const ClampingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 32.0,
-                      ),
-                      child: Column(
-                        // mainAxisSize.min lets the Column size to its children
-                        // instead of expanding to fill remaining space, which was
-                        // causing a 2px overflow at certain viewport heights.
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Top: Logo Area
-                          _buildLogoBlock(),
-                          const SizedBox(height: 24),
-
-                          if (ref.watch(currentGameIdProvider) != null) ...[
-                            _buildButton('RECONNECT TO GAME', () {
-                              final gameId = ref.read(currentGameIdProvider);
-                              if (gameId != null) {
-                                context.push('/waiting_room/$gameId');
-                              }
-                            }, type: ButtonType.primary),
-                            const SizedBox(height: 12),
-                            _buildButton('LEAVE CURRENT GAME', () {
-                              ref
-                                  .read(currentGameIdProvider.notifier)
-                                  .setId(null);
-                            }),
-                            const SizedBox(height: 32),
-                          ],
-
-                          // Center: Online Play Panel
-                          _buildOnlinePlayPanel(isOnlineFocused),
-                          const SizedBox(height: 48),
-
-                          // Bottom: Local Games
-                          _buildLocalGamesSection(),
-                        ],
-                      ),
-                    ),
-                  ),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 32.0,
                 ),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Top: Logo Area
+                    _buildLogoBlock(),
+                    const SizedBox(height: 24),
+
+                    if (ref.watch(currentGameIdProvider) != null) ...[
+                      _buildButton('RECONNECT TO GAME', () {
+                        final gameId = ref.read(currentGameIdProvider);
+                        if (gameId != null) {
+                          context.push('/waiting_room/$gameId');
+                        }
+                      }, type: ButtonType.primary),
+                      const SizedBox(height: 12),
+                      _buildButton('LEAVE CURRENT GAME', () {
+                        ref
+                            .read(currentGameIdProvider.notifier)
+                            .setId(null);
+                      }),
+                      const SizedBox(height: 32),
+                    ],
+
+                    // Center: Online Play Panel
+                    _buildOnlinePlayPanel(isOnlineFocused),
+                    const SizedBox(height: 48),
+
+                    // Bottom: Local Games
+                    _buildLocalGamesSection(),
+
+                    // Bottom breathing room so content clears nav bar
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
             ),
           ),
+
         ],
       ),
     );

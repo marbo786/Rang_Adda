@@ -35,6 +35,9 @@ abstract class BluffBot {
         return BluffBotMedium(personality);
       case BotDifficulty.hard:
         return BluffBotHard(personality);
+      case BotDifficulty.ml:
+        // ML difficulty is Thulla-only; fall back to hard for Bluff.
+        return BluffBotHard(personality);
     }
   }
 }

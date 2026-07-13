@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:rang_adda/firebase_options.dart';
 import 'package:rang_adda/shared/routing/app_router.dart';
 import 'package:rang_adda/shared/ui/theme.dart';
+import 'package:rang_adda/features/thulla/ai/thulla_bot_ml.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,8 @@ void main() async {
       ),
     );
   };
+
+  await ThullaBotML.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }

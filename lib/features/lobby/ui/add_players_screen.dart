@@ -276,7 +276,11 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                           .map(
                             (d) => DropdownMenuItem(
                               value: d,
-                              child: Text(d.name.toUpperCase()),
+                              child: Text(
+                                d == BotDifficulty.ml
+                                    ? 'AI BOT'
+                                    : d.name.toUpperCase(),
+                              ),
                             ),
                           )
                           .toList(),

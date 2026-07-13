@@ -1,1 +1,1 @@
-enum BotDifficulty { easy, medium, hard }
+enum BotDifficulty { easy, medium, hard, ml }

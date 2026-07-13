@@ -26,6 +26,9 @@ abstract class RangBot {
         return RangBotMedium(personality);
       case BotDifficulty.hard:
         return RangBotHard(personality);
+      case BotDifficulty.ml:
+        // ML difficulty is Thulla-only; fall back to hard for Rang.
+        return RangBotHard(personality);
     }
   }
 }
