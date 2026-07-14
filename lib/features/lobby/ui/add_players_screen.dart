@@ -35,6 +35,55 @@ const _configs = <String, _GameConfig>{
 const _thematicNames = ["Asad", "Marbo", "Jatt", "Gujjar", "Pinky", "Butt"];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Game difficulty — the three options shown to the player
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The three difficulty tiers exposed in the UI.
+/// Each maps to an internal [BotDifficulty].
+enum _GameDifficulty { easy, medium, hard }
+
+extension _GameDifficultyX on _GameDifficulty {
+  /// Display label shown on the segmented button.
+  String get label {
+    switch (this) {
+      case _GameDifficulty.easy:
+        return 'EASY';
+      case _GameDifficulty.medium:
+        return 'MEDIUM';
+      case _GameDifficulty.hard:
+        return 'HARD';
+    }
+  }
+
+  /// Short subtitle shown beneath the label.
+  String get subtitle {
+    switch (this) {
+      case _GameDifficulty.easy:
+        return 'Simple logic';
+      case _GameDifficulty.medium:
+        return 'Thinks ahead';
+      case _GameDifficulty.hard:
+        return 'Mobile only';
+    }
+  }
+
+  /// The internal [BotDifficulty] this tier maps to.
+  BotDifficulty get botDifficulty {
+    switch (this) {
+      case _GameDifficulty.easy:
+        return BotDifficulty.medium; // rule-based smallest-card strategy
+      case _GameDifficulty.medium:
+        return BotDifficulty.expert; // PIMC — perfect information Monte Carlo
+      case _GameDifficulty.hard:
+        return BotDifficulty.expert; // placeholder — disabled in UI
+    }
+  }
+
+  /// Whether this option can be selected on the current platform.
+  bool get isEnabled => this != _GameDifficulty.hard;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -42,13 +91,11 @@ class _PlayerSlot {
   final TextEditingController controller;
   final FocusNode focusNode;
   bool isBot;
-  BotDifficulty botDifficulty;
 
   _PlayerSlot()
     : controller = TextEditingController(),
       focusNode = FocusNode(),
-      isBot = false,
-      botDifficulty = BotDifficulty.ml;
+      isBot = false;
 
   void dispose() {
     controller.dispose();
@@ -71,6 +118,9 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
 
   final List<_PlayerSlot> _slots = [];
   final Random _rand = Random();
+
+  /// Single game-level difficulty shared by all bots.
+  _GameDifficulty _gameDifficulty = _GameDifficulty.medium;
 
   @override
   void initState() {
@@ -172,10 +222,14 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
     return true;
   }
 
+  bool get _hasAnyBot => _slots.any((s) => s.isBot);
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
   void _onStartGame() {
     if (!_canStart) return;
+
+    final assignedDifficulty = _gameDifficulty.botDifficulty;
 
     final players = List.generate(_slots.length, (i) {
       final slot = _slots[i];
@@ -183,7 +237,7 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
         id: 'p${i + 1}',
         name: slot.controller.text.trim(),
         isBot: slot.isBot,
-        botDifficulty: slot.isBot ? slot.botDifficulty : null,
+        botDifficulty: slot.isBot ? assignedDifficulty : null,
       );
     });
 
@@ -261,35 +315,6 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                     });
                   },
                 ),
-                if (slot.isBot) ...[
-                  const SizedBox(width: 8),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton<BotDifficulty>(
-                      value: slot.botDifficulty,
-                      dropdownColor: AppTheme.surfaceElevated,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      items: BotDifficulty.values
-                          .map(
-                            (d) => DropdownMenuItem(
-                              value: d,
-                              child: Text(
-                                d == BotDifficulty.ml
-                                    ? 'AI BOT'
-                                    : d.name.toUpperCase(),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (d) {
-                        if (d != null) setState(() => slot.botDifficulty = d);
-                      },
-                    ),
-                  ),
-                ],
                 const Spacer(),
                 if (canRemove)
                   GestureDetector(
@@ -563,6 +588,16 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
                     ...playerFields,
                     const SizedBox(height: 12),
                     ...addRemoveButtons,
+
+                    // ── Bot difficulty selector ───────────────────────────────
+                    if (_hasAnyBot) ...[
+                      const SizedBox(height: 28),
+                      _BotDifficultySelector(
+                        selected: _gameDifficulty,
+                        onChanged: (d) => setState(() => _gameDifficulty = d),
+                      ),
+                    ],
+
                     const SizedBox(height: 32),
                     startGameButton,
                   ],
@@ -571,6 +606,181 @@ class _AddPlayersScreenState extends ConsumerState<AddPlayersScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bot difficulty selector widget
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _BotDifficultySelector extends StatelessWidget {
+  final _GameDifficulty selected;
+  final ValueChanged<_GameDifficulty> onChanged;
+
+  const _BotDifficultySelector({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.psychology_rounded,
+              size: 14,
+              color: AppTheme.accentSecondary,
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              'BOT DIFFICULTY',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2.0,
+                color: AppTheme.accentSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: _GameDifficulty.values.map((tier) {
+            final isSelected = selected == tier;
+            final isDisabled = !tier.isEnabled;
+
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: tier != _GameDifficulty.hard ? 8 : 0,
+                ),
+                child: _DifficultyTile(
+                  tier: tier,
+                  isSelected: isSelected,
+                  isDisabled: isDisabled,
+                  onTap: isDisabled ? null : () => onChanged(tier),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _DifficultyTile extends StatelessWidget {
+  final _GameDifficulty tier;
+  final bool isSelected;
+  final bool isDisabled;
+  final VoidCallback? onTap;
+
+  const _DifficultyTile({
+    required this.tier,
+    required this.isSelected,
+    required this.isDisabled,
+    this.onTap,
+  });
+
+  Color get _borderColor {
+    if (isDisabled) return AppTheme.textDisabled.withValues(alpha: 0.2);
+    if (isSelected) return _accentColor;
+    return AppTheme.textDisabled.withValues(alpha: 0.3);
+  }
+
+  Color get _accentColor {
+    switch (tier) {
+      case _GameDifficulty.easy:
+        return const Color(0xFF4ADE80); // green
+      case _GameDifficulty.medium:
+        return AppTheme.accentPrimary; // gold
+      case _GameDifficulty.hard:
+        return AppTheme.textDisabled;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = isDisabled ? 0.35 : 1.0;
+
+    return Opacity(
+      opacity: opacity,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? _accentColor.withValues(alpha: 0.12)
+                : AppTheme.surfaceElevated,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _borderColor, width: isSelected ? 1.5 : 1),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: _accentColor.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      spreadRadius: -2,
+                    ),
+                  ]
+                : [],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                tier.label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                  color: isSelected ? _accentColor : AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                tier.subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? _accentColor.withValues(alpha: 0.7)
+                      : AppTheme.textDisabled,
+                ),
+              ),
+              if (isDisabled) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textDisabled.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'SOON',
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                      color: AppTheme.textDisabled,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

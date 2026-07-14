@@ -5,6 +5,7 @@ import 'package:rang_adda/shared/ai/bot_personality.dart';
 import 'thulla_bot_easy.dart';
 import 'thulla_bot_medium.dart';
 import 'thulla_bot_hard.dart';
+import 'thulla_bot_expert.dart';
 import 'thulla_bot_ml.dart';
 
 abstract class ThullaBot {
@@ -25,6 +26,8 @@ abstract class ThullaBot {
         return ThullaBotMedium(personality);
       case BotDifficulty.hard:
         return ThullaBotHard(personality);
+      case BotDifficulty.expert:
+        return ThullaBotExpert(personality);
       case BotDifficulty.ml:
         return ThullaBotML(personality);
     }

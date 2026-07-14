@@ -162,7 +162,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                               (p) => p.id == state.currentPlayerId,
                             ),
                             cardCounts: state.players
-                                .map((p) => p.hand.length)
+                                .map((p) => p.cardCount)
                                 .toList(),
                             latestEmojis: state.players
                                 .map((p) => p.latestEmoji)

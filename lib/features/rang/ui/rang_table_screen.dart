@@ -220,7 +220,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                               (p) => p.id == state.currentPlayerId,
                             ),
                             cardCounts: state.players
-                                .map((p) => p.hand.length)
+                                .map((p) => p.cardCount)
                                 .toList(),
                             trumpSuit: state.trumpSuit != null
                                 ? _getSuitSymbol(state.trumpSuit!)

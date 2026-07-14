@@ -18,6 +18,9 @@ class BotDelay {
       case BotDifficulty.hard:
         // Hard bots appear to think carefully (2500ms - 4000ms)
         delayMs = 2500 + _random.nextInt(1500);
+      case BotDifficulty.expert:
+        // Expert bots simulate many worlds — they "think" the longest (3000ms - 5000ms)
+        delayMs = 3000 + _random.nextInt(2000);
       case BotDifficulty.ml:
         // AI bot mirrors the hard delay for a natural feel (2500ms - 4000ms)
         delayMs = 2500 + _random.nextInt(1500);
