@@ -262,7 +262,7 @@ class _RoundTableWidgetState extends State<RoundTableWidget>
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '✦ $cards',
+                                '🂠 $cards',
                                 style: TextStyle(
                                   color: isActive
                                       ? AppTheme.accentSecondary

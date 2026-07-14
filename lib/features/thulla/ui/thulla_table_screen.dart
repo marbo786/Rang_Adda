@@ -186,8 +186,11 @@ class _ThullaTableScreenState extends ConsumerState<ThullaTableScreen> {
     }
 
     Player bottomPlayer = state.players.firstWhere(
-      (p) => p.id == state.currentPlayerId,
-      orElse: () => state.players.first,
+      (p) => p.id == state.currentPlayerId && !p.isBot,
+      orElse: () => state.players.firstWhere(
+        (p) => !p.isBot,
+        orElse: () => state.players.first,
+      ),
     );
     if (widget.isOnline) {
       final user = ref.read(userProvider).value;

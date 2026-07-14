@@ -95,8 +95,11 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     }
 
     Player bottomPlayer = state.players.firstWhere(
-      (p) => p.id == state.currentPlayerId,
-      orElse: () => state.players.first,
+      (p) => p.id == state.currentPlayerId && !p.isBot,
+      orElse: () => state.players.firstWhere(
+        (p) => !p.isBot,
+        orElse: () => state.players.first,
+      ),
     );
 
     if (widget.isOnline) {

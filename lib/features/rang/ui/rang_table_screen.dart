@@ -75,8 +75,11 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
 
     // Determine bottom player (active player holding device)
     final bottomPlayer = state.players.firstWhere(
-      (p) => p.id == state.currentPlayerId,
-      orElse: () => state.players.first,
+      (p) => p.id == state.currentPlayerId && !p.isBot,
+      orElse: () => state.players.firstWhere(
+        (p) => !p.isBot,
+        orElse: () => state.players.first,
+      ),
     );
 
     final bottomIndex = state.players.indexOf(bottomPlayer);
