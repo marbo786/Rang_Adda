@@ -88,9 +88,7 @@ class ThullaBotExpert extends ThullaBot {
       return validCards.first;
     }
 
-    validCards.sort(
-      (a, b) => (cardScores[b]!).compareTo(cardScores[a]!),
-    );
+    validCards.sort((a, b) => (cardScores[b]!).compareTo(cardScores[a]!));
     return validCards.first;
   }
 
@@ -115,8 +113,9 @@ class ThullaBotExpert extends ThullaBot {
 
       // Unknown = full deck minus our hand minus known-gone cards.
       final unknownCards = List<PlayingCard>.from(
-        Deck.standard().cards
-            .where((c) => !myHand.contains(c) && !knownGone.contains(c)),
+        Deck.standard().cards.where(
+          (c) => !myHand.contains(c) && !knownGone.contains(c),
+        ),
       )..shuffle(_rng);
 
       // Deal to opponents proportionally to their known card count.
@@ -272,8 +271,9 @@ class ThullaBotExpert extends ThullaBot {
     //    Exception: if we are the power player, holding high cards gives us
     //    more control over the lead — so they're less of a liability.
     final isPowerPlayer = state.powerPlayerId == botId;
-    final highCards =
-        myPlayer.hand.where((c) => _rankValue(c.rank) >= 13).length;
+    final highCards = myPlayer.hand
+        .where((c) => _rankValue(c.rank) >= 13)
+        .length;
     final highCardScore = isPowerPlayer ? highCards * 1.0 : -highCards * 1.5;
 
     // 3. Holding cards in fewer suits = better Tochoo opportunities.
@@ -326,12 +326,7 @@ class ThullaBotExpert extends ThullaBot {
     );
 
     final opponentPlayers = obs.opponentCardCounts.entries.map((e) {
-      return Player(
-        id: e.key,
-        name: e.key,
-        hand: const [],
-        cardCount: e.value,
-      );
+      return Player(id: e.key, name: e.key, hand: const [], cardCount: e.value);
     }).toList();
 
     // Place myself first so currentPlayerId = myId is consistent.
@@ -339,8 +334,9 @@ class ThullaBotExpert extends ThullaBot {
 
     // Reconstruct power player heuristic:
     // If the trick is empty and it's our turn, we must be the power player.
-    final powerPlayerId =
-        obs.currentTrick.isEmpty ? obs.myId : obs.currentTrick.first.playerId;
+    final powerPlayerId = obs.currentTrick.isEmpty
+        ? obs.myId
+        : obs.currentTrick.first.playerId;
 
     return ThullaGameState(
       gameId: 'pimc-sim',

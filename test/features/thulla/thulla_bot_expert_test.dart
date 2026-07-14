@@ -13,19 +13,18 @@ void main() {
   // Use a seeded RNG for deterministic test results.
   final seededRng = Random(42);
 
-  ThullaBotExpert makeBot({int worlds = 3, int depth = 1}) =>
-      ThullaBotExpert(
-        BotPersonality.fromName('TestBot'),
-        numWorlds: worlds,
-        searchDepth: depth,
-        random: seededRng,
-      );
+  ThullaBotExpert makeBot({int worlds = 3, int depth = 1}) => ThullaBotExpert(
+    BotPersonality.fromName('TestBot'),
+    numWorlds: worlds,
+    searchDepth: depth,
+    random: seededRng,
+  );
 
   ThullaGameState initState() => ThullaEngine.initializeGame([
-        const Player(id: 'p1', name: 'Alice'),
-        const Player(id: 'p2', name: 'Bot'),
-        const Player(id: 'p3', name: 'Charlie'),
-      ]);
+    const Player(id: 'p1', name: 'Alice'),
+    const Player(id: 'p2', name: 'Bot'),
+    const Player(id: 'p3', name: 'Charlie'),
+  ]);
 
   group('ThullaBotExpert (PIMC)', () {
     test('returns a valid card in the opening position', () {

@@ -721,7 +721,10 @@ class _DifficultyTile extends StatelessWidget {
                 ? _accentColor.withValues(alpha: 0.12)
                 : AppTheme.surfaceElevated,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _borderColor, width: isSelected ? 1.5 : 1),
+            border: Border.all(
+              color: _borderColor,
+              width: isSelected ? 1.5 : 1,
+            ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
