@@ -20,7 +20,6 @@ class BluffBotHard implements BluffBotStrategy {
     if (state.lastCardPlayerId != null &&
         state.lastCardPlayerId != botId &&
         state.lastPlayedCards.isNotEmpty) {
-
       final prob = _estimateBluffProbability(state, botId);
       // Lower threshold in endgame (more aggressive calling)
       final threshold = isEndgame ? 0.45 : 0.70;
@@ -53,7 +52,7 @@ class BluffBotHard implements BluffBotStrategy {
     final available = totalOfRank - myCount;
     final claimedCount = state.lastPlayedCards.length;
 
-    if (claimedCount > available) return 1.0;  // mathematically impossible
+    if (claimedCount > available) return 1.0; // mathematically impossible
 
     final scarcity = myCount / totalOfRank.toDouble();
     final pilePresure = (state.centerPile.length / 25.0).clamp(0.0, 0.35);
@@ -64,9 +63,11 @@ class BluffBotHard implements BluffBotStrategy {
   }
 
   BluffBotAction _startNewRoundHard(
-      BluffGameState state, String botId,
-      List<PlayingCard> hand, bool isEndgame) {
-
+    BluffGameState state,
+    String botId,
+    List<PlayingCard> hand,
+    bool isEndgame,
+  ) {
     final rankCounts = <Rank, int>{};
     for (final c in hand) {
       rankCounts[c.rank] = (rankCounts[c.rank] ?? 0) + 1;
@@ -75,22 +76,27 @@ class BluffBotHard implements BluffBotStrategy {
     if (isEndgame) {
       // Endgame: play as many cards as possible to race to empty hand
       final bestRank = rankCounts.entries
-          .reduce((a, b) => a.value >= b.value ? a : b).key;
+          .reduce((a, b) => a.value >= b.value ? a : b)
+          .key;
       final all = hand.where((c) => c.rank == bestRank).take(4).toList();
       return BluffBotAction.play(cards: all, claimedRank: bestRank);
     }
 
     // Normal: declare rank we have most of, play 2–3 cards
     final bestRank = rankCounts.entries
-        .reduce((a, b) => a.value >= b.value ? a : b).key;
+        .reduce((a, b) => a.value >= b.value ? a : b)
+        .key;
     final toPlay = hand.where((c) => c.rank == bestRank).take(3).toList();
     return BluffBotAction.play(cards: toPlay, claimedRank: bestRank);
   }
 
   BluffBotAction _continueRoundHard(
-      BluffGameState state, String botId,
-      List<PlayingCard> hand, Rank roundRank, bool isEndgame) {
-
+    BluffGameState state,
+    String botId,
+    List<PlayingCard> hand,
+    Rank roundRank,
+    bool isEndgame,
+  ) {
     final hasRank = hand.where((c) => c.rank == roundRank).toList();
     final noRank = hand.where((c) => c.rank != roundRank).toList();
 
@@ -116,9 +122,10 @@ class BluffBotHard implements BluffBotStrategy {
 
     // In endgame, bluff with up to 2 cards to dump faster
     final bluffCount = isEndgame ? min(2, noRank.length) : 1;
-    final bluffCards = [bluffCard, ...noRank.where((c) => c != bluffCard)]
-        .take(bluffCount)
-        .toList();
+    final bluffCards = [
+      bluffCard,
+      ...noRank.where((c) => c != bluffCard),
+    ].take(bluffCount).toList();
 
     return BluffBotAction.play(cards: bluffCards, claimedRank: roundRank);
   }

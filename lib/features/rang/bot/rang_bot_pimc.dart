@@ -13,11 +13,8 @@ class RangBotPIMC implements RangBotStrategy {
   final int searchDepth;
   final Random _rng;
 
-  RangBotPIMC({
-    this.numWorlds = 20,
-    this.searchDepth = 3,
-    Random? random,
-  }) : _rng = random ?? Random();
+  RangBotPIMC({this.numWorlds = 20, this.searchDepth = 3, Random? random})
+    : _rng = random ?? Random();
 
   // ── Trump selection ───────────────────────────────────────────────────────
 
@@ -38,17 +35,23 @@ class RangBotPIMC implements RangBotStrategy {
       double score = cardsOfSuit.length.toDouble();
       for (final card in cardsOfSuit) {
         final rv = _rankValue(card.rank);
-        if (rv >= 14) { score += 3.0; }  // Ace
-        else if (rv >= 13) { score += 2.0; }  // King
-        else if (rv >= 12) { score += 1.0; }  // Queen
-        else if (rv >= 11) { score += 0.5; }  // Jack
+        if (rv >= 14) {
+          score += 3.0;
+        } // Ace
+        else if (rv >= 13) {
+          score += 2.0;
+        } // King
+        else if (rv >= 12) {
+          score += 1.0;
+        } // Queen
+        else if (rv >= 11) {
+          score += 0.5;
+        } // Jack
       }
       suitScores[suit] = score;
     }
 
-    return suitScores.entries
-        .reduce((a, b) => a.value >= b.value ? a : b)
-        .key;
+    return suitScores.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
   }
 
   // ── Card selection (PIMC) ─────────────────────────────────────────────────
@@ -57,15 +60,18 @@ class RangBotPIMC implements RangBotStrategy {
   PlayingCard chooseCard(RangGameState state, String botId) {
     final player = state.players.firstWhere((p) => p.id == botId);
     final validCards = List<PlayingCard>.from(
-      player.hand.where((c) => RangEngine.getMoveError(state, botId, c) == null)
+      player.hand.where(
+        (c) => RangEngine.getMoveError(state, botId, c) == null,
+      ),
     );
 
-    if (validCards.isEmpty) return RangBotEasy(rng: _rng).chooseCard(state, botId);
+    if (validCards.isEmpty)
+      return RangBotEasy(rng: _rng).chooseCard(state, botId);
     if (validCards.length == 1) return validCards.first;
 
     // Find which team the bot is on (index in players list)
     final botIndex = state.players.indexWhere((p) => p.id == botId);
-    final botTeam = botIndex % 2 == 0 ? 'A' : 'B';  // 0,2 = A; 1,3 = B
+    final botTeam = botIndex % 2 == 0 ? 'A' : 'B'; // 0,2 = A; 1,3 = B
 
     final cardScores = <PlayingCard, double>{};
     for (final card in validCards) {
@@ -89,10 +95,12 @@ class RangBotPIMC implements RangBotStrategy {
       worldsCompleted++;
     }
 
-    if (worldsCompleted == 0) return RangBotEasy(rng: _rng).chooseCard(state, botId);
+    if (worldsCompleted == 0)
+      return RangBotEasy(rng: _rng).chooseCard(state, botId);
 
-    validCards.sort((a, b) =>
-        (cardScores[b] ?? 0.0).compareTo(cardScores[a] ?? 0.0));
+    validCards.sort(
+      (a, b) => (cardScores[b] ?? 0.0).compareTo(cardScores[a] ?? 0.0),
+    );
     return validCards.first;
   }
 
@@ -110,7 +118,7 @@ class RangBotPIMC implements RangBotStrategy {
 
       final allCards = Deck.standard().cards;
       final unknownCards = List<PlayingCard>.from(
-        allCards.where((c) => !myHand.contains(c) && !knownGone.contains(c))
+        allCards.where((c) => !myHand.contains(c) && !knownGone.contains(c)),
       );
       unknownCards.shuffle(_rng);
 
@@ -138,8 +146,12 @@ class RangBotPIMC implements RangBotStrategy {
   // ── Card evaluation via shallow search ───────────────────────────────────
 
   double _evaluateCard(
-      RangGameState world, String botId, String botTeam,
-      PlayingCard card, int depth) {
+    RangGameState world,
+    String botId,
+    String botTeam,
+    PlayingCard card,
+    int depth,
+  ) {
     try {
       // Simulate playing the card
       RangGameState next = RangEngine.playCard(world, botId, card);
@@ -195,11 +207,13 @@ class RangBotPIMC implements RangBotStrategy {
     // Trump conservation: having trump cards is valuable
     if (state.trumpSuit != null) {
       final botPlayer = state.players.firstWhere(
-        (p) => p.id == state.currentPlayerId, orElse: () => state.players.first
+        (p) => p.id == state.currentPlayerId,
+        orElse: () => state.players.first,
       );
       final trumpCount = botPlayer.hand
-          .where((c) => c.suit == state.trumpSuit).length;
-      score += trumpCount * 1.5;  // each trump card = strategic asset
+          .where((c) => c.suit == state.trumpSuit)
+          .length;
+      score += trumpCount * 1.5; // each trump card = strategic asset
     }
 
     return score;
@@ -210,7 +224,7 @@ class RangBotPIMC implements RangBotStrategy {
     // If our team's player is lastTrickWinnerId, we're likely to collect heap
     if (state.lastTrickWinnerId == null) return false;
     final winnerIdx = state.players.indexWhere(
-      (p) => p.id == state.lastTrickWinnerId
+      (p) => p.id == state.lastTrickWinnerId,
     );
     if (winnerIdx == -1) return false;
     final winnerTeam = winnerIdx % 2 == 0 ? 'A' : 'B';
@@ -218,9 +232,21 @@ class RangBotPIMC implements RangBotStrategy {
   }
 
   int _rankValue(Rank rank) {
-    const v = {Rank.two:2,Rank.three:3,Rank.four:4,Rank.five:5,Rank.six:6,
-               Rank.seven:7,Rank.eight:8,Rank.nine:9,Rank.ten:10,
-               Rank.jack:11,Rank.queen:12,Rank.king:13,Rank.ace:14};
+    const v = {
+      Rank.two: 2,
+      Rank.three: 3,
+      Rank.four: 4,
+      Rank.five: 5,
+      Rank.six: 6,
+      Rank.seven: 7,
+      Rank.eight: 8,
+      Rank.nine: 9,
+      Rank.ten: 10,
+      Rank.jack: 11,
+      Rank.queen: 12,
+      Rank.king: 13,
+      Rank.ace: 14,
+    };
     return v[rank]!;
   }
 }

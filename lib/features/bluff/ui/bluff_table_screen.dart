@@ -565,14 +565,15 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     runSpacing: 12,
                     alignment: WrapAlignment.center,
                     children: Rank.values.map((rank) {
-                      bool isLockedAndDifferent = currentRoundRank != null && rank != currentRoundRank;
+                      bool isLockedAndDifferent =
+                          currentRoundRank != null && rank != currentRoundRank;
                       return IgnorePointer(
                         ignoring: isLockedAndDifferent,
                         child: InkWell(
                           onTap: () async {
                             ref.read(audioServiceProvider).playClick();
                             Navigator.of(dialogContext).pop();
-  
+
                             String? error;
                             if (widget.isOnline) {
                               error = await ref
@@ -583,7 +584,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                   .read(bluffProvider.notifier)
                                   .playCard(playerId, cards, rank);
                             }
-  
+
                             if (error != null) {
                               if (!context.mounted) return;
                               ref.read(audioServiceProvider).playError();

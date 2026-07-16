@@ -29,7 +29,9 @@ class RangBotHard extends RangBotPIMC {
   PlayingCard chooseCard(RangGameState state, String botId) {
     final player = state.players.firstWhere((p) => p.id == botId);
     final validCards = List<PlayingCard>.from(
-      player.hand.where((c) => RangEngine.getMoveError(state, botId, c) == null)
+      player.hand.where(
+        (c) => RangEngine.getMoveError(state, botId, c) == null,
+      ),
     );
     if (validCards.length == 1) return validCards.first;
 
@@ -49,11 +51,13 @@ class RangBotHard extends RangBotPIMC {
         if (isPartnerWinning) {
           // Don't play trump — filter out trump cards if we have alternatives
           final nonTrump = validCards
-              .where((c) => c.suit != state.trumpSuit).toList();
+              .where((c) => c.suit != state.trumpSuit)
+              .toList();
           if (nonTrump.isNotEmpty) {
             // Among non-trump valid cards, dump the weakest
-            return nonTrump.reduce((a, b) =>
-                _rankValue(a.rank) < _rankValue(b.rank) ? a : b);
+            return nonTrump.reduce(
+              (a, b) => _rankValue(a.rank) < _rankValue(b.rank) ? a : b,
+            );
           }
         }
       }
@@ -61,11 +65,14 @@ class RangBotHard extends RangBotPIMC {
 
     // ── Rule: Lead trump when holding 3+ trump cards ─────────────────────
     if (state.currentTrick.isEmpty && state.trumpSuit != null) {
-      final myTrump = validCards.where((c) => c.suit == state.trumpSuit).toList();
+      final myTrump = validCards
+          .where((c) => c.suit == state.trumpSuit)
+          .toList();
       if (myTrump.length >= 3) {
         // Lead highest trump to draw out opponents
-        return myTrump.reduce((a, b) =>
-            _rankValue(a.rank) > _rankValue(b.rank) ? a : b);
+        return myTrump.reduce(
+          (a, b) => _rankValue(a.rank) > _rankValue(b.rank) ? a : b,
+        );
       }
     }
 
@@ -75,8 +82,9 @@ class RangBotHard extends RangBotPIMC {
     if (ourSars >= 6) {
       // One more heap collection wins — lead our strongest card
       if (state.currentTrick.isEmpty) {
-        return validCards.reduce((a, b) =>
-            _rankValue(a.rank) > _rankValue(b.rank) ? a : b);
+        return validCards.reduce(
+          (a, b) => _rankValue(a.rank) > _rankValue(b.rank) ? a : b,
+        );
       }
     }
 
@@ -96,8 +104,9 @@ class RangBotHard extends RangBotPIMC {
 
     if (trumpCards.isNotEmpty && trumpSuit != null) {
       if (card.suit != trumpSuit) return false;
-      final highestTrump = trumpCards.reduce((a, b) =>
-          _rankValue(a.rank) > _rankValue(b.rank) ? a : b);
+      final highestTrump = trumpCards.reduce(
+        (a, b) => _rankValue(a.rank) > _rankValue(b.rank) ? a : b,
+      );
       return _rankValue(card.rank) >= _rankValue(highestTrump.rank);
     }
 
@@ -105,15 +114,28 @@ class RangBotHard extends RangBotPIMC {
     if (card.suit != leadSuit) return false;
     final leadCards = trickCards.where((c) => c.suit == leadSuit).toList();
     if (leadCards.isEmpty) return true;
-    final highestLead = leadCards.reduce((a, b) =>
-        _rankValue(a.rank) > _rankValue(b.rank) ? a : b);
+    final highestLead = leadCards.reduce(
+      (a, b) => _rankValue(a.rank) > _rankValue(b.rank) ? a : b,
+    );
     return _rankValue(card.rank) >= _rankValue(highestLead.rank);
   }
 
   int _rankValue(Rank rank) {
-    const v = {Rank.two:2,Rank.three:3,Rank.four:4,Rank.five:5,Rank.six:6,
-               Rank.seven:7,Rank.eight:8,Rank.nine:9,Rank.ten:10,
-               Rank.jack:11,Rank.queen:12,Rank.king:13,Rank.ace:14};
+    const v = {
+      Rank.two: 2,
+      Rank.three: 3,
+      Rank.four: 4,
+      Rank.five: 5,
+      Rank.six: 6,
+      Rank.seven: 7,
+      Rank.eight: 8,
+      Rank.nine: 9,
+      Rank.ten: 10,
+      Rank.jack: 11,
+      Rank.queen: 12,
+      Rank.king: 13,
+      Rank.ace: 14,
+    };
     return v[rank]!;
   }
 }

@@ -238,7 +238,9 @@ class BluffGameState extends GameState {
           ? Rank.values[json['currentRoundRank'] as int]
           : null,
       playersActedThisRound:
-          (json['playersActedThisRound'] as List?)?.map((e) => e as String).toSet() ??
+          (json['playersActedThisRound'] as List?)
+              ?.map((e) => e as String)
+              .toSet() ??
           const {},
       lastCardPlayerId: json['lastCardPlayerId'] as String?,
       participantIds:

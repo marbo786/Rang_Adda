@@ -15,8 +15,14 @@ sealed class BluffBotAction {
   }) = Play;
 }
 
-class CallBluff extends BluffBotAction { const CallBluff(); }
-class Pass extends BluffBotAction { const Pass(); }
+class CallBluff extends BluffBotAction {
+  const CallBluff();
+}
+
+class Pass extends BluffBotAction {
+  const Pass();
+}
+
 class Play extends BluffBotAction {
   final List<PlayingCard> cards;
   final Rank claimedRank;

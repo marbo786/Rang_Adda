@@ -13,7 +13,9 @@ class RangBotEasy implements RangBotStrategy {
   PlayingCard chooseCard(RangGameState state, String botId) {
     final player = state.players.firstWhere((p) => p.id == botId);
     final valid = List<PlayingCard>.from(
-      player.hand.where((c) => RangEngine.getMoveError(state, botId, c) == null)
+      player.hand.where(
+        (c) => RangEngine.getMoveError(state, botId, c) == null,
+      ),
     );
     valid.shuffle(_rng);
     return valid.first;

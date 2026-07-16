@@ -24,12 +24,15 @@ class BluffBotEasy implements BluffBotStrategy {
 
     // Play 1–4 random cards from hand
     hand.shuffle(_rng);
-    final count = min(1 + _rng.nextInt(3), hand.length);   // 1 to min(4, hand size)
+    final count = min(
+      1 + _rng.nextInt(3),
+      hand.length,
+    ); // 1 to min(4, hand size)
     final cards = hand.take(count).toList();
 
     // Claim the locked rank if round is in progress, else random rank
-    final rank = state.currentRoundRank ??
-        Rank.values[_rng.nextInt(Rank.values.length)];
+    final rank =
+        state.currentRoundRank ?? Rank.values[_rng.nextInt(Rank.values.length)];
 
     return BluffBotAction.play(cards: cards, claimedRank: rank);
   }

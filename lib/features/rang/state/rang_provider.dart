@@ -61,7 +61,7 @@ class RangNotifier extends Notifier<RangGameState?> {
   void acknowledgePass() {
     if (state == null) return;
     state = state!.copyWith(clearPassToPlayerId: true);
-    
+
     final s = state!;
     if (s.phase == RangPhase.trumpSelection &&
         _isBotPlayer(s.trumpCallerId) &&
@@ -77,7 +77,10 @@ class RangNotifier extends Notifier<RangGameState?> {
 
   bool _isBotPlayer(String? id) {
     if (id == null || state == null) return false;
-    final p = state!.players.firstWhere((p) => p.id == id, orElse: () => state!.players.first);
+    final p = state!.players.firstWhere(
+      (p) => p.id == id,
+      orElse: () => state!.players.first,
+    );
     return p.id == id && p.isBot;
   }
 
@@ -100,7 +103,9 @@ class RangNotifier extends Notifier<RangGameState?> {
     if (state == null || state!.trumpCallerId == null) return;
     final callerId = state!.trumpCallerId!;
     final player = state!.players.firstWhere((p) => p.id == callerId);
-    final bot = _getBotForDifficulty(player.botDifficulty ?? BotDifficulty.easy);
+    final bot = _getBotForDifficulty(
+      player.botDifficulty ?? BotDifficulty.easy,
+    );
     final suit = bot.chooseTrump(state!, callerId);
     declareTrump(callerId, suit);
   }
@@ -112,7 +117,7 @@ class RangNotifier extends Notifier<RangGameState?> {
     if (s.phase != RangPhase.trickPlay) return;
     if (s.passToPlayerId != null) return;
     if (!_isBotPlayer(s.currentPlayerId)) return;
-    
+
     _scheduleBotMove();
   }
 
@@ -121,7 +126,8 @@ class RangNotifier extends Notifier<RangGameState?> {
     _botMovePending = true;
     Future.delayed(const Duration(milliseconds: 900), () {
       final s = state;
-      if (s != null && s.status == GameStatus.playing &&
+      if (s != null &&
+          s.status == GameStatus.playing &&
           s.phase == RangPhase.trickPlay &&
           _isBotPlayer(s.currentPlayerId) &&
           s.passToPlayerId == null) {
@@ -135,11 +141,13 @@ class RangNotifier extends Notifier<RangGameState?> {
     if (state == null) return;
     final botId = state!.currentPlayerId!;
     final player = state!.players.firstWhere((p) => p.id == botId);
-    final bot = _getBotForDifficulty(player.botDifficulty ?? BotDifficulty.easy);
+    final bot = _getBotForDifficulty(
+      player.botDifficulty ?? BotDifficulty.easy,
+    );
     final card = bot.chooseCard(state!, botId);
 
     final error = RangEngine.getMoveError(state!, botId, card);
-    if (error != null) return;  // safety check
+    if (error != null) return; // safety check
 
     playCard(botId, card);
   }

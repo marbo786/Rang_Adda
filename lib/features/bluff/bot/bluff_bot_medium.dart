@@ -12,7 +12,6 @@ class BluffBotMedium implements BluffBotStrategy {
     if (state.lastCardPlayerId != null &&
         state.lastCardPlayerId != botId &&
         state.lastPlayedCards.isNotEmpty) {
-
       final bluffProbability = _estimateBluffProbability(state, botId);
 
       // Call bluff if estimated probability of lying > 65%
@@ -40,14 +39,16 @@ class BluffBotMedium implements BluffBotStrategy {
     final player = state.players.firstWhere((p) => p.id == botId);
 
     // Count how many cards of claimed rank I hold
-    final myCountOfRank = player.hand.where((c) => c.rank == claimedRank).length;
+    final myCountOfRank = player.hand
+        .where((c) => c.rank == claimedRank)
+        .length;
 
     // Count how many are in the waste pile (gone from game)
     // Note: in Bluff, waste Pile wasn't explicitly modeled in previous versions,
     // we use what we can see: cards in MY hand + any revealed cards
     // The prompt mentions counting in wastePile, but our engine discards them.
     // For simplicity, we just use our hand.
-    
+
     // Max cards of any rank in a 52-card deck = 4 (one per suit)
     const totalOfAnyRank = 4;
 
@@ -70,16 +71,23 @@ class BluffBotMedium implements BluffBotStrategy {
     final pileSizeFactor = (state.centerPile.length / 20.0).clamp(0.0, 0.4);
 
     // Claimed count factor: claiming more cards = more likely to be bluffing
-    final claimFactor = (claimedCount / availableElsewhere.toDouble())
-        .clamp(0.0, 0.5);
+    final claimFactor = (claimedCount / availableElsewhere.toDouble()).clamp(
+      0.0,
+      0.5,
+    );
 
-    return (scarcityFactor * 0.5 + pileSizeFactor + claimFactor * 0.3).clamp(0.0, 1.0);
+    return (scarcityFactor * 0.5 + pileSizeFactor + claimFactor * 0.3).clamp(
+      0.0,
+      1.0,
+    );
   }
 
   // ── Starting a new round: choose best rank to declare ────────────────────
   BluffBotAction _startNewRound(
-      BluffGameState state, String botId, List<PlayingCard> hand) {
-
+    BluffGameState state,
+    String botId,
+    List<PlayingCard> hand,
+  ) {
     // Strategy: declare the rank we have the MOST cards of
     // This maximizes the chance we can play honestly (harder to call bluff on truth)
     final rankCounts = <Rank, int>{};
@@ -102,9 +110,11 @@ class BluffBotMedium implements BluffBotStrategy {
 
   // ── Continuing a round with a locked rank ────────────────────────────────
   BluffBotAction _continueRound(
-      BluffGameState state, String botId,
-      List<PlayingCard> hand, Rank roundRank) {
-
+    BluffGameState state,
+    String botId,
+    List<PlayingCard> hand,
+    Rank roundRank,
+  ) {
     final hasRoundRank = hand.where((c) => c.rank == roundRank).toList();
     final doesntHaveRoundRank = hand.where((c) => c.rank != roundRank).toList();
 
@@ -125,17 +135,30 @@ class BluffBotMedium implements BluffBotStrategy {
     // Bluff with 1 card (minimum exposure)
     // Choose the card we least want to keep (highest rank card — risky to hold)
     final bluffCard = doesntHaveRoundRank.isNotEmpty
-        ? doesntHaveRoundRank.reduce((a, b) =>
-            _rankValue(a.rank) > _rankValue(b.rank) ? a : b)
+        ? doesntHaveRoundRank.reduce(
+            (a, b) => _rankValue(a.rank) > _rankValue(b.rank) ? a : b,
+          )
         : hand.first;
 
     return BluffBotAction.play(cards: [bluffCard], claimedRank: roundRank);
   }
 
   int _rankValue(Rank rank) {
-    const v = {Rank.two:2,Rank.three:3,Rank.four:4,Rank.five:5,Rank.six:6,
-               Rank.seven:7,Rank.eight:8,Rank.nine:9,Rank.ten:10,
-               Rank.jack:11,Rank.queen:12,Rank.king:13,Rank.ace:14};
+    const v = {
+      Rank.two: 2,
+      Rank.three: 3,
+      Rank.four: 4,
+      Rank.five: 5,
+      Rank.six: 6,
+      Rank.seven: 7,
+      Rank.eight: 8,
+      Rank.nine: 9,
+      Rank.ten: 10,
+      Rank.jack: 11,
+      Rank.queen: 12,
+      Rank.king: 13,
+      Rank.ace: 14,
+    };
     return v[rank]!;
   }
 }

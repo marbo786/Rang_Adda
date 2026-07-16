@@ -95,7 +95,10 @@ class BluffNotifier extends Notifier<BluffGameState> {
 
   bool _isBotPlayer(String? id) {
     if (id == null) return false;
-    final p = state.players.firstWhere((p) => p.id == id, orElse: () => state.players.first);
+    final p = state.players.firstWhere(
+      (p) => p.id == id,
+      orElse: () => state.players.first,
+    );
     return p.id == id && p.isBot;
   }
 
@@ -110,9 +113,9 @@ class BluffNotifier extends Notifier<BluffGameState> {
 
   void _checkAndScheduleBotMove() {
     if (state.status != GameStatus.playing) return;
-    if (state.passToPlayerId != null) return;          // waiting for pass ack
+    if (state.passToPlayerId != null) return; // waiting for pass ack
     if (state.resolvingBluffMessage != null) return;
-    if (!_isBotPlayer(state.currentPlayerId)) return;  // human's turn
+    if (!_isBotPlayer(state.currentPlayerId)) return; // human's turn
 
     _scheduleBotMove();
   }
@@ -134,7 +137,9 @@ class BluffNotifier extends Notifier<BluffGameState> {
   void _executeBotMove() {
     final botId = state.currentPlayerId!;
     final player = state.players.firstWhere((p) => p.id == botId);
-    final bot = _getBotForDifficulty(player.botDifficulty ?? BotDifficulty.easy);
+    final bot = _getBotForDifficulty(
+      player.botDifficulty ?? BotDifficulty.easy,
+    );
     final action = bot.chooseAction(state, botId);
 
     switch (action) {

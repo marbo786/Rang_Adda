@@ -55,7 +55,9 @@ class BluffEngine {
     if (cards.isEmpty || cards.length > 4) {
       return "You must select between 1 and 4 cards.";
     }
-    if (state.centerPile.isEmpty && cards.length < 2 && state.currentRoundRank == null) {
+    if (state.centerPile.isEmpty &&
+        cards.length < 2 &&
+        state.currentRoundRank == null) {
       return "You must play at least 2 cards to start a new pile.";
     }
     if (state.currentRoundRank != null &&
@@ -121,7 +123,7 @@ class BluffEngine {
 
     final newPlayersActed = Set<String>.from(state.playersActedThisRound)
       ..add(playerId);
-    
+
     int activePlayerCount = updatedPlayers.where((p) => p.cardCount > 0).length;
 
     // A round ends when all players have either played or passed
@@ -177,7 +179,8 @@ class BluffEngine {
       ..add(playerId);
     int activePlayerCount = updatedPlayers.where((p) => p.cardCount > 0).length;
 
-    bool roundEnded = newPlayersActed.length >= activePlayerCount ||
+    bool roundEnded =
+        newPlayersActed.length >= activePlayerCount ||
         newConsecutivePasses >= activePlayerCount;
 
     if (roundEnded) {
@@ -203,7 +206,9 @@ class BluffEngine {
     }
 
     return state.copyWith(
-      currentPlayerId: roundEnded ? (state.lastCardPlayerId ?? nextPlayerId) : nextPlayerId,
+      currentPlayerId: roundEnded
+          ? (state.lastCardPlayerId ?? nextPlayerId)
+          : nextPlayerId,
       consecutivePasses: newConsecutivePasses,
       centerPile: newCenterPile,
       lastPlayedCards: newLastPlayed,
