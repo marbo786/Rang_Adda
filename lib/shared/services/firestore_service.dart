@@ -116,7 +116,8 @@ class FirestoreService {
         gameId: gameId,
         players: [Player(id: hostId, name: hostName)],
         status: GameStatus.waiting,
-        dealerId: hostId, // Dealer gets assigned during startGameFromWaitingRoom anyway
+        dealerId:
+            hostId, // Dealer gets assigned during startGameFromWaitingRoom anyway
         trumpCallerId: hostId,
         participantIds: [hostId],
         hostUid: hostId,

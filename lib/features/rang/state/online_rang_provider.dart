@@ -12,11 +12,10 @@ import 'package:rang_adda/shared/ai/bot_difficulty.dart';
 import 'package:rang_adda/shared/ai/bot_delay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final currentRangGameIdProvider = NotifierProvider<CurrentRangGameIdNotifier, String?>(
-  () {
-    return CurrentRangGameIdNotifier();
-  },
-);
+final currentRangGameIdProvider =
+    NotifierProvider<CurrentRangGameIdNotifier, String?>(() {
+      return CurrentRangGameIdNotifier();
+    });
 
 class CurrentRangGameIdNotifier extends Notifier<String?> {
   @override
@@ -119,7 +118,9 @@ class OnlineRangActionController {
 
     if (state.phase == RangPhase.trumpSelection) {
       if (state.trumpSuit == null) {
-        final caller = state.players.firstWhere((p) => p.id == state.trumpCallerId);
+        final caller = state.players.firstWhere(
+          (p) => p.id == state.trumpCallerId,
+        );
         if (caller.isBot) {
           _handleBotTrumpSelection(state, caller);
         }
@@ -146,7 +147,9 @@ class OnlineRangActionController {
       _lastBotTurnId = '${state.currentTrick.length}_${state.currentPlayerId}';
 
       final bot = _bots[currentPlayer.id]!;
-      await BotDelay.simulateThinking(currentPlayer.botDifficulty ?? BotDifficulty.easy);
+      await BotDelay.simulateThinking(
+        currentPlayer.botDifficulty ?? BotDifficulty.easy,
+      );
 
       // Re-fetch latest state
       final latestState = ref.read(onlineRangProvider).value;
@@ -159,21 +162,21 @@ class OnlineRangActionController {
       await playCard(currentPlayer.id, cardToPlay);
     }
   }
-  
+
   Future<void> _handleBotTrumpSelection(RangGameState state, player) async {
     // Prevent double-triggering
     if (_lastBotTurnId == 'trump_${player.id}') return;
     _lastBotTurnId = 'trump_${player.id}';
-    
+
     _initializeBotsIfNeeded(state);
     final bot = _bots[player.id];
     if (bot == null) return;
-    
+
     await BotDelay.simulateThinking(player.botDifficulty ?? BotDifficulty.easy);
-    
+
     final latestState = ref.read(onlineRangProvider).value;
     if (latestState == null || latestState.trumpSuit != null) return;
-    
+
     final suit = bot.chooseTrump(latestState, player.id);
     await declareTrump(player.id, suit);
   }
@@ -182,7 +185,9 @@ class OnlineRangActionController {
     if (_bots.isEmpty) {
       for (final p in state.players) {
         if (p.isBot) {
-          _bots[p.id] = _getBotForDifficulty(p.botDifficulty ?? BotDifficulty.easy);
+          _bots[p.id] = _getBotForDifficulty(
+            p.botDifficulty ?? BotDifficulty.easy,
+          );
         }
       }
     }
@@ -227,18 +232,22 @@ class OnlineRangActionController {
       _isProcessing = false;
     }
   }
-  
+
   Future<String?> declareTrump(String playerId, Suit suit) async {
     if (_isProcessing) return "Processing...";
     _isProcessing = true;
-    
+
     try {
       final state = ref.read(onlineRangProvider).value;
       if (state == null) return "Game not found";
-      
+
       final firestore = ref.read(firestoreServiceProvider);
       await firestore.runGameTransaction(state.gameId, (latestState) {
-        return RangEngine.declareTrump(latestState as RangGameState, playerId, suit);
+        return RangEngine.declareTrump(
+          latestState as RangGameState,
+          playerId,
+          suit,
+        );
       });
       return null;
     } finally {

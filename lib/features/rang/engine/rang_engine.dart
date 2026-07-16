@@ -295,7 +295,9 @@ class RangEngine {
       teamBSars: newTeamBSars,
       trickResolving: false,
       currentPlayerId: winnerId,
-      passToPlayerId: state.isOnline ? null : winnerId, // Trick winner leads next
+      passToPlayerId: state.isOnline
+          ? null
+          : winnerId, // Trick winner leads next
     );
 
     // ── 4f. Win condition check ──────────────────────────────────────────────

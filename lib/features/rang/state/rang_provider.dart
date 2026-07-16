@@ -52,7 +52,7 @@ class RangNotifier extends Notifier<RangGameState?> {
       _autoAcknowledgeBotPassIfNeeded();
       _checkAndScheduleBotMove();
     }
-    
+
     return null;
   }
 

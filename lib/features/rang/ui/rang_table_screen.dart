@@ -46,7 +46,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
     if (widget.isOnline) {
       ref.watch(onlineRangActionProvider);
     }
-    
+
     final state = widget.isOnline
         ? ref.watch(onlineRangProvider).value
         : ref.watch(rangProvider);
@@ -59,7 +59,7 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
         ),
       );
     }
-    
+
     // Prevent interaction while the trick is resolving
     final isTrickResolving = state.trickResolving;
 
@@ -272,8 +272,11 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: ((isYourTurn ||
-                                              (isTrumpSelection && isTrumpCaller)) && !isTrickResolving)
+                                  color:
+                                      ((isYourTurn ||
+                                              (isTrumpSelection &&
+                                                  isTrumpCaller)) &&
+                                          !isTrickResolving)
                                       ? AppTheme.accentPrimary.withValues(
                                           alpha: 0.15,
                                         )
@@ -282,7 +285,9 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   border: Border.all(
                                     color:
                                         (isYourTurn ||
-                                            (isTrumpSelection && isTrumpCaller)) && !isTrickResolving
+                                                (isTrumpSelection &&
+                                                    isTrumpCaller)) &&
+                                            !isTrickResolving
                                         ? AppTheme.accentPrimary
                                         : AppTheme.accentPrimary.withValues(
                                             alpha: 0.1,
@@ -291,7 +296,9 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   ),
                                   boxShadow:
                                       (isYourTurn ||
-                                          (isTrumpSelection && isTrumpCaller)) && !isTrickResolving
+                                              (isTrumpSelection &&
+                                                  isTrumpCaller)) &&
+                                          !isTrickResolving
                                       ? [
                                           BoxShadow(
                                             color: AppTheme.neonGlow,
@@ -437,7 +444,9 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                   ),
                                   child: Text(
                                     ((isYourTurn ||
-                                            (isTrumpSelection && isTrumpCaller)) && !isTrickResolving)
+                                                (isTrumpSelection &&
+                                                    isTrumpCaller)) &&
+                                            !isTrickResolving)
                                         ? 'YOUR TURN'
                                         : bottomPlayer.name.toUpperCase(),
                                     style: TextStyle(
@@ -446,14 +455,16 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                       letterSpacing: 3.0,
                                       color:
                                           ((isYourTurn ||
-                                              (isTrumpSelection &&
-                                                  isTrumpCaller)) && !isTrickResolving)
+                                                  (isTrumpSelection &&
+                                                      isTrumpCaller)) &&
+                                              !isTrickResolving)
                                           ? AppTheme.accentPrimary
                                           : AppTheme.textSecondary,
                                       shadows:
                                           ((isYourTurn ||
-                                              (isTrumpSelection &&
-                                                  isTrumpCaller)) && !isTrickResolving)
+                                                  (isTrumpSelection &&
+                                                      isTrumpCaller)) &&
+                                              !isTrickResolving)
                                           ? [
                                               Shadow(
                                                 color: AppTheme.neonGlow,
@@ -493,16 +504,22 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                             onCardTap: (card) async {
                                               if (widget.isOnline) {
                                                 final error = await ref
-                                                    .read(onlineRangActionProvider)
+                                                    .read(
+                                                      onlineRangActionProvider,
+                                                    )
                                                     .playCard(
                                                       bottomPlayer.id,
                                                       card,
                                                     );
-                                                if (error != null && context.mounted) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                if (error != null &&
+                                                    context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
                                                     SnackBar(
                                                       content: Text(error),
-                                                      backgroundColor: AppTheme.statusError,
+                                                      backgroundColor:
+                                                          AppTheme.statusError,
                                                     ),
                                                   );
                                                 }
@@ -513,13 +530,20 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                                                       bottomPlayer.id,
                                                       card,
                                                     );
-                                                if (error != null && context.mounted) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                if (error != null &&
+                                                    context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
                                                     SnackBar(
                                                       content: Text(error),
-                                                      duration: const Duration(seconds: 2),
-                                                      backgroundColor: AppTheme.statusError,
-                                                      behavior: SnackBarBehavior.floating,
+                                                      duration: const Duration(
+                                                        seconds: 2,
+                                                      ),
+                                                      backgroundColor:
+                                                          AppTheme.statusError,
+                                                      behavior: SnackBarBehavior
+                                                          .floating,
                                                     ),
                                                   );
                                                 }
@@ -600,9 +624,13 @@ class _RangTableScreenState extends ConsumerState<RangTableScreen> {
                 onTap: () {
                   ref.read(audioServiceProvider).playClick();
                   if (widget.isOnline) {
-                    ref.read(onlineRangActionProvider).declareTrump(callerId, suit);
+                    ref
+                        .read(onlineRangActionProvider)
+                        .declareTrump(callerId, suit);
                   } else {
-                    ref.read(rangProvider.notifier).declareTrump(callerId, suit);
+                    ref
+                        .read(rangProvider.notifier)
+                        .declareTrump(callerId, suit);
                   }
                 },
                 child: Container(
