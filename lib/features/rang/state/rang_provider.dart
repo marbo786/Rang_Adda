@@ -41,21 +41,26 @@ class RangNotifier extends Notifier<RangGameState?> {
     String? error = RangEngine.getMoveError(state!, playerId, card);
     if (error != null) return error;
 
-    // Notice we capture the state BEFORE playing to see if the trick ended
-    final trickBeforePlay = state!.currentTrick.length;
-
     state = RangEngine.playCard(state!, playerId, card);
 
-    // If trick was just resolved (it went from 3 to 0 because engine resolves it instantly),
-    // we could add an artificial delay here if needed, but for now we just trigger next bot.
-    if (trickBeforePlay == 3 && state!.currentTrick.isEmpty) {
-      // A trick just resolved.
-      await Future.delayed(const Duration(milliseconds: 1500));
+    if (state != null && state!.trickResolving) {
+      // Wait 1 second so players can see all 4 cards, then resolve it
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        resolveTrick();
+      });
+    } else if (state != null) {
+      _autoAcknowledgeBotPassIfNeeded();
+      _checkAndScheduleBotMove();
     }
+    
+    return null;
+  }
 
+  void resolveTrick() {
+    if (state == null || !state!.trickResolving) return;
+    state = RangEngine.resolveTrick(state!);
     _autoAcknowledgeBotPassIfNeeded();
     _checkAndScheduleBotMove();
-    return null;
   }
 
   void acknowledgePass() {
@@ -100,8 +105,8 @@ class RangNotifier extends Notifier<RangGameState?> {
   }
 
   void _botDeclareTrump() {
-    if (state == null || state!.trumpCallerId == null) return;
-    final callerId = state!.trumpCallerId!;
+    if (state == null) return;
+    final callerId = state!.trumpCallerId;
     final player = state!.players.firstWhere((p) => p.id == callerId);
     final bot = _getBotForDifficulty(
       player.botDifficulty ?? BotDifficulty.easy,
@@ -115,6 +120,7 @@ class RangNotifier extends Notifier<RangGameState?> {
     if (s == null) return;
     if (s.status != GameStatus.playing) return;
     if (s.phase != RangPhase.trickPlay) return;
+    if (s.trickResolving) return; // Wait for trick to resolve
     if (s.passToPlayerId != null) return;
     if (!_isBotPlayer(s.currentPlayerId)) return;
 
@@ -129,6 +135,7 @@ class RangNotifier extends Notifier<RangGameState?> {
       if (s != null &&
           s.status == GameStatus.playing &&
           s.phase == RangPhase.trickPlay &&
+          !s.trickResolving &&
           _isBotPlayer(s.currentPlayerId) &&
           s.passToPlayerId == null) {
         _executeBotMove();

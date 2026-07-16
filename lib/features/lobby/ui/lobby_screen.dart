@@ -155,6 +155,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                 Navigator.of(context).pop();
                 _hostGame('bluff');
               }),
+              const SizedBox(height: 12),
+              _buildButton('RANG', () {
+                Navigator.of(context).pop();
+                _hostGame('rang');
+              }),
             ],
           ),
         );

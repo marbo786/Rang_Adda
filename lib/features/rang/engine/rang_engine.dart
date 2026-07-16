@@ -77,6 +77,47 @@ class RangEngine {
     );
   }
 
+  /// Starts a game from the waiting room (online multiplayer).
+  /// Re-deals a shuffled deck and sets the game to trick-play,
+  /// skipping the device pass overlays (isOnline = true).
+  static RangGameState startGameFromWaitingRoom(RangGameState state) {
+    final deck = Deck.standard().cards..shuffle(Random());
+    var players = List<Player>.from(state.players);
+
+    int pIndex = 0;
+    for (var card in deck) {
+      players[pIndex] = players[pIndex].copyWith(
+        hand: [...players[pIndex].hand, card],
+      );
+      pIndex = (pIndex + 1) % players.length;
+    }
+
+    players = players.map((p) {
+      final sorted = List<PlayingCard>.from(p.hand)
+        ..sort((a, b) {
+          final suitCmp = a.suit.index.compareTo(b.suit.index);
+          if (suitCmp != 0) return suitCmp;
+          return _rankValue(b.rank).compareTo(_rankValue(a.rank));
+        });
+      return p.copyWith(hand: sorted, cardCount: sorted.length);
+    }).toList();
+
+    final dealerId = players[0].id;
+    final trumpCallerId = players[1].id;
+
+    return state.copyWith(
+      players: players,
+      status: GameStatus.playing,
+      currentPlayerId: trumpCallerId,
+      dealerId: dealerId,
+      trumpCallerId: trumpCallerId,
+      phase: RangPhase.trumpSelection,
+      passToPlayerId: null, // Online games do not need pass device screens!
+      trickResolving: false,
+      isOnline: true,
+    );
+  }
+
   /// Declares the trump suit and advances the game to [RangPhase.trickPlay].
   ///
   /// The trump caller leads the first trick immediately (no pass-device after
@@ -179,24 +220,30 @@ class RangEngine {
         currentTrick: updatedTrick,
         leadSuit: newLeadSuit,
         currentPlayerId: nextPlayerId,
-        passToPlayerId: nextPlayerId,
+        passToPlayerId: state.isOnline ? null : nextPlayerId,
       );
     }
 
-    // ── 4. All 4 played — resolve the trick ─────────────────────────────────
-    return _resolveTrick(state, updatedPlayers, updatedTrick, newLeadSuit!);
+    // ── 4. All 4 played — wait for resolution ───────────────────────────────
+    return state.copyWith(
+      players: updatedPlayers,
+      currentTrick: updatedTrick,
+      leadSuit: newLeadSuit,
+      trickResolving: true,
+      clearCurrentPlayerId: true,
+    );
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  // ── Public Trick Resolution ───────────────────────────────────────────────
 
   /// Resolves a completed 4-card trick, updates heap / sars, and checks
   /// the win condition.
-  static RangGameState _resolveTrick(
-    RangGameState state,
-    List<Player> players,
-    List<RangTrickPlay> trick,
-    Suit leadSuit,
-  ) {
+  static RangGameState resolveTrick(RangGameState state) {
+    if (!state.trickResolving || state.currentTrick.length < 4) return state;
+
+    final players = state.players;
+    final trick = state.currentTrick;
+    final leadSuit = state.leadSuit!;
     final trumpSuit = state.trumpSuit; // non-null; declareTrump already set it.
 
     // ── 4a. Determine winner ────────────────────────────────────────────────
@@ -246,8 +293,9 @@ class RangEngine {
       consecutiveWinsByLastWinner: newConsecutiveAfterScore,
       teamASars: newTeamASars,
       teamBSars: newTeamBSars,
+      trickResolving: false,
       currentPlayerId: winnerId,
-      passToPlayerId: winnerId, // Trick winner leads next; pass device.
+      passToPlayerId: state.isOnline ? null : winnerId, // Trick winner leads next
     );
 
     // ── 4f. Win condition check ──────────────────────────────────────────────

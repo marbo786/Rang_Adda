@@ -6,6 +6,8 @@ import 'package:rang_adda/features/thulla/engine/thulla_game_state.dart';
 import 'package:rang_adda/features/thulla/engine/thulla_engine.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_game_state.dart';
 import 'package:rang_adda/features/bluff/engine/bluff_engine.dart';
+import 'package:rang_adda/features/rang/engine/rang_game_state.dart';
+import 'package:rang_adda/features/rang/engine/rang_engine.dart';
 import 'package:rang_adda/shared/models/user_model.dart';
 import 'package:rang_adda/shared/models/chat_message.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,6 +111,16 @@ class FirestoreService {
         participantIds: [hostId],
         hostUid: hostId,
       );
+    } else if (gameType == 'rang') {
+      state = RangGameState(
+        gameId: gameId,
+        players: [Player(id: hostId, name: hostName)],
+        status: GameStatus.waiting,
+        dealerId: hostId, // Dealer gets assigned during startGameFromWaitingRoom anyway
+        trumpCallerId: hostId,
+        participantIds: [hostId],
+        hostUid: hostId,
+      );
     } else {
       state = ThullaGameState(
         gameId: gameId,
@@ -169,6 +181,14 @@ class FirestoreService {
       playingState = initialized.copyWith(
         gameId: state.gameId,
         status: GameStatus.playing,
+        isOnline: true,
+        participantIds: state.participantIds,
+      );
+    } else if (state.gameType == 'rang') {
+      playingState = RangEngine.startGameFromWaitingRoom(
+        state as RangGameState,
+      );
+      playingState = (playingState as RangGameState).copyWith(
         isOnline: true,
         participantIds: state.participantIds,
       );

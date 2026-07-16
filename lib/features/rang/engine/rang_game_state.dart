@@ -75,6 +75,12 @@ class RangGameState extends GameState {
   /// (a "bavney" / grand slam).
   final bool bavney;
 
+  /// Whether the game is being played online.
+  final bool isOnline;
+
+  /// Whether the current trick is waiting to be resolved (for the 1-second delay).
+  final bool trickResolving;
+
   const RangGameState({
     required super.gameId,
     super.gameType = 'rang',
@@ -97,6 +103,8 @@ class RangGameState extends GameState {
     this.winningTeam,
     this.kot = false,
     this.bavney = false,
+    this.isOnline = false,
+    this.trickResolving = false,
     super.participantIds = const [],
     super.hostUid,
   });
@@ -134,6 +142,8 @@ class RangGameState extends GameState {
     bool clearWinningTeam = false,
     bool? kot,
     bool? bavney,
+    bool? isOnline,
+    bool? trickResolving,
     List<ChatMessage>? chatMessages,
     List<String>? participantIds,
     String? hostUid,
@@ -166,6 +176,8 @@ class RangGameState extends GameState {
       winningTeam: clearWinningTeam ? null : (winningTeam ?? this.winningTeam),
       kot: kot ?? this.kot,
       bavney: bavney ?? this.bavney,
+      isOnline: isOnline ?? this.isOnline,
+      trickResolving: trickResolving ?? this.trickResolving,
       participantIds: participantIds ?? this.participantIds,
       hostUid: hostUid ?? this.hostUid,
     );
@@ -191,6 +203,8 @@ class RangGameState extends GameState {
     winningTeam,
     kot,
     bavney,
+    isOnline,
+    trickResolving,
     hostUid,
   ];
 
@@ -219,6 +233,8 @@ class RangGameState extends GameState {
     'winningTeam': winningTeam,
     'kot': kot,
     'bavney': bavney,
+    'isOnline': isOnline,
+    'trickResolving': trickResolving,
     'participantIds': participantIds,
     'hostUid': hostUid,
   };
@@ -260,6 +276,8 @@ class RangGameState extends GameState {
       winningTeam: json['winningTeam'] as String?,
       kot: json['kot'] as bool? ?? false,
       bavney: json['bavney'] as bool? ?? false,
+      isOnline: json['isOnline'] as bool? ?? false,
+      trickResolving: json['trickResolving'] as bool? ?? false,
       participantIds:
           (json['participantIds'] as List?)?.map((e) => e as String).toList() ??
           const [],

@@ -65,8 +65,9 @@ class RangBotPIMC implements RangBotStrategy {
       ),
     );
 
-    if (validCards.isEmpty)
+    if (validCards.isEmpty) {
       return RangBotEasy(rng: _rng).chooseCard(state, botId);
+    }
     if (validCards.length == 1) return validCards.first;
 
     // Find which team the bot is on (index in players list)
@@ -95,8 +96,9 @@ class RangBotPIMC implements RangBotStrategy {
       worldsCompleted++;
     }
 
-    if (worldsCompleted == 0)
+    if (worldsCompleted == 0) {
       return RangBotEasy(rng: _rng).chooseCard(state, botId);
+    }
 
     validCards.sort(
       (a, b) => (cardScores[b] ?? 0.0).compareTo(cardScores[a] ?? 0.0),

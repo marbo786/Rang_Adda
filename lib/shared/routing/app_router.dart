@@ -39,6 +39,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const BluffTableScreen(isOnline: true),
     ),
     GoRoute(
+      path: '/online_rang',
+      builder: (context, state) => const RangTableScreen(isOnline: true),
+    ),
+    GoRoute(
       path: '/waiting_room/:gameId',
       builder: (context, state) {
         final gameId = state.pathParameters['gameId']!;
