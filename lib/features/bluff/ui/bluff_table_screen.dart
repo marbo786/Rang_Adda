@@ -223,6 +223,32 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 12),
+                            if (state.currentRoundRank != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.statusWarning.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppTheme.statusWarning,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  'ROUND RANK: ${state.currentRoundRank!.name.toUpperCase()}S',
+                                  style: const TextStyle(
+                                    color: AppTheme.statusWarning,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2.0,
+                                  ),
+                                ),
+                              ),
                             const SizedBox(height: 24),
                             if (state.centerPile.isNotEmpty)
                               AnimatedOpacity(
@@ -424,6 +450,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                                           context,
                                           cards,
                                           bottomPlayer.id,
+                                          state.currentRoundRank,
                                         );
                                       },
                                     ),
@@ -481,6 +508,7 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
     BuildContext context,
     List<PlayingCard> cards,
     String playerId,
+    Rank? currentRoundRank,
   ) {
     showDialog(
       context: context,
@@ -537,56 +565,66 @@ class _BluffTableScreenState extends ConsumerState<BluffTableScreen> {
                     runSpacing: 12,
                     alignment: WrapAlignment.center,
                     children: Rank.values.map((rank) {
-                      return InkWell(
-                        onTap: () async {
-                          ref.read(audioServiceProvider).playClick();
-                          Navigator.of(dialogContext).pop();
-
-                          String? error;
-                          if (widget.isOnline) {
-                            error = await ref
-                                .read(onlineBluffActionProvider)
-                                .playCard(playerId, cards, rank);
-                          } else {
-                            error = await ref
-                                .read(bluffProvider.notifier)
-                                .playCard(playerId, cards, rank);
-                          }
-
-                          if (error != null) {
-                            if (!context.mounted) return;
-                            ref.read(audioServiceProvider).playError();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(error),
-                                backgroundColor: AppTheme.statusError,
-                              ),
-                            );
-                          } else {}
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentPrimary.withValues(
-                              alpha: 0.1,
+                      bool isLockedAndDifferent = currentRoundRank != null && rank != currentRoundRank;
+                      return IgnorePointer(
+                        ignoring: isLockedAndDifferent,
+                        child: InkWell(
+                          onTap: () async {
+                            ref.read(audioServiceProvider).playClick();
+                            Navigator.of(dialogContext).pop();
+  
+                            String? error;
+                            if (widget.isOnline) {
+                              error = await ref
+                                  .read(onlineBluffActionProvider)
+                                  .playCard(playerId, cards, rank);
+                            } else {
+                              error = await ref
+                                  .read(bluffProvider.notifier)
+                                  .playCard(playerId, cards, rank);
+                            }
+  
+                            if (error != null) {
+                              if (!context.mounted) return;
+                              ref.read(audioServiceProvider).playError();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(error),
+                                  backgroundColor: AppTheme.statusError,
+                                ),
+                              );
+                            } else {}
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 14,
                             ),
-                            border: Border.all(
-                              color: AppTheme.accentPrimary.withValues(
-                                alpha: 0.5,
+                            decoration: BoxDecoration(
+                              color: isLockedAndDifferent
+                                  ? Colors.grey.withValues(alpha: 0.1)
+                                  : AppTheme.accentPrimary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                              border: Border.all(
+                                color: isLockedAndDifferent
+                                    ? Colors.grey.withValues(alpha: 0.3)
+                                    : AppTheme.accentPrimary.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                width: 1.5,
                               ),
-                              width: 1.5,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            rank.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: AppTheme.accentPrimary,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.5,
+                            child: Text(
+                              rank.name.toUpperCase(),
+                              style: TextStyle(
+                                color: isLockedAndDifferent
+                                    ? Colors.grey.withValues(alpha: 0.5)
+                                    : AppTheme.accentPrimary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.5,
+                              ),
                             ),
                           ),
                         ),

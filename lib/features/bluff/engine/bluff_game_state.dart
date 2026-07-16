@@ -13,6 +13,9 @@ class BluffGameState extends GameState {
   final String? resolvingBluffMessage;
   final String? pendingBluffCallerId;
   final bool isOnline;
+  final Rank? currentRoundRank;
+  final Set<String> playersActedThisRound;
+  final String? lastCardPlayerId;
 
   const BluffGameState({
     required super.gameId,
@@ -30,6 +33,9 @@ class BluffGameState extends GameState {
     this.resolvingBluffMessage,
     this.pendingBluffCallerId,
     this.isOnline = false,
+    this.currentRoundRank,
+    this.playersActedThisRound = const {},
+    this.lastCardPlayerId,
     super.participantIds = const [],
     super.hostUid,
   }) : super(currentPlayerId: currentPlayerId);
@@ -49,6 +55,11 @@ class BluffGameState extends GameState {
     String? pendingBluffCallerId,
     bool clearPendingBluffCallerId = false,
     bool? isOnline,
+    Rank? currentRoundRank,
+    bool clearCurrentRoundRank = false,
+    Set<String>? playersActedThisRound,
+    String? lastCardPlayerId,
+    bool clearLastCardPlayerId = false,
     List<ChatMessage>? chatMessages,
     List<String>? participantIds,
     String? hostUid,
@@ -70,6 +81,14 @@ class BluffGameState extends GameState {
           ? null
           : (pendingBluffCallerId ?? this.pendingBluffCallerId),
       isOnline: isOnline ?? this.isOnline,
+      currentRoundRank: clearCurrentRoundRank
+          ? null
+          : (currentRoundRank ?? this.currentRoundRank),
+      playersActedThisRound:
+          playersActedThisRound ?? this.playersActedThisRound,
+      lastCardPlayerId: clearLastCardPlayerId
+          ? null
+          : (lastCardPlayerId ?? this.lastCardPlayerId),
       chatMessages: chatMessages ?? this.chatMessages,
       participantIds: participantIds ?? this.participantIds,
       hostUid: hostUid ?? this.hostUid,
@@ -91,6 +110,9 @@ class BluffGameState extends GameState {
       resolvingBluffMessage: null,
       pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      currentRoundRank: currentRoundRank,
+      playersActedThisRound: playersActedThisRound,
+      lastCardPlayerId: lastCardPlayerId,
       participantIds: participantIds,
       hostUid: hostUid,
     );
@@ -111,6 +133,9 @@ class BluffGameState extends GameState {
       resolvingBluffMessage: resolvingBluffMessage,
       pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      currentRoundRank: currentRoundRank,
+      playersActedThisRound: playersActedThisRound,
+      lastCardPlayerId: lastCardPlayerId,
       participantIds: participantIds,
       hostUid: hostUid,
     );
@@ -131,6 +156,9 @@ class BluffGameState extends GameState {
       resolvingBluffMessage: message,
       pendingBluffCallerId: pendingBluffCallerId,
       isOnline: isOnline,
+      currentRoundRank: currentRoundRank,
+      playersActedThisRound: playersActedThisRound,
+      lastCardPlayerId: lastCardPlayerId,
       participantIds: participantIds,
       hostUid: hostUid,
     );
@@ -148,6 +176,9 @@ class BluffGameState extends GameState {
     resolvingBluffMessage,
     pendingBluffCallerId,
     isOnline,
+    currentRoundRank,
+    playersActedThisRound,
+    lastCardPlayerId,
     hostUid,
   ];
 
@@ -168,6 +199,9 @@ class BluffGameState extends GameState {
     'resolvingBluffMessage': resolvingBluffMessage,
     'pendingBluffCallerId': pendingBluffCallerId,
     'isOnline': isOnline,
+    'currentRoundRank': currentRoundRank?.index,
+    'playersActedThisRound': playersActedThisRound.toList(),
+    'lastCardPlayerId': lastCardPlayerId,
     'participantIds': participantIds,
     'hostUid': hostUid,
   };
@@ -200,6 +234,13 @@ class BluffGameState extends GameState {
       resolvingBluffMessage: json['resolvingBluffMessage'] as String?,
       pendingBluffCallerId: json['pendingBluffCallerId'] as String?,
       isOnline: json['isOnline'] as bool? ?? false,
+      currentRoundRank: json['currentRoundRank'] != null
+          ? Rank.values[json['currentRoundRank'] as int]
+          : null,
+      playersActedThisRound:
+          (json['playersActedThisRound'] as List?)?.map((e) => e as String).toSet() ??
+          const {},
+      lastCardPlayerId: json['lastCardPlayerId'] as String?,
       participantIds:
           (json['participantIds'] as List?)?.map((e) => e as String).toList() ??
           const [],

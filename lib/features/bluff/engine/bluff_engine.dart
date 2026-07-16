@@ -45,8 +45,9 @@ class BluffEngine {
   static String? getMoveError(
     BluffGameState state,
     String playerId,
-    List<PlayingCard> cards,
-  ) {
+    List<PlayingCard> cards, [
+    Rank? claimedRank,
+  ]) {
     if (state.status == GameStatus.finished) {
       return "Game is already finished.";
     }
@@ -54,8 +55,14 @@ class BluffEngine {
     if (cards.isEmpty || cards.length > 4) {
       return "You must select between 1 and 4 cards.";
     }
-    if (state.centerPile.isEmpty && cards.length < 2) {
+    if (state.centerPile.isEmpty && cards.length < 2 && state.currentRoundRank == null) {
       return "You must play at least 2 cards to start a new pile.";
+    }
+    if (state.currentRoundRank != null &&
+        claimedRank != null &&
+        claimedRank != state.currentRoundRank) {
+      return 'This round is locked to ${state.currentRoundRank!.name}s. '
+          'You must play ${state.currentRoundRank!.name}s or call bluff.';
     }
 
     final player = state.players.firstWhere((p) => p.id == playerId);
@@ -73,8 +80,11 @@ class BluffEngine {
     List<PlayingCard> cards,
     Rank claimedRank,
   ) {
-    final error = getMoveError(state, playerId, cards);
+    final error = getMoveError(state, playerId, cards, claimedRank);
     if (error != null) throw Exception(error);
+
+    // If this is the first play of a new round, lock in the rank
+    final roundRank = state.currentRoundRank ?? claimedRank;
 
     List<Player> updatedPlayers = List.from(state.players);
     int pIdx = updatedPlayers.indexWhere((p) => p.id == playerId);
@@ -109,17 +119,30 @@ class BluffEngine {
     }
     String nextPlayerId = updatedPlayers[nextPIdx].id;
 
+    final newPlayersActed = Set<String>.from(state.playersActedThisRound)
+      ..add(playerId);
+    
+    int activePlayerCount = updatedPlayers.where((p) => p.cardCount > 0).length;
+
+    // A round ends when all players have either played or passed
+    bool roundEnded = newPlayersActed.length >= activePlayerCount;
+
     return state.copyWith(
       players: updatedPlayers,
-      currentPlayerId: nextPlayerId,
+      currentPlayerId: roundEnded ? playerId : nextPlayerId,
       lastPlayerId: playerId,
-      centerPile: newCenterPile,
-      lastPlayedCards: cards,
-      lastClaimedRank: claimedRank,
+      centerPile: roundEnded ? [] : newCenterPile,
+      lastPlayedCards: roundEnded ? [] : cards,
+      lastClaimedRank: roundEnded ? null : claimedRank,
       consecutivePasses: 0,
-      passToPlayerId: nextPlayerId,
+      passToPlayerId: roundEnded ? null : nextPlayerId,
       resolvingBluffMessage: null,
       status: newStatus,
+      currentRoundRank: roundEnded ? null : roundRank,
+      clearCurrentRoundRank: roundEnded,
+      playersActedThisRound: roundEnded ? {} : newPlayersActed,
+      lastCardPlayerId: playerId,
+      clearLastCardPlayerId: roundEnded,
     );
   }
 
@@ -150,15 +173,22 @@ class BluffEngine {
     Rank? newLastClaimed = state.lastClaimedRank;
     String? newLastPlayerId = state.lastPlayerId;
 
-    if (newConsecutivePasses >= state.players.length) {
-      // Everyone passed. Center pile is discarded.
+    final newPlayersActed = Set<String>.from(state.playersActedThisRound)
+      ..add(playerId);
+    int activePlayerCount = updatedPlayers.where((p) => p.cardCount > 0).length;
+
+    bool roundEnded = newPlayersActed.length >= activePlayerCount ||
+        newConsecutivePasses >= activePlayerCount;
+
+    if (roundEnded) {
+      // Everyone passed or acted. Center pile is discarded.
       newCenterPile = [];
       newLastPlayed = [];
       newLastClaimed = null;
       newLastPlayerId = null;
       newConsecutivePasses = 0;
 
-      // If the player who won the trick (lastPlayerId) has 0 cards, they win the game!
+      // If the player who made the last play has 0 cards, they win the game!
       if (state.lastPlayerId != null) {
         int prevIdx = updatedPlayers.indexWhere(
           (p) => p.id == state.lastPlayerId!,
@@ -173,14 +203,19 @@ class BluffEngine {
     }
 
     return state.copyWith(
-      currentPlayerId: nextPlayerId,
+      currentPlayerId: roundEnded ? (state.lastCardPlayerId ?? nextPlayerId) : nextPlayerId,
       consecutivePasses: newConsecutivePasses,
       centerPile: newCenterPile,
       lastPlayedCards: newLastPlayed,
       lastClaimedRank: newLastClaimed,
       lastPlayerId: newLastPlayerId,
-      passToPlayerId: nextPlayerId,
+      passToPlayerId: roundEnded ? null : nextPlayerId,
       resolvingBluffMessage: null,
+      currentRoundRank: roundEnded ? null : state.currentRoundRank,
+      clearCurrentRoundRank: roundEnded,
+      playersActedThisRound: roundEnded ? {} : newPlayersActed,
+      lastCardPlayerId: roundEnded ? null : state.lastCardPlayerId,
+      clearLastCardPlayerId: roundEnded,
     );
   }
 
@@ -258,6 +293,10 @@ class BluffEngine {
       resolvingBluffMessage: message,
       status: newStatus,
       clearPendingBluffCallerId: true,
+      clearCurrentRoundRank: true,
+      playersActedThisRound: {},
+      clearLastCardPlayerId: true,
+      currentPlayerId: loserId,
     );
   }
 }
