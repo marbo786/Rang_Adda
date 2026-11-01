@@ -18,7 +18,7 @@
 
 **Rang-Adda** ("the card hub") is a Flutter app that brings three classic trick-taking and bluffing card games — **Thulla**, **Bluff**, and **Rang** — onto a single polished, real-time multiplayer platform. It's built around a high-contrast, minimal-premium design system and a clean feature-first architecture, with full Firebase-backed online play alongside local pass-and-play.
 
-This isn't a tech demo — it's a complete game engine: strict rule enforcement, trick resolution, team play, reconnection handling, lobbies, profiles, and live chat, all wired together with Riverpod and Firestore.
+The game engines handle strict rule enforcement, trick resolution, team play, reconnection handling, lobbies, profiles, and live chat, all wired together with Riverpod and Firestore.
 
 ---
 
@@ -94,30 +94,6 @@ A **Minimal Premium** look, tuned for fast readability mid-game:
 | Reactive Streams | rxdart |
 | Audio | just_audio |
 | Fonts | google_fonts |
-
----
-
-## Getting Started
-
-```bash
-# Clone the repo
-git clone https://github.com/marbo786/Rang_Adda.git
-cd Rang_Adda
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run
-```
-
-Run the test suite (native Dart game engines):
-
-```bash
-flutter test
-```
-
-> **Note:** Online multiplayer requires a Firebase project wired up via `firebase.json` / `firestore.rules`. Pass & play modes work fully offline out of the box.
 
 ---
 
